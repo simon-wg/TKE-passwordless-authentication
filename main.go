@@ -1,11 +1,14 @@
 package main
 
 import (
+	"crypto"
+	"crypto/ed25519"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/tillitis/tkeyclient"
+	"golang.org/x/crypto/ssh"
 )
 
 const progname = "tkey-device-signer"
@@ -43,12 +46,28 @@ func main() {
 	defer signer.disconnect()
 
 	fmt.Printf("Connected to TKEY\n")
-	signer.printAuthorizedKey()
 
-	sign, err := signer.Sign(os.Stdin, []byte("test"), nil)
+	pub, err := signer.tkSigner.GetPubkey()
+
+	if err != nil {
+		fmt.Println("Error getting Public Key")
+		return
+	}
+
+	sshPub, _ := ssh.NewPublicKey(ed25519.PublicKey(pub))
+
+	fmt.Printf("Public key is: \n%s\n", ssh.MarshalAuthorizedKey(sshPub))
+
+	sign, err := signer.Sign(os.Stdin, []byte("test"), crypto.Hash(0))
 	if err != nil {
 		le.Printf("Sign failed: %s\n", err)
 		return
 	}
-	fmt.Printf("Signature: %s\n", sign)
+	fmt.Printf("Signature: %x\n", string(sign))
+
+	if ed25519.Verify(pub, []byte("test"), sign) {
+		fmt.Println("Signature is valid!")
+		return
+	}
+	fmt.Println("Signature is wrong :(")
 }
