@@ -17,7 +17,11 @@ const progname = "tkey-device-signer"
 var le = log.New(os.Stderr, "", 0)
 
 func main() {
-	devPath := "/dev/ttyACM0"
+	devPath, err := tkeyclient.DetectSerialPort(false)
+	if err != nil {
+		le.Printf("Failed to detect serial port: %s\n", err)
+		return
+	}
 
 	// tk := tkeyclient.New()
 	// err := tk.Connect(devPath)
