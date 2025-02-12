@@ -15,6 +15,21 @@ const progname = "tkey-device-signer"
 var le = log.New(os.Stderr, "Error: ", 0)
 
 func GetTkeyPubKey() []byte {
+	signer := getSigner()
+
+	pub, err := signer.tkSigner.GetPubkey()
+
+	if err != nil {
+		fmt.Println("Error getting Public Key")
+		return nil
+	}
+
+	sshPub, _ := ssh.NewPublicKey(ed25519.PublicKey(pub))
+
+	return ssh.MarshalAuthorizedKey(sshPub)
+}
+
+func getSigner() *Signer {
 	devPath, err := tkeyclient.DetectSerialPort(false)
 	if err != nil {
 		fmt.Println("Error detecting serial port")
@@ -30,14 +45,5 @@ func GetTkeyPubKey() []byte {
 
 	signer := NewSigner(devPath, serialSpeed, false, "", "", exit)
 
-	pub, err := signer.tkSigner.GetPubkey()
-
-	if err != nil {
-		fmt.Println("Error getting Public Key")
-		return nil
-	}
-
-	sshPub, _ := ssh.NewPublicKey(ed25519.PublicKey(pub))
-
-	return ssh.MarshalAuthorizedKey(sshPub)
+	return signer
 }
