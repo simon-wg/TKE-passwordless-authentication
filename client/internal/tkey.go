@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"crypto"
 	"crypto/ed25519"
 	"fmt"
 	"log"
@@ -27,6 +28,26 @@ func GetTkeyPubKey() []byte {
 	sshPub, _ := ssh.NewPublicKey(ed25519.PublicKey(pub))
 
 	return ssh.MarshalAuthorizedKey(sshPub)
+}
+
+func Sign(msg []byte) ([]byte, error) {
+
+	signer := getSigner()
+
+	if !signer.connect() {
+		le.Printf("Connect failed")
+		return nil, fmt.Errorf("connect failed")
+	}
+
+	defer signer.disconnect()
+
+	sig, err := signer.Sign(nil, msg, crypto.Hash(0))
+	if err != nil {
+		le.Printf("Sign failed: %s\n", err)
+		return nil, err
+	}
+
+	return sig, nil
 }
 
 func getSigner() *Signer {
