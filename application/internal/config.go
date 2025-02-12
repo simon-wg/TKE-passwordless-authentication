@@ -1,3 +1,3 @@
 package internal
 
-// Constants etc used in internal
+const UsersFile = "../data/users.csv"
