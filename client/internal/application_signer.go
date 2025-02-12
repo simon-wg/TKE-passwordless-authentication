@@ -11,7 +11,7 @@ import (
 func GetSignatureAndVerify(user string) bool {
 	pubkey := getPublicKey()
 
-	sig, msg := getSignatureAndMessageFromEndpoint(user)
+	msg, sig := fetchMessageAndSignature(user)
 
 	return verifySig(pubkey, msg, sig)
 }
@@ -44,11 +44,15 @@ func getPublicKey() []byte {
 	return pubkey
 }
 
-func verifySig(pubkey []byte, data []byte, sig []byte) bool {
+func verifySig(pubkey ed25519.PublicKey, data []byte, sig []byte) bool {
+	if len(pubkey) != ed25519.PublicKeySize {
+		fmt.Println("Invalid public key")
+		return false
+	}
 	return ed25519.Verify(pubkey, data, sig)
 }
 
-func getSignatureAndMessageFromEndpoint(user string) ([]byte, []byte) {
+func fetchMessageAndSignature(user string) ([]byte, []byte) {
 	baseUrl := "http://localhost:8080"
 	endpoint := "/api/login"
 
@@ -75,7 +79,7 @@ func getSignatureAndMessageFromEndpoint(user string) ([]byte, []byte) {
 		return nil, nil
 	}
 
-	return sigMsg.Signature, sigMsg.Message
+	return sigMsg.Message, sigMsg.Signature
 }
 
 type SignatureMessage struct {
