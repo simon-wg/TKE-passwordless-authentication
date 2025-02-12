@@ -54,9 +54,9 @@ func getSignatureAndMessageFromEndpoint(user string) ([]byte, []byte) {
 
 	// Get the signature and message from the endpoint
 
-	httpClient := &http.Client{}
+	c := &http.Client{}
 
-	resp, err := httpClient.PostForm(baseUrl+endpoint, url.Values{"user": {user}})
+	resp, err := c.PostForm(baseUrl+endpoint, url.Values{"user": {user}})
 	if err != nil {
 		fmt.Println("Error sending request to get signature and message")
 		return nil, nil
