@@ -41,9 +41,30 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Received login request for user: %s\n", username)
 
 	// Read user data from csv and store in var userData
+	userData, err := Read(UsersFile)
+	if err != nil {
+		fmt.Printf("Error reading user data: %v\n", err)
+		http.Error(w, "Unable to read user data", http.StatusInternalServerError)
+		return
+	}
+
+	// Check if the specified user is found
+	if _, userExists := userData[username]; !userExists {
+		fmt.Printf("User not found: %s\n", username)
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
 
 	// If username == username that is stored in userData, extract public key in
 	// var pubkey. If public key is empty return error
+	pubkey, ok := userData[username]
+	if !ok || pubkey == "" {
+		fmt.Printf("Public key not found for user: %s\n", username)
+		http.Error(w, "Public key not found for specified user", http.StatusNotFound)
+		return
+	}
+
+	fmt.Printf("Found public key for user %s: %s\n", username, pubkey)
 
 	// Generate a challenge using username
 	challenge := "challenge"
@@ -52,8 +73,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	responseBody := map[string]string{"challenge": challenge}
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(responseBody); err != nil {
+		fmt.Printf("Unable to send response for user: %s\n", username)
 		http.Error(w, "Unable to send response", http.StatusInternalServerError)
 	}
-
-	fmt.Printf("Responded to request")
 }
