@@ -15,24 +15,31 @@ const progname = "tkey-device-signer"
 
 var le = log.New(os.Stderr, "Error: ", 0)
 
-func GetTkeyPubKey() []byte {
-	signer := getSigner()
+func GetTkeyPubKey() ([]byte, error) {
+	signer, err := getSigner()
+
+	if err != nil {
+		return nil, err
+	}
 
 	pub, err := signer.tkSigner.GetPubkey()
 
 	if err != nil {
-		fmt.Println("Error getting Public Key")
-		return nil
+		return nil, err
 	}
 
 	sshPub, _ := ssh.NewPublicKey(ed25519.PublicKey(pub))
 
-	return ssh.MarshalAuthorizedKey(sshPub)
+	return ssh.MarshalAuthorizedKey(sshPub), nil
 }
 
 func Sign(msg []byte) ([]byte, error) {
 
-	signer := getSigner()
+	signer, err := getSigner()
+
+	if err != nil {
+		return nil, err
+	}
 
 	if !signer.connect() {
 		le.Printf("Connect failed")
@@ -50,21 +57,19 @@ func Sign(msg []byte) ([]byte, error) {
 	return sig, nil
 }
 
-func getSigner() *Signer {
+func getSigner() (*Signer, error) {
 	devPath, err := tkeyclient.DetectSerialPort(false)
 	if err != nil {
-		fmt.Println("Error detecting serial port")
-		return nil
+		return nil, err
 	}
 
 	serialSpeed := tkeyclient.SerialSpeed
 
 	exit := func(code int) {
-		fmt.Println("Error connecting to TKEY")
 		os.Exit(0)
 	}
 
 	signer := NewSigner(devPath, serialSpeed, false, "", "", exit)
 
-	return signer
+	return signer, nil
 }
