@@ -25,7 +25,6 @@ func main() {
 	}
 
 	signer := NewSigner(devPath, serialSpeed, false, "", "", exit)
-
 	if !signer.connect() {
 		le.Printf("Connect failed")
 		return
