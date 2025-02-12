@@ -1,10 +1,7 @@
 package internal
 
 import (
-<<<<<<< HEAD
-=======
 	"crypto"
->>>>>>> origin/dev/client
 	"crypto/ed25519"
 	"fmt"
 	"log"
@@ -18,13 +15,6 @@ const progname = "tkey-device-signer"
 
 var le = log.New(os.Stderr, "Error: ", 0)
 
-<<<<<<< HEAD
-func GetTkeyPubKey() []byte {
-	devPath, err := tkeyclient.DetectSerialPort(false)
-	if err != nil {
-		fmt.Println("Error detecting serial port")
-		return nil
-=======
 func GetTkeyPubKey() ([]byte, error) {
 	signer, err := getSigner()
 
@@ -71,33 +61,15 @@ func getSigner() (*Signer, error) {
 	devPath, err := tkeyclient.DetectSerialPort(false)
 	if err != nil {
 		return nil, err
->>>>>>> origin/dev/client
 	}
 
 	serialSpeed := tkeyclient.SerialSpeed
 
 	exit := func(code int) {
-<<<<<<< HEAD
-		fmt.Println("Error connecting to TKEY")
-=======
->>>>>>> origin/dev/client
 		os.Exit(0)
 	}
 
 	signer := NewSigner(devPath, serialSpeed, false, "", "", exit)
 
-<<<<<<< HEAD
-	pub, err := signer.tkSigner.GetPubkey()
-
-	if err != nil {
-		fmt.Println("Error getting Public Key")
-		return nil
-	}
-
-	sshPub, _ := ssh.NewPublicKey(ed25519.PublicKey(pub))
-
-	return ssh.MarshalAuthorizedKey(sshPub)
-=======
 	return signer, nil
->>>>>>> origin/dev/client
 }
