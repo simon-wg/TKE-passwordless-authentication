@@ -8,12 +8,12 @@ import (
 	"net/url"
 )
 
-func GetSignatureAndVerify(user string) bool {
+func GetChallengeAndVerify(user string) ([]byte, bool) {
 	pubkey := getPublicKey()
 
 	msg, sig := fetchMessageAndSignature(user)
 
-	return verifySig(pubkey, msg, sig)
+	return msg, verifySig(pubkey, msg, sig)
 }
 
 func getPublicKey() []byte {
