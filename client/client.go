@@ -9,5 +9,8 @@ import (
 var le = log.New(os.Stderr, "Error: ", 0)
 
 func main() {
-	internal.GetChallengeAndSign("user")
+	err := internal.Login("user")
+	if err != nil {
+		le.Println(err)
+	}
 }
