@@ -9,12 +9,24 @@ import (
 )
 
 func register() error {
+
+	username := getUsername()
+
 	pubkey, err := GetTkeyPubKey()
 	if err != nil {
 		return err
 	}
-	sendRequest(pubkey, "my_username")
+
+	sendRequest(pubkey, username)
+
 	return nil
+}
+
+func getUsername() string {
+	var username string
+	fmt.Print("Type a number: ")
+	fmt.Scan(&username)
+	return username
 }
 
 func getURL() string {
@@ -58,6 +70,10 @@ func sendRequest(pubkey []byte, username string) {
 	}
 	defer resp.Body.Close()
 
-	fmt.Println("Response Status:", resp.Status)
+	if resp.Status != "200" {
+		fmt.Printf("Could not create user! Error: %s", resp.Status)
+	} else {
+		fmt.Printf("User '%s' has been successfully created!", username)
+	}
 
 }
