@@ -133,7 +133,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Found public key for user %s: %s\n", username, pubkey)
 
 	// Generate a challenge using username
-	challenge := "challenge"
+	challenge, _ := GenerateChallenge(pubkey)
 
 	// Send the challenge in the response
 	responseBody := map[string]string{"challenge": challenge}
