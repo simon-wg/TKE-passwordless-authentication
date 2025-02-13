@@ -14,7 +14,7 @@ type Challenge struct {
 }
 
 var (
-	challengeLength  = 128                            // number of bytes in challenge
+	challengeLength  = 64                             // number of bytes in challenge
 	validDuration    = time.Duration(1) * time.Minute // challenges are valid for 60 seconds
 	cleanupInterval  = time.Duration(2) * time.Minute
 	activeChallenges = make(map[string]*Challenge)
