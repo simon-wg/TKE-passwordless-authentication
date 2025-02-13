@@ -73,16 +73,36 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to send response", http.StatusInternalServerError)
 	}
 }
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	/*
-		1. Check if valid request
-		2. Extract username from request body
-		3. Read user data from csv
-		4. Find the associated public key
-		5. Create a challenge
-		6. Send the challenge back in response
 
-	*/
+// LoginHandler handles user login requests.
+// It ensures the request is a GET, extracts the username from the request body,
+// reads user data from a CSV file, finds the associated public key,
+// creates a challenge, and sends the challenge back in the response.
+//
+// Parameters:
+//   - w: The http.ResponseWriter to write the response to.
+//   - r: The http.Request containing the login request.
+//
+// Returns:
+//   - None
+//
+// Dependencies:
+//   - challenge.go
+//   - config.go
+//   - csvutil.go
+//
+// Expected JSON format in request body:
+//
+//	{
+//	  "username": "example_username"
+//	}
+//
+// JSON format in response body:
+//
+//	{
+//	  "challenge": "generated_challenge"
+//	}
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Ensure it is a GET
 	if r.Method != http.MethodGet {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
