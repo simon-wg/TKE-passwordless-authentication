@@ -11,27 +11,23 @@ var le = log.New(os.Stderr, "Error: ", 0)
 
 func main() {
 
+	// Gets mode from user inputs and runs selected mode. Loops until program is told to exit.
 	for {
 		mode := select_mode()
 
-		if mode == 1 {
+		switch mode {
+		case 1:
 			// Perform register
-
-		} else if mode == 2 {
-
-			// Perform Login
+		case 2:
+			// Perform login
 			call_login()
-
-		} else if mode == 3 {
+		case 3:
 			// Stop program
-			break
-
-		} else {
+			return
+		default:
 			fmt.Println("Invalid choice, please try again.")
 		}
-
 	}
-
 }
 
 func select_mode() int {
