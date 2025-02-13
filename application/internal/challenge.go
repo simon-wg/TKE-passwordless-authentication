@@ -14,10 +14,11 @@ type Challenge struct {
 }
 
 var (
-	challenges      = make(map[string]*Challenge)
-	validDuration   = 60 // challenges are valid for 60 seconds
-	challengeLength = 64 // number of bytes in challenge
-	challengesLock  sync.Mutex
+	challengeLength  = 64                             // number of bytes in challenge
+	validDuration    = time.Duration(1) * time.Minute // challenges are valid for 60 seconds
+	cleanupInterval  = time.Duration(2) * time.Minute
+	activeChallenges = make(map[string]*Challenge)
+	challengesLock   sync.Mutex
 )
 
 func init() {
@@ -49,21 +50,21 @@ func GenerateChallenge(pubKey string) (string, error) {
 
 	challenge := &Challenge{
 		Value:     hex.EncodeToString(bytes),
-		ExpiresAt: time.Now().Add(time.Duration(validDuration) * time.Second),
+		ExpiresAt: time.Now().Add(validDuration),
 	}
 
-	challenges[pubKey] = challenge
+	activeChallenges[pubKey] = challenge
 
 	return challenge.Value, nil
 }
 
 func cleanupExpiredChallenges() {
 	for {
-		time.Sleep(time.Duration(validDuration) * time.Second)
+		time.Sleep(cleanupInterval)
 		challengesLock.Lock()
-		for pubKey, challenge := range challenges {
+		for pubKey, challenge := range activeChallenges {
 			if time.Now().After(challenge.ExpiresAt) {
-				delete(challenges, pubKey)
+				delete(activeChallenges, pubKey)
 			}
 		}
 		challengesLock.Unlock()
