@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"crypto/ed25519"
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
@@ -66,4 +67,36 @@ func cleanupExpiredChallenges() {
 		}
 		challengesLock.Unlock()
 	}
+}
+
+func VerifySignedResponse(pubKey string, signature string) (bool, error) {
+	challenge, exists := activeChallenges[pubKey]
+	if !exists {
+		return false, errors.New("no active challenge found for given key")
+	}
+
+	if time.Now().After(challenge.ExpiresAt) {
+		return false, errors.New("challenge expired")
+	}
+
+	pubKeyBytes, err := hex.DecodeString(pubKey)
+	if err != nil {
+		return false, errors.New("invalid public key format")
+	}
+
+	challengeBytes, err := hex.DecodeString(challenge.Value)
+	if err != nil {
+		return false, errors.New("invalid challenge format")
+	}
+
+	signatureBytes, err := hex.DecodeString(signature)
+	if err != nil {
+		return false, errors.New("invalid signature format")
+	}
+
+	if ed25519.Verify(ed25519.PublicKey(pubKeyBytes), challengeBytes, signatureBytes) {
+		return true, nil
+	}
+
+	return false, errors.New("invalid signature")
 }
