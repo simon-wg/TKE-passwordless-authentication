@@ -59,7 +59,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Store new user data
 	userData[username] = publicKey
-	if err := Write(UsersFile, userData); err != nil {
+	if err := Write(UsersFile, username, publicKey); err != nil {
 		fmt.Printf("Error writing user data: %v\n", err)
 		http.Error(w, "Unable to save user data", http.StatusInternalServerError)
 		return
