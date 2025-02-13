@@ -14,7 +14,7 @@ type Challenge struct {
 }
 
 var (
-	challengeLength  = 64                             // number of bytes in challenge
+	challengeLength  = 128                            // number of bytes in challenge
 	validDuration    = time.Duration(1) * time.Minute // challenges are valid for 60 seconds
 	cleanupInterval  = time.Duration(2) * time.Minute
 	activeChallenges = make(map[string]*Challenge)
@@ -25,19 +25,16 @@ func init() {
 	go cleanupExpiredChallenges()
 }
 
-// Generate a new challenge for the given public key.
-// It locks the challenges map to ensure thread safety, generates a random
-// byte array, and encodes it to a hexadecimal string. The challenge is then
-// stored in the challenges map with an expiration time.
+// GenerateChallenge generates a new challenge for the given public key.
+// It creates a random byte sequence, encodes it to a hexadecimal string,
+// and stores it in the activeChallenges map with an expiration time.
 //
 // Parameters:
 //   - pubKey: The public key for which the challenge is generated.
 //
 // Returns:
-//   - A string representing the generated challenge value.
-//
-// Panics:
-//   - If it fails to generate random bytes.
+//   - A string representing the generated challenge.
+//   - An error if the random byte generation fails.
 func GenerateChallenge(pubKey string) (string, error) {
 	challengesLock.Lock()
 	defer challengesLock.Unlock()
