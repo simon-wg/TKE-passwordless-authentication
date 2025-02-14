@@ -2,13 +2,88 @@ package tests
 
 import (
 	"bytes"
+	"encoding/csv"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"chalmers/tkey-group22/application/internal"
 )
+
+const usersFilePath = "../data/users.csv"
+const backupFilePath = "../data/users_backup.csv"
+
+// Helper function to backup the existing users.csv file
+func backupUsersFile(t *testing.T) {
+	input, err := os.ReadFile(usersFilePath)
+	if err != nil {
+		t.Fatalf("Failed to read users file: %v", err)
+	}
+
+	err = os.WriteFile(backupFilePath, input, 0644)
+	if err != nil {
+		t.Fatalf("Failed to write backup file: %v", err)
+	}
+}
+
+// Helper function to restore the original users.csv file from the backup
+func restoreUsersFile(t *testing.T) {
+	input, err := os.ReadFile(backupFilePath)
+	if err != nil {
+		t.Fatalf("Failed to read backup file: %v", err)
+	}
+
+	err = os.WriteFile(usersFilePath, input, 0644)
+	if err != nil {
+		t.Fatalf("Failed to restore users file: %v", err)
+	}
+
+	err = os.Remove(backupFilePath)
+	if err != nil {
+		t.Fatalf("Failed to remove backup file: %v", err)
+	}
+}
+
+// Helper function to write mock data to users.csv file
+func writeMockData(t *testing.T, data [][]string) {
+	file, err := os.Create(usersFilePath)
+	if err != nil {
+		t.Fatalf("Failed to create users file: %v", err)
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	for _, record := range data {
+		if err := writer.Write(record); err != nil {
+			t.Fatalf("Failed to write record to users file: %v", err)
+		}
+	}
+}
+
+func TestMain(m *testing.M) {
+	// Backup the existing users.csv file
+	backupUsersFile(nil)
+
+	// Write mock data to users.csv file
+	mockData := [][]string{
+		{"username", "publickey"},
+		{"bob", "mocked_banana1234"},
+		{"alice", "mocked_apple1234"},
+	}
+	writeMockData(nil, mockData)
+
+	// Run the tests
+	code := m.Run()
+
+	// Restore the original users.csv file
+	restoreUsersFile(nil)
+
+	os.Exit(code)
+}
 
 // Helper function to create a new HTTP request and recorder
 func createRequest(t *testing.T, method, url string, body map[string]string) (*httptest.ResponseRecorder, *http.Request) {
