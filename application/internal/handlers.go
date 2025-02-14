@@ -141,8 +141,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// If username == username that is stored in userData, extract public key in
-	// var pubkey. If public key is empty return error
+	// If the found user is the same as the requested user,
+	// extract the public key. If public key is empty return error
 	pubkey, ok := userData[username]
 	if !ok || pubkey == "" {
 		fmt.Printf("Public key not found for user: %s\n", username)
@@ -152,7 +152,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("Found public key for user %s: %s\n", username, pubkey)
 
-	// Generate a challenge using username
+	// Generate a challenge using public key
 	challenge, _ := GenerateChallenge(pubkey)
 
 	// Send the challenge in the response
