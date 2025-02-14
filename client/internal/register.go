@@ -8,7 +8,9 @@ import (
 	"net/http"
 )
 
-func register() error {
+const regurl = "http://localhost:8080/api/register"
+
+func Register() error {
 
 	username := getUsername()
 
@@ -29,11 +31,6 @@ func getUsername() string {
 	return username
 }
 
-func getURL() string {
-	url := "http://localhost:8080/api/register"
-	return url
-}
-
 func convertToJSON(data map[string]string) []byte {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -52,14 +49,12 @@ func createRequest(jsonData []byte, url string) *http.Request {
 
 func sendRequest(pubkey []byte, username string) {
 
-	url := getURL()
-
 	pubkeyStr := string(pubkey[:])
 	data := map[string]string{"username": username, "pubkey": pubkeyStr}
 
 	jsonData := convertToJSON(data)
 
-	req := createRequest(jsonData, url)
+	req := createRequest(jsonData, regurl)
 
 	req.Header.Set("Content-Type", "application/json")
 
@@ -71,6 +66,7 @@ func sendRequest(pubkey []byte, username string) {
 	defer resp.Body.Close()
 
 	if resp.Status != "200" {
+		log.Fatal()
 		fmt.Printf("Could not create user! Error: %s", resp.Status)
 	} else {
 		fmt.Printf("User '%s' has been successfully created!", username)
