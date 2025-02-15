@@ -69,7 +69,7 @@ func cleanupExpiredChallenges() {
 	}
 }
 
-// VerifySignedResponse verifies the signed response for a given public key.
+// VerifySignature verifies the signed response for a given public key.
 // It checks if there is an active challenge for the provided public key, if the challenge has not expired,
 // and if the provided signature is valid for the challenge.
 //
@@ -80,7 +80,7 @@ func cleanupExpiredChallenges() {
 // Returns:
 //   - bool: True if the signature is valid, false otherwise.
 //   - error: An error if the verification fails due to an invalid format, expired challenge, or no active challenge.
-func VerifySignedResponse(pubKey string, signature string) (bool, error) {
+func VerifySignature(pubKey string, signature string) (bool, error) {
 	challenge, exists := activeChallenges[pubKey]
 	if !exists {
 		return false, errors.New("no active challenge found for given key")
@@ -110,4 +110,12 @@ func VerifySignedResponse(pubKey string, signature string) (bool, error) {
 	}
 
 	return false, errors.New("invalid signature")
+}
+
+func HasActiveChallenge(pubKey string) bool {
+	challengesLock.Lock()
+	defer challengesLock.Unlock()
+
+	_, exists := activeChallenges[pubKey]
+	return exists
 }

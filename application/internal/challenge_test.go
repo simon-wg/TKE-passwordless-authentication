@@ -23,7 +23,7 @@ func TestVerifySignedResponse_ValidSignature(t *testing.T) {
 	signatureHex := hex.EncodeToString(signature)
 
 	// Verify the signed response
-	valid, err := VerifySignedResponse(pubKeyHex, signatureHex)
+	valid, err := VerifySignature(pubKeyHex, signatureHex)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -39,7 +39,7 @@ func TestVerifySignedResponse_InvalidSignature(t *testing.T) {
 	// Test with an invalid signature
 	invalidSignature := []byte("invalidsignature")
 	signatureHex := hex.EncodeToString(invalidSignature)
-	valid, err := VerifySignedResponse(pubKeyHex, signatureHex)
+	valid, err := VerifySignature(pubKeyHex, signatureHex)
 	if err == nil {
 		t.Fatalf("Expected an error, got none")
 	}
@@ -65,7 +65,7 @@ func TestVerifySignedResponse_NonExistentChallenge(t *testing.T) {
 
 	// Test with a non-existent challenge
 	nonExistentPubKey := "nonexistentpubkey"
-	valid, err := VerifySignedResponse(nonExistentPubKey, signatureHex)
+	valid, err := VerifySignature(nonExistentPubKey, signatureHex)
 	if err == nil {
 		t.Fatalf("Expected an error, got none")
 	}
@@ -79,7 +79,7 @@ func TestVerifySignedResponse_ExpiredChallenge(t *testing.T) {
 	originalValidDuration := validDuration
 
 	// Set a new validDuration for the test
-	validDuration = time.Duration(1) * time.Second
+	validDuration = time.Duration(400) * time.Millisecond
 
 	// Restore the original validDuration after the test
 	defer func() {
@@ -101,8 +101,8 @@ func TestVerifySignedResponse_ExpiredChallenge(t *testing.T) {
 	signatureHex := hex.EncodeToString(signature)
 
 	// Test with an expired challenge
-	time.Sleep(validDuration + time.Second)
-	valid, err := VerifySignedResponse(pubKeyHex, signatureHex)
+	time.Sleep(validDuration + time.Duration(100)*time.Millisecond)
+	valid, err := VerifySignature(pubKeyHex, signatureHex)
 	if err == nil {
 		t.Fatalf("Expected an error, got none")
 	}
