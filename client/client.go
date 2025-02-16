@@ -18,6 +18,7 @@ func main() {
 		switch mode {
 		case 1:
 			// Perform register
+			internal.Call_register()
 		case 2:
 			// Perform login
 			internal.Call_login()

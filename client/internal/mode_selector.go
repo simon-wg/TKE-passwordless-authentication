@@ -22,3 +22,10 @@ func Call_login() {
 		le.Println(err)
 	}
 }
+
+func Call_register() {
+	err := Register()
+	if err != nil {
+		le.Println(err)
+	}
+}
