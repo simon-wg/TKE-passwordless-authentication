@@ -22,6 +22,13 @@ func GetTkeyPubKey() ([]byte, error) {
 		return nil, err
 	}
 
+	if !signer.connect() {
+		le.Printf("Connect failed")
+		return nil, fmt.Errorf("connect failed")
+	}
+
+	defer signer.disconnect()
+
 	pub, err := signer.tkSigner.GetPubkey()
 
 	if err != nil {
