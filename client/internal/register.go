@@ -12,7 +12,7 @@ const regurl = "http://localhost:8080/api/register"
 
 func Register() error {
 
-	username := "test" //getUsername()
+	username := getUsername()
 
 	pubkey, err := GetTkeyPubKey()
 	if err != nil {
