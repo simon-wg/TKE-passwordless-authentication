@@ -143,3 +143,59 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to send response", http.StatusInternalServerError)
 	}
 }
+
+func VerifyHandler(w http.ResponseWriter, r *http.Request) {
+	/*
+		Verify request is POST
+		Check if challenge is active for the user
+		Verify challenge for user
+		Send success response
+	*/
+
+	// Ensure it is a POST request
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Parse request body
+	var requestBody map[string]string
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	publicKey := requestBody["publicKey"]
+	signature := requestBody["signature"]
+
+	// Check if publicKey has active signature
+	if !HasActiveChallenge(publicKey) {
+		http.Error(w, "No active challenge found for the public key", http.StatusNotFound)
+		return
+	}
+
+	// Verify the signed response
+	valid, _ := VerifySignature(publicKey, signature)
+	if !valid {
+		http.Error(w, "Invalid signature", http.StatusUnauthorized)
+		return
+	}
+
+	// Read user data
+	userData, err := Read(UsersFile)
+	if err != nil {
+		fmt.Printf("Error reading user data: %v\n", err)
+		http.Error(w, "Unable to read user data", http.StatusInternalServerError)
+		return
+	}
+
+	// Send success response
+	responseBody := map[string]interface{}{
+		"message":  "Verification successful",
+		"userData": userData,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(responseBody); err != nil {
+		fmt.Printf("Unable to send response: %v\n", err)
+		http.Error(w, "Unable to send response", http.StatusInternalServerError)
+	}
+}
