@@ -10,3 +10,17 @@ To test the application and get the coverage percentage, follow these steps:
    ```sh
    go test -cover -coverpkg=chalmers/tkey-group22/application/internal ./tests
    ```
+
+# Viewing documentation
+
+To view the documentation in localhost:
+
+1. Install go doc
+
+2. From the `application` directory, run:
+
+   ```sh
+   godoc -http=:6060
+   ```
+
+3. Navigate to `http://localhost:6060/pkg/chalmers/tkey-group22/application/internal/` to view documentation for the `internal` package.
