@@ -9,37 +9,21 @@ import (
 	"time"
 )
 
-type ChallengeService interface {
-	HasActiveChallenge(pubKey string) bool
-	VerifySignature(pubKey string, signature string) (bool, error)
-	GenerateChallenge(pubKey string) (string, error)
-}
-
 type Challenge struct {
 	Value     string
 	ExpiresAt time.Time
 }
 
-type ED25519ChallengeService struct {
-	challengeLength  int           // Number of bytes in challenge
-	validDuration    time.Duration // Time before the challenge is timed out
-	cleanupInterval  time.Duration // Interval between removal of registered timed out challenges
-	activeChallenges map[string]*Challenge
+var (
+	challengeLength  = 128                            // number of bytes in challenge
+	validDuration    = time.Duration(1) * time.Minute // challenges are valid for 60 seconds
+	cleanupInterval  = time.Duration(2) * time.Minute
+	activeChallenges = make(map[string]*Challenge)
 	challengesLock   sync.Mutex
-}
+)
 
-func NewED25519ChallengeService() *ED25519ChallengeService {
-	service := &ED25519ChallengeService{
-		challengeLength:  128,
-		validDuration:    time.Duration(1) * time.Minute,
-		cleanupInterval:  time.Duration(2) * time.Minute,
-		activeChallenges: make(map[string]*Challenge),
-		challengesLock:   sync.Mutex{},
-	}
-
-	go service.cleanupExpiredChallenges()
-
-	return service
+func init() {
+	go cleanupExpiredChallenges()
 }
 
 // GenerateChallenge generates a new challenge for the given public key.
@@ -52,11 +36,11 @@ func NewED25519ChallengeService() *ED25519ChallengeService {
 // Returns:
 //   - A string representing the generated challenge.
 //   - An error if the random byte generation fails.
-func (s *ED25519ChallengeService) GenerateChallenge(pubKey string) (string, error) {
-	s.challengesLock.Lock()
-	defer s.challengesLock.Unlock()
+func GenerateChallenge(pubKey string) (string, error) {
+	challengesLock.Lock()
+	defer challengesLock.Unlock()
 
-	bytes := make([]byte, s.challengeLength)
+	bytes := make([]byte, challengeLength)
 	_, err := rand.Read(bytes)
 	if err != nil {
 		return "", errors.New("failed to generate random bytes")
@@ -64,24 +48,24 @@ func (s *ED25519ChallengeService) GenerateChallenge(pubKey string) (string, erro
 
 	challenge := &Challenge{
 		Value:     hex.EncodeToString(bytes),
-		ExpiresAt: time.Now().Add(s.validDuration),
+		ExpiresAt: time.Now().Add(validDuration),
 	}
 
-	s.activeChallenges[pubKey] = challenge
+	activeChallenges[pubKey] = challenge
 
 	return challenge.Value, nil
 }
 
-func (s *ED25519ChallengeService) cleanupExpiredChallenges() {
+func cleanupExpiredChallenges() {
 	for {
-		time.Sleep(s.cleanupInterval)
-		s.challengesLock.Lock()
-		for pubKey, challenge := range s.activeChallenges {
+		time.Sleep(cleanupInterval)
+		challengesLock.Lock()
+		for pubKey, challenge := range activeChallenges {
 			if time.Now().After(challenge.ExpiresAt) {
-				delete(s.activeChallenges, pubKey)
+				delete(activeChallenges, pubKey)
 			}
 		}
-		s.challengesLock.Unlock()
+		challengesLock.Unlock()
 	}
 }
 
@@ -96,8 +80,8 @@ func (s *ED25519ChallengeService) cleanupExpiredChallenges() {
 // Returns:
 //   - bool: True if the signature is valid, false otherwise.
 //   - error: An error if the verification fails due to an invalid format, expired challenge, or no active challenge.
-func (s *ED25519ChallengeService) VerifySignature(pubKey string, signature string) (bool, error) {
-	challenge, exists := s.activeChallenges[pubKey]
+func VerifySignature(pubKey string, signature string) (bool, error) {
+	challenge, exists := activeChallenges[pubKey]
 	if !exists {
 		return false, errors.New("no active challenge found for given key")
 	}
@@ -128,10 +112,10 @@ func (s *ED25519ChallengeService) VerifySignature(pubKey string, signature strin
 	return false, errors.New("invalid signature")
 }
 
-func (s *ED25519ChallengeService) HasActiveChallenge(pubKey string) bool {
-	s.challengesLock.Lock()
-	defer s.challengesLock.Unlock()
+func HasActiveChallenge(pubKey string) bool {
+	challengesLock.Lock()
+	defer challengesLock.Unlock()
 
-	_, exists := s.activeChallenges[pubKey]
+	_, exists := activeChallenges[pubKey]
 	return exists
 }

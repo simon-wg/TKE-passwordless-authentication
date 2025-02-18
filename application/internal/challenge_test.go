@@ -11,11 +11,8 @@ func TestVerifySignedResponse_ValidSignature(t *testing.T) {
 	pubKey, privKey, _ := ed25519.GenerateKey(nil)
 	pubKeyHex := hex.EncodeToString(pubKey)
 
-	// Create an instance of ED25519ChallengeService
-	service := NewED25519ChallengeService()
-
 	// Generate a challenge
-	challengeValue, err := service.GenerateChallenge(pubKeyHex)
+	challengeValue, err := GenerateChallenge(pubKeyHex)
 	if err != nil {
 		t.Fatalf("Failed to generate challenge: %v", err)
 	}
@@ -26,7 +23,7 @@ func TestVerifySignedResponse_ValidSignature(t *testing.T) {
 	signatureHex := hex.EncodeToString(signature)
 
 	// Verify the signed response
-	valid, err := service.VerifySignature(pubKeyHex, signatureHex)
+	valid, err := VerifySignature(pubKeyHex, signatureHex)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -39,13 +36,9 @@ func TestVerifySignedResponse_InvalidSignature(t *testing.T) {
 	pubKey, _, _ := ed25519.GenerateKey(nil)
 	pubKeyHex := hex.EncodeToString(pubKey)
 
-	// Create an instance of ED25519ChallengeService
-	service := NewED25519ChallengeService()
-
-	// Test with an invalid signature
 	invalidSignature := []byte("invalidsignature")
 	signatureHex := hex.EncodeToString(invalidSignature)
-	valid, err := service.VerifySignature(pubKeyHex, signatureHex)
+	valid, err := VerifySignature(pubKeyHex, signatureHex)
 	if err == nil {
 		t.Fatalf("Expected an error, got none")
 	}
@@ -58,11 +51,8 @@ func TestVerifySignedResponse_NonExistentChallenge(t *testing.T) {
 	pubKey, privKey, _ := ed25519.GenerateKey(nil)
 	pubKeyHex := hex.EncodeToString(pubKey)
 
-	// Create an instance of ED25519ChallengeService
-	service := NewED25519ChallengeService()
-
 	// Generate a challenge
-	challengeValue, err := service.GenerateChallenge(pubKeyHex)
+	challengeValue, err := GenerateChallenge(pubKeyHex)
 	if err != nil {
 		t.Fatalf("Failed to generate challenge: %v", err)
 	}
@@ -74,7 +64,7 @@ func TestVerifySignedResponse_NonExistentChallenge(t *testing.T) {
 
 	// Test with a non-existent challenge
 	nonExistentPubKey := "nonexistentpubkey"
-	valid, err := service.VerifySignature(nonExistentPubKey, signatureHex)
+	valid, err := VerifySignature(nonExistentPubKey, signatureHex)
 	if err == nil {
 		t.Fatalf("Expected an error, got none")
 	}
@@ -84,23 +74,20 @@ func TestVerifySignedResponse_NonExistentChallenge(t *testing.T) {
 }
 
 func TestVerifySignedResponse_ExpiredChallenge(t *testing.T) {
-	service := NewED25519ChallengeService()
-
 	// Set a new validDuration for the test
-	service.validDuration = time.Duration(400) * time.Millisecond
+	originalValidDuration := validDuration
+	validDuration = time.Duration(400) * time.Millisecond
 
 	// // Restore the original validDuration after the test
-	// defer func() {
-	// 	validDuration = originalValidDuration
-	// }()
+	defer func() {
+		validDuration = originalValidDuration
+	}()
 
 	pubKey, privKey, _ := ed25519.GenerateKey(nil)
 	pubKeyHex := hex.EncodeToString(pubKey)
 
-	// Create an instance of ED25519ChallengeService
-
 	// Generate a challenge
-	challengeValue, err := service.GenerateChallenge(pubKeyHex)
+	challengeValue, err := GenerateChallenge(pubKeyHex)
 	if err != nil {
 		t.Fatalf("Failed to generate challenge: %v", err)
 	}
@@ -111,8 +98,8 @@ func TestVerifySignedResponse_ExpiredChallenge(t *testing.T) {
 	signatureHex := hex.EncodeToString(signature)
 
 	// Test with an expired challenge
-	time.Sleep(service.validDuration + time.Duration(100)*time.Millisecond)
-	valid, err := service.VerifySignature(pubKeyHex, signatureHex)
+	time.Sleep(validDuration + time.Duration(100)*time.Millisecond)
+	valid, err := VerifySignature(pubKeyHex, signatureHex)
 	if err == nil {
 		t.Fatalf("Expected an error, got none")
 	}
