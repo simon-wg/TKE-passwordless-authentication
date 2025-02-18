@@ -103,8 +103,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 //	  "challenge": "generated_challenge"
 //	}
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	// Ensure it is a GET
-	if r.Method != http.MethodGet {
+	// Ensure it is a POST
+	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}

@@ -145,7 +145,7 @@ func createRequest(t *testing.T, method, url string, body map[string]string) (*h
 
 // Valid input. Expects success.
 func TestLoginHandler_Success(t *testing.T) {
-	rr, req := createRequest(t, http.MethodGet, loginURL, map[string]string{"username": "bob"})
+	rr, req := createRequest(t, http.MethodPost, loginURL, map[string]string{"username": "bob"})
 	internal.LoginHandler(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
@@ -160,7 +160,7 @@ func TestLoginHandler_Success(t *testing.T) {
 
 // Invalid method. Expects fail.
 func TestLoginHandler_InvalidMethod(t *testing.T) {
-	rr, req := createRequest(t, http.MethodPost, loginURL, nil)
+	rr, req := createRequest(t, http.MethodGet, loginURL, nil)
 	internal.LoginHandler(rr, req)
 
 	if status := rr.Code; status != http.StatusMethodNotAllowed {
@@ -170,7 +170,7 @@ func TestLoginHandler_InvalidMethod(t *testing.T) {
 
 // Invalid req body. Expects fail.
 func TestLoginHandler_InvalidRequestBody(t *testing.T) {
-	rr, req := createRequest(t, http.MethodGet, loginURL, map[string]string{"invalid": "body"})
+	rr, req := createRequest(t, http.MethodPost, loginURL, map[string]string{"invalid": "body"})
 	internal.LoginHandler(rr, req)
 
 	if status := rr.Code; status != http.StatusBadRequest {
@@ -180,7 +180,7 @@ func TestLoginHandler_InvalidRequestBody(t *testing.T) {
 
 // No username in req body. Expects fail.
 func TestLoginHandler_UsernameNotProvided(t *testing.T) {
-	rr, req := createRequest(t, http.MethodGet, loginURL, map[string]string{})
+	rr, req := createRequest(t, http.MethodPost, loginURL, map[string]string{})
 	internal.LoginHandler(rr, req)
 
 	if status := rr.Code; status != http.StatusBadRequest {
@@ -190,7 +190,7 @@ func TestLoginHandler_UsernameNotProvided(t *testing.T) {
 
 // Bad user. Expects fail.
 func TestLoginHandler_UserNotFound(t *testing.T) {
-	rr, req := createRequest(t, http.MethodGet, loginURL, map[string]string{"username": "nonexistent"})
+	rr, req := createRequest(t, http.MethodPost, loginURL, map[string]string{"username": "nonexistent"})
 	internal.LoginHandler(rr, req)
 
 	if status := rr.Code; status != http.StatusNotFound {
