@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"chalmers/tkey-group22/application/internal"
 	"crypto/ed25519"
+	"crypto/rand"
 	"encoding/csv"
 	"encoding/hex"
 	"encoding/json"
@@ -20,6 +21,10 @@ import (
 const usersFilePath = "../data/users.csv"
 const backupFilePath = "../data/users_backup.csv"
 const loginURL = "/api/login"
+const mockUsername = "MockUser"
+
+var mockPubKey ed25519.PublicKey
+var mockPrivKey ed25519.PrivateKey
 
 // backupUsersFile backs up the existing users.csv file to users_backup.csv.
 //
@@ -102,13 +107,15 @@ func writeMockData(t *testing.T, data [][]string) {
 //   - backupUsersFile
 //   - writeMockData
 //   - restoreUsersFile
+
 func TestMain(m *testing.M) {
 	backupUsersFile(nil)
-
+	mockPubKey, mockPrivKey, _ = ed25519.GenerateKey(nil)
 	mockData := [][]string{
 		{"username", "publickey"},
 		{"bob", "mocked_banana1234"},
 		{"alice", "mocked_apple1234"},
+		{mockUsername, hex.EncodeToString(mockPubKey)},
 	}
 	writeMockData(nil, mockData)
 
@@ -229,7 +236,7 @@ func TestVerifyHandler_NoActiveChallengeFound(t *testing.T) {
 	handler := http.HandlerFunc(internal.VerifyHandler)
 
 	requestBody := map[string]string{
-		"publicKey": "testPublicKey",
+		"username":  mockUsername,
 		"signature": "testSignature",
 	}
 	body, _ := json.Marshal(requestBody)
@@ -245,11 +252,14 @@ func TestVerifyHandler_NoActiveChallengeFound(t *testing.T) {
 func TestVerifyHandler_InvalidSignature(t *testing.T) {
 	handler := http.HandlerFunc(internal.VerifyHandler)
 
-	internal.GenerateChallenge("testPublicKey")
+	internal.GenerateChallenge(hex.EncodeToString(mockPubKey))
+
+	invalidSignBytes := make([]byte, 32)
+	rand.Read(invalidSignBytes)
 
 	requestBody := map[string]string{
-		"publicKey": "testPublicKey",
-		"signature": "testSignature",
+		"username":  mockUsername,
+		"signature": hex.EncodeToString(invalidSignBytes),
 	}
 	body, _ := json.Marshal(requestBody)
 	req, err := http.NewRequest(http.MethodPost, "/verify", bytes.NewBuffer(body))
@@ -264,16 +274,14 @@ func TestVerifyHandler_InvalidSignature(t *testing.T) {
 func TestVerifyHandler_VerificationSuccessful(t *testing.T) {
 	handler := http.HandlerFunc(internal.VerifyHandler)
 
-	pubKey, privKey, _ := ed25519.GenerateKey(nil)
-	pubKeyHex := hex.EncodeToString(pubKey)
-
+	pubKeyHex := hex.EncodeToString(mockPubKey)
 	challengeHex, _ := internal.GenerateChallenge(pubKeyHex)
 	challengeBytes, _ := hex.DecodeString(challengeHex)
-	signature := ed25519.Sign(privKey, challengeBytes)
+	signature := ed25519.Sign(mockPrivKey, challengeBytes)
 	signatureHex := hex.EncodeToString(signature)
 
 	requestBody := map[string]string{
-		"publicKey": pubKeyHex,
+		"username":  mockUsername,
 		"signature": signatureHex,
 	}
 	body, _ := json.Marshal(requestBody)

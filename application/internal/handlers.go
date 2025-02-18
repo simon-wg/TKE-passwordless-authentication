@@ -183,8 +183,30 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pubkey := requestBody["publicKey"]
+	username := requestBody["username"]
 	signature := requestBody["signature"]
+
+	// Read user data
+	userData, err := Read(UsersFile)
+	if err != nil {
+		fmt.Printf("Error reading user data: %v\n", err)
+		http.Error(w, "Unable to read user data", http.StatusInternalServerError)
+		return
+	}
+
+	pubkey, exists := userData[username]
+	if !exists {
+		fmt.Println("No user named " + username + " exists")
+	}
+
+	// Find the username associated with the public key
+	// var username string
+	// for user, key := range userData {
+	// 	if key == pubkey {
+	// 		username = user
+	// 		break
+	// 	}
+	// }
 
 	// Check if publicKey has an active challenge
 	if !HasActiveChallenge(pubkey) {
@@ -199,23 +221,6 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		http.Error(w, "Invalid signature", http.StatusUnauthorized)
 		return
-	}
-
-	// Read user data
-	userData, err := Read(UsersFile)
-	if err != nil {
-		fmt.Printf("Error reading user data: %v\n", err)
-		http.Error(w, "Unable to read user data", http.StatusInternalServerError)
-		return
-	}
-
-	// Find the username associated with the public key
-	var username string
-	for user, key := range userData {
-		if key == pubkey {
-			username = user
-			break
-		}
 	}
 
 	// Send success response
