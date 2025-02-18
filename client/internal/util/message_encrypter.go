@@ -1,7 +1,7 @@
 // This class contains two methods:
 // -- The encrypt_message function encrypts a given message using the provided RSA public key.
 // -- The decrypt_message function decrypts a given ciphertext using the provided RSA private key.
-package internal
+package util
 
 import (
 	"crypto/rand"

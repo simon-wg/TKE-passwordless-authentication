@@ -1,4 +1,4 @@
-package internal
+package util
 
 import (
 	"chalmers/tkey-group22/internal/auth"
