@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func Select_mode() int {
+func SelectMode() int {
 	fmt.Println("Select Mode:")
 	fmt.Println("1. Register")
 	fmt.Println("2. Login")
@@ -16,14 +16,14 @@ func Select_mode() int {
 	return choice
 }
 
-func Call_login() {
+func CallLogin() {
 	err := Login("user")
 	if err != nil {
 		le.Println(err)
 	}
 }
 
-func Call_register() {
+func CallRegister() {
 	err := Register()
 	if err != nil {
 		le.Println(err)
