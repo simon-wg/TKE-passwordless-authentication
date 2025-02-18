@@ -5,11 +5,11 @@ name: Go
 
 on:
   push:
-    branches: [ "main" ]
-    pahts: 
+    branches: [ "main", "dev/**" ]
+    paths: 
       - client/**
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main" , "dev/client" ]
 
 jobs:
 
@@ -19,7 +19,6 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Go
-      working-directory: ./client
       uses: actions/setup-go@v4
       with:
         go-version: '1.23'
