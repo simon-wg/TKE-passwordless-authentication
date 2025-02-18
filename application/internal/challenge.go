@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"crypto/ed25519"
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
@@ -14,8 +15,8 @@ type Challenge struct {
 }
 
 var (
-	challengeLength  = 64                             // number of bytes in challenge
-	validDuration    = time.Duration(1) * time.Minute // challenges are valid for 60 seconds
+	ValidDuration    = time.Duration(1) * time.Minute // challenges are valid for 60 seconds
+	challengeLength  = 128                            // number of bytes in challenge
 	cleanupInterval  = time.Duration(2) * time.Minute
 	activeChallenges = make(map[string]*Challenge)
 	challengesLock   sync.Mutex
@@ -47,7 +48,7 @@ func GenerateChallenge(pubKey string) (string, error) {
 
 	challenge := &Challenge{
 		Value:     hex.EncodeToString(bytes),
-		ExpiresAt: time.Now().Add(validDuration),
+		ExpiresAt: time.Now().Add(ValidDuration),
 	}
 
 	activeChallenges[pubKey] = challenge
@@ -66,4 +67,55 @@ func cleanupExpiredChallenges() {
 		}
 		challengesLock.Unlock()
 	}
+}
+
+// VerifySignature verifies the signed response for a given public key.
+// It checks if there is an active challenge for the provided public key, if the challenge has not expired,
+// and if the provided signature is valid for the challenge.
+//
+// Parameters:
+//   - pubKey: The public key as a hexadecimal string.
+//   - signature: The signature as a hexadecimal string.
+//
+// Returns:
+//   - bool: True if the signature is valid, false otherwise.
+//   - error: An error if the verification fails due to an invalid format, expired challenge, or no active challenge.
+func VerifySignature(pubKey string, signature string) (bool, error) {
+	challenge, exists := activeChallenges[pubKey]
+	if !exists {
+		return false, errors.New("no active challenge found for given key")
+	}
+
+	if time.Now().After(challenge.ExpiresAt) {
+		return false, errors.New("challenge expired")
+	}
+
+	pubKeyBytes, err := hex.DecodeString(pubKey)
+	if err != nil {
+		return false, errors.New("invalid public key format")
+	}
+
+	challengeBytes, err := hex.DecodeString(challenge.Value)
+	if err != nil {
+		return false, errors.New("invalid challenge format")
+	}
+
+	signatureBytes, err := hex.DecodeString(signature)
+	if err != nil {
+		return false, errors.New("invalid signature format")
+	}
+
+	if ed25519.Verify(ed25519.PublicKey(pubKeyBytes), challengeBytes, signatureBytes) {
+		return true, nil
+	}
+
+	return false, errors.New("invalid signature")
+}
+
+func HasActiveChallenge(pubKey string) bool {
+	challengesLock.Lock()
+	defer challengesLock.Unlock()
+
+	_, exists := activeChallenges[pubKey]
+	return exists
 }

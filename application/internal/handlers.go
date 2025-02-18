@@ -163,3 +163,69 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to send response", http.StatusInternalServerError)
 	}
 }
+
+func VerifyHandler(w http.ResponseWriter, r *http.Request) {
+	// Ensure it is a POST request
+	if r.Method != http.MethodPost {
+		fmt.Println("Invalid request method")
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Parse request body
+	var requestBody map[string]string
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		fmt.Println("Invalid request body")
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	publicKey := requestBody["publicKey"]
+	signature := requestBody["signature"]
+
+	// Check if publicKey has an active challenge
+	if !HasActiveChallenge(publicKey) {
+		fmt.Println("No active challenge found for the public key")
+		http.Error(w, "No active challenge found for the public key", http.StatusNotFound)
+		return
+	}
+
+	// Verify the signed response
+	valid, err := VerifySignature(publicKey, signature)
+	if !valid {
+		fmt.Println(err)
+		http.Error(w, "Invalid signature", http.StatusUnauthorized)
+		return
+	}
+
+	// Read user data
+	userData, err := Read(UsersFile)
+	if err != nil {
+		fmt.Printf("Error reading user data: %v\n", err)
+		http.Error(w, "Unable to read user data", http.StatusInternalServerError)
+		return
+	}
+
+	// Find the username associated with the public key
+	var username string
+	for user, key := range userData {
+		if key == publicKey {
+			username = user
+			break
+		}
+	}
+
+	// Send success response
+	responseBody := map[string]interface{}{
+		"message":  "Verification successful",
+		"userData": map[string]string{username: publicKey},
+	}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(responseBody); err != nil {
+		fmt.Printf("Unable to send response: %v\n", err)
+		http.Error(w, "Unable to send response", http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Println("Verification successful")
+}
