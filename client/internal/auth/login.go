@@ -1,7 +1,9 @@
-package internal
+package auth
 
 import (
 	"bytes"
+	. "chalmers/tkey-group22/internal/structs"
+	. "chalmers/tkey-group22/internal/tkey"
 	"encoding/json"
 	"fmt"
 	"net/http"

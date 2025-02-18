@@ -1,7 +1,8 @@
-package internal
+package auth
 
 import (
 	"bytes"
+	"chalmers/tkey-group22/internal/tkey"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -14,7 +15,7 @@ func Register() error {
 
 	username := getUsername()
 
-	pubkey, err := GetTkeyPubKey()
+	pubkey, err := tkey.GetTkeyPubKey()
 	if err != nil {
 		return err
 	}

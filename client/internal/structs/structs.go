@@ -1,4 +1,4 @@
-package internal
+package structs
 
 type RegisterRequest struct {
 	Username string `json:"username"`

@@ -1,8 +1,13 @@
 package internal
 
 import (
+	"chalmers/tkey-group22/internal/auth"
 	"fmt"
+	"log"
+	"os"
 )
+
+var le = log.New(os.Stderr, "Error: ", 0)
 
 func SelectMode() int {
 	fmt.Println("Select Mode:")
@@ -17,7 +22,7 @@ func SelectMode() int {
 }
 
 func CallLogin() {
-	err := Login()
+	err := auth.Login()
 	if err != nil {
 		le.Println(err)
 	} else {
@@ -26,7 +31,7 @@ func CallLogin() {
 }
 
 func CallRegister() {
-	err := Register()
+	err := auth.Register()
 	if err != nil {
 		le.Println(err)
 	} else {
