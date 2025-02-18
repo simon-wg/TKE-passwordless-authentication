@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"chalmers/tkey-group22/application/internal/util"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -43,7 +44,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Received registration request for user: %s\n", username)
 
 	// Read existing user data
-	userData, err := Read(UsersFile)
+	userData, err := util.Read(UsersFile)
 	if err != nil {
 		fmt.Printf("Error reading user data: %v\n", err)
 		http.Error(w, "Unable to read user data", http.StatusInternalServerError)
@@ -59,7 +60,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Store new user data
 	userData[username] = publicKey
-	if err := Write(UsersFile, username, publicKey); err != nil {
+	if err := util.Write(UsersFile, username, publicKey); err != nil {
 		fmt.Printf("Error writing user data: %v\n", err)
 		http.Error(w, "Unable to save user data", http.StatusInternalServerError)
 		return
@@ -127,7 +128,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Received login request for user: %s\n", username)
 
 	// Read user data from csv and store in var userData
-	userData, err := Read(UsersFile)
+	userData, err := util.Read(UsersFile)
 	if err != nil {
 		fmt.Printf("Error reading user data: %v\n", err)
 		http.Error(w, "Unable to read user data", http.StatusInternalServerError)
@@ -199,7 +200,7 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Read user data
-	userData, err := Read(UsersFile)
+	userData, err := util.Read(UsersFile)
 	if err != nil {
 		fmt.Printf("Error reading user data: %v\n", err)
 		http.Error(w, "Unable to read user data", http.StatusInternalServerError)
