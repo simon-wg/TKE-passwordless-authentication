@@ -1,27 +1,23 @@
 package main
 
 import (
-	"chalmers/tkey-group22/internal"
+	"chalmers/tkey-group22/internal/util"
 	"fmt"
-	"log"
-	"os"
 )
-
-var le = log.New(os.Stderr, "Error: ", 0)
 
 func main() {
 
 	// Gets mode from user inputs and runs selected mode. Loops until program is told to exit.
 	for {
-		mode := internal.SelectMode()
+		mode := util.SelectMode()
 
 		switch mode {
 		case 1:
 			// Perform register
-			internal.CallRegister()
+			util.CallRegister()
 		case 2:
 			// Perform login
-			internal.CallLogin()
+			util.CallLogin()
 		case 3:
 			// Stop program
 			return
