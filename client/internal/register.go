@@ -26,7 +26,7 @@ func Register() error {
 
 func getUsername() string {
 	var username string
-	fmt.Print("Type a number: ")
+	fmt.Print("Please enter username: ")
 	fmt.Scan(&username)
 	return username
 }

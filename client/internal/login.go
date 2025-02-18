@@ -7,7 +7,9 @@ import (
 	"net/http"
 )
 
-func Login(username string) error {
+func Login() error {
+	username := getUsername()
+
 	c := &http.Client{}
 
 	challengeResponse, err := getChallenge(username)

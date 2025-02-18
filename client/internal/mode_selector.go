@@ -17,9 +17,11 @@ func SelectMode() int {
 }
 
 func CallLogin() {
-	err := Login("user")
+	err := Login()
 	if err != nil {
 		le.Println(err)
+	} else {
+		fmt.Println("user logged in")
 	}
 }
 
@@ -27,5 +29,7 @@ func CallRegister() {
 	err := Register()
 	if err != nil {
 		le.Println(err)
+	} else {
+		fmt.Println("user registered")
 	}
 }
