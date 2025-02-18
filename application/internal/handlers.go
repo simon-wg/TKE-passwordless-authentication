@@ -34,7 +34,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Extract username and public key
 	username, usernameExists := requestBody["username"]
-	publicKey, publicKeyExists := requestBody["publicKey"]
+	pubkey, publicKeyExists := requestBody["publicKey"]
 
 	if !usernameExists || !publicKeyExists {
 		http.Error(w, "Username and publicKey are required", http.StatusBadRequest)
@@ -59,8 +59,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Store new user data
-	userData[username] = publicKey
-	if err := util.Write(UsersFile, username, publicKey); err != nil {
+	userData[username] = pubkey
+	if err := util.Write(UsersFile, username, pubkey); err != nil {
 		fmt.Printf("Error writing user data: %v\n", err)
 		http.Error(w, "Unable to save user data", http.StatusInternalServerError)
 		return
@@ -181,18 +181,18 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	publicKey := requestBody["publicKey"]
+	pubkey := requestBody["publicKey"]
 	signature := requestBody["signature"]
 
 	// Check if publicKey has an active challenge
-	if !HasActiveChallenge(publicKey) {
+	if !HasActiveChallenge(pubkey) {
 		fmt.Println("No active challenge found for the public key")
 		http.Error(w, "No active challenge found for the public key", http.StatusNotFound)
 		return
 	}
 
 	// Verify the signed response
-	valid, err := VerifySignature(publicKey, signature)
+	valid, err := VerifySignature(pubkey, signature)
 	if !valid {
 		fmt.Println(err)
 		http.Error(w, "Invalid signature", http.StatusUnauthorized)
@@ -210,7 +210,7 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	// Find the username associated with the public key
 	var username string
 	for user, key := range userData {
-		if key == publicKey {
+		if key == pubkey {
 			username = user
 			break
 		}
@@ -219,7 +219,7 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	// Send success response
 	responseBody := map[string]interface{}{
 		"message":  "Verification successful",
-		"userData": map[string]string{username: publicKey},
+		"userData": map[string]string{username: pubkey},
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(responseBody); err != nil {
