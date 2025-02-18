@@ -4,6 +4,7 @@ import (
 	"chalmers/tkey-group22/application/internal/util"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -27,7 +28,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Parse request body
 	var requestBody map[string]string
-	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := json.Unmarshal(body, &requestBody); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
@@ -68,11 +75,14 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Send success response
 	responseBody := map[string]string{"message": "User registered successfully"}
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(responseBody); err != nil {
-		fmt.Printf("Unable to send response for user: %s\n", username)
+	responseBodyBytes, err := json.Marshal(responseBody)
+	if err != nil {
+		fmt.Printf("Unable to marshal response for user: %s\n", username)
 		http.Error(w, "Unable to send response", http.StatusInternalServerError)
+		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseBodyBytes)
 }
 
 // LoginHandler handles user login requests.
@@ -110,10 +120,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Extract username from req body
+	// Parse request body
 	var requestBody map[string]string
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
 
-	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+	if err := json.Unmarshal(body, &requestBody); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
@@ -158,11 +173,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Send the challenge in the response
 	responseBody := map[string]string{"challenge": challenge}
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(responseBody); err != nil {
-		fmt.Printf("Unable to send response for user: %s\n", username)
+	responseBodyBytes, err := json.Marshal(responseBody)
+	if err != nil {
+		fmt.Printf("Unable to marshal response for user: %s\n", username)
 		http.Error(w, "Unable to send response", http.StatusInternalServerError)
+		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseBodyBytes)
 }
 
 func VerifyHandler(w http.ResponseWriter, r *http.Request) {
@@ -175,7 +193,14 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Parse request body
 	var requestBody map[string]string
-	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println("Invalid request body")
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := json.Unmarshal(body, &requestBody); err != nil {
 		fmt.Println("Invalid request body")
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
@@ -221,12 +246,14 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		"message":  "Verification successful",
 		"userData": map[string]string{username: pubkey},
 	}
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(responseBody); err != nil {
-		fmt.Printf("Unable to send response: %v\n", err)
+	responseBodyBytes, err := json.Marshal(responseBody)
+	if err != nil {
+		fmt.Printf("Unable to marshal response: %v\n", err)
 		http.Error(w, "Unable to send response", http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseBodyBytes)
 
 	fmt.Println("Verification successful")
 }
