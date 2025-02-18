@@ -1,11 +1,11 @@
 # This workflow will build a golang project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
 
-name: Go
+name: Client
 
 on:
   push:
-    branches: [ "main", "dev/**" ]
+    branches: [ "main", "dev/client" ]
     paths: 
       - client/**
   pull_request:
@@ -33,4 +33,4 @@ jobs:
 
     - name: Test
       working-directory: ./client
-      run: go test
+      run: go test ./...
