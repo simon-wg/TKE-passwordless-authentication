@@ -1,9 +1,11 @@
 package internal
 
 import (
+	"chalmers/tkey-group22/application/internal/util"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -28,14 +30,20 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse request body
 	// TODO: Use JSON object instead
 	var requestBody map[string]string
-	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := json.Unmarshal(body, &requestBody); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
 	// Extract username and public key
 	username, usernameExists := requestBody["username"]
-	publicKey, publicKeyExists := requestBody["publicKey"]
+	pubkey, publicKeyExists := requestBody["publicKey"]
 
 	if !usernameExists || !publicKeyExists {
 		http.Error(w, "Username and publicKey are required", http.StatusBadRequest)
@@ -45,7 +53,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Received registration request for user: %s\n", username)
 
 	// Read existing user data
-	userData, err := Read(UsersFile)
+	userData, err := util.Read(UsersFile)
 	if err != nil {
 		fmt.Printf("Error reading user data: %v\n", err)
 		http.Error(w, "Unable to read user data", http.StatusInternalServerError)
@@ -60,8 +68,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Store new user data
-	userData[username] = publicKey
-	if err := Write(UsersFile, username, publicKey); err != nil {
+	userData[username] = pubkey
+	if err := util.Write(UsersFile, username, pubkey); err != nil {
 		fmt.Printf("Error writing user data: %v\n", err)
 		http.Error(w, "Unable to save user data", http.StatusInternalServerError)
 		return
@@ -70,11 +78,14 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Send success response
 	// TODO: Use json.Unmarshal
 	responseBody := map[string]string{"message": "User registered successfully"}
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(responseBody); err != nil {
-		fmt.Printf("Unable to send response for user: %s\n", username)
+	responseBodyBytes, err := json.Marshal(responseBody)
+	if err != nil {
+		fmt.Printf("Unable to marshal response for user: %s\n", username)
 		http.Error(w, "Unable to send response", http.StatusInternalServerError)
+		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseBodyBytes)
 }
 
 // LoginHandler handles user login requests.
@@ -112,10 +123,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Extract username from req body
-	// TODO: Use json.Unmarshal
+	// Parse request body
 	var requestBody map[string]string
-	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := json.Unmarshal(body, &requestBody); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
@@ -130,7 +146,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Received login request for user: %s\n", username)
 
 	// Read user data from csv and store in var userData
-	userData, err := Read(UsersFile)
+	userData, err := util.Read(UsersFile)
 	if err != nil {
 		fmt.Printf("Error reading user data: %v\n", err)
 		http.Error(w, "Unable to read user data", http.StatusInternalServerError)
@@ -162,13 +178,34 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Send the challenge in the response
 	responseBody := map[string]string{"challenge": challenge}
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(responseBody); err != nil {
-		fmt.Printf("Unable to send response for user: %s\n", username)
+	responseBodyBytes, err := json.Marshal(responseBody)
+	if err != nil {
+		fmt.Printf("Unable to marshal response for user: %s\n", username)
 		http.Error(w, "Unable to send response", http.StatusInternalServerError)
+		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseBodyBytes)
 }
 
+// VerifyHandler handles the verification of a user's signature.
+// It expects a POST request with a JSON body containing "username" and "signature" fields.
+// The handler performs the following steps:
+// Request Body:
+//
+//	{
+//	  "username": "exampleUser",
+//	  "signature": "hexEncodedSignature"
+//	}
+//
+// Response Body (on success):
+//
+//	{
+//	  "message": "Verification successful",
+//	  "userData": {
+//	    "exampleUser": "publicKeyString"
+//	  }
+//	}
 func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	// Ensure it is a POST request
 	if r.Method != http.MethodPost {
@@ -180,7 +217,14 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse request body
 	// TODO: Use json.Unmarshal
 	var requestBody map[string]string
-	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println("Invalid request body")
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := json.Unmarshal(body, &requestBody); err != nil {
 		fmt.Println("Invalid request body")
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
@@ -188,14 +232,13 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 
 	username := requestBody["username"]
 	signature, err := hex.DecodeString(requestBody["signature"])
-
 	if err != nil {
 		fmt.Println("Invalid request body")
 		http.Error(w, "Invalid signature format", http.StatusBadRequest)
 	}
 
 	// Read user data
-	userData, err := Read(UsersFile)
+	userData, err := util.Read(UsersFile)
 	if err != nil {
 		fmt.Printf("Error reading user data: %v\n", err)
 		http.Error(w, "Unable to read user data", http.StatusInternalServerError)
@@ -207,6 +250,13 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("No user named " + username + " exists")
 	}
 	pubkey := []byte(pubkeyString)
+
+	// Check if publicKey has an active challenge
+	if !HasActiveChallenge(pubkey) {
+		fmt.Println("No active challenge found for the public key")
+		http.Error(w, "No active challenge found for the public key", http.StatusNotFound)
+		return
+	}
 
 	// Check if publicKey has an active challenge
 	if !HasActiveChallenge(pubkey) {
@@ -229,12 +279,14 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		"message":  "Verification successful",
 		"userData": map[string]string{username: pubkeyString},
 	}
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(responseBody); err != nil {
-		fmt.Printf("Unable to send response: %v\n", err)
+	responseBodyBytes, err := json.Marshal(responseBody)
+	if err != nil {
+		fmt.Printf("Unable to marshal response: %v\n", err)
 		http.Error(w, "Unable to send response", http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseBodyBytes)
 
 	fmt.Println("Verification successful")
 }
