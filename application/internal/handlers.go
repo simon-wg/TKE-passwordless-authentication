@@ -191,8 +191,6 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Verify the signed response
-	fmt.Println("Public Key: " + string(publicKey))
-	fmt.Println("Signature: " + string(signature))
 	valid, err := VerifySignature(publicKey, signature)
 	if !valid {
 		fmt.Println(err)

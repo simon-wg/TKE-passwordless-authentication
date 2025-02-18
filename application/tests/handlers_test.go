@@ -1,7 +1,8 @@
-package internal
+package tests
 
 import (
 	"bytes"
+	"chalmers/tkey-group22/application/internal"
 	"crypto/ed25519"
 	"encoding/hex"
 	"encoding/json"
@@ -13,7 +14,7 @@ import (
 )
 
 func TestVerifyHandler_InvalidRequestMethod(t *testing.T) {
-	handler := http.HandlerFunc(VerifyHandler)
+	handler := http.HandlerFunc(internal.VerifyHandler)
 
 	req, err := http.NewRequest(http.MethodGet, "/verify", nil)
 	assert.NoError(t, err)
@@ -25,7 +26,7 @@ func TestVerifyHandler_InvalidRequestMethod(t *testing.T) {
 }
 
 func TestVerifyHandler_InvalidRequestBody(t *testing.T) {
-	handler := http.HandlerFunc(VerifyHandler)
+	handler := http.HandlerFunc(internal.VerifyHandler)
 
 	req, err := http.NewRequest(http.MethodPost, "/verify", bytes.NewBuffer([]byte("invalid body")))
 	assert.NoError(t, err)
@@ -37,7 +38,7 @@ func TestVerifyHandler_InvalidRequestBody(t *testing.T) {
 }
 
 func TestVerifyHandler_NoActiveChallengeFound(t *testing.T) {
-	handler := http.HandlerFunc(VerifyHandler)
+	handler := http.HandlerFunc(internal.VerifyHandler)
 
 	requestBody := map[string]string{
 		"publicKey": "testPublicKey",
@@ -54,9 +55,9 @@ func TestVerifyHandler_NoActiveChallengeFound(t *testing.T) {
 }
 
 func TestVerifyHandler_InvalidSignature(t *testing.T) {
-	handler := http.HandlerFunc(VerifyHandler)
+	handler := http.HandlerFunc(internal.VerifyHandler)
 
-	GenerateChallenge("testPublicKey")
+	internal.GenerateChallenge("testPublicKey")
 
 	requestBody := map[string]string{
 		"publicKey": "testPublicKey",
@@ -73,12 +74,12 @@ func TestVerifyHandler_InvalidSignature(t *testing.T) {
 }
 
 func TestVerifyHandler_VerificationSuccessful(t *testing.T) {
-	handler := http.HandlerFunc(VerifyHandler)
+	handler := http.HandlerFunc(internal.VerifyHandler)
 
 	pubKey, privKey, _ := ed25519.GenerateKey(nil)
 	pubKeyHex := hex.EncodeToString(pubKey)
 
-	challengeHex, _ := GenerateChallenge(pubKeyHex)
+	challengeHex, _ := internal.GenerateChallenge(pubKeyHex)
 	challengeBytes, _ := hex.DecodeString(challengeHex)
 	signature := ed25519.Sign(privKey, challengeBytes)
 	signatureHex := hex.EncodeToString(signature)
