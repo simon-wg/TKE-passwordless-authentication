@@ -5,10 +5,16 @@ import (
 	"os"
 )
 
-/*
-	Read returns a map where each username is associated with a publickey.
-*/
-
+// Read reads a CSV file and returns a map where each username is associated
+// with a public key.
+//
+// Parameters:
+//   - filePath: The path to the CSV file to be read.
+//
+// Returns:
+//   - map[string]string: A map where the keys are usernames and the values are
+//     public keys.
+//   - error: An error if one occurred during reading the file.
 func Read(filePath string) (map[string]string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -35,11 +41,16 @@ func Read(filePath string) (map[string]string, error) {
 	return userMap, nil
 }
 
-/*
-	By calling Write with a filepath, username and a publickey will make a new
-	entry in the csv file with the specified properties.
-*/
-
+// Write appends a new entry with the specified username and public key to a
+// CSV file.
+//
+// Parameters:
+//   - filePath: The path to the CSV file to be written to.
+//   - username: The username to be added.
+//   - publicKey: The public key to be associated with the username.
+//
+// Returns:
+//   - error: An error if one occurred during writing to the file.
 func Write(filePath, username, publicKey string) error {
 	file, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
 	if err != nil {
