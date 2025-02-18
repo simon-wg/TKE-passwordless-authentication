@@ -115,7 +115,7 @@ func TestMain(m *testing.M) {
 		{"username", "publickey"},
 		{"bob", "mocked_banana1234"},
 		{"alice", "mocked_apple1234"},
-		{mockUsername, hex.EncodeToString(mockPubKey)},
+		{mockUsername, string(mockPubKey)},
 	}
 	writeMockData(nil, mockData)
 
@@ -232,12 +232,29 @@ func TestVerifyHandler_InvalidRequestBody(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, rr.Code)
 }
 
+func TestVerifyHandler_NonHexadecimalSignature(t *testing.T) {
+	handler := http.HandlerFunc(internal.VerifyHandler)
+
+	requestBody := map[string]string{
+		"username":  mockUsername,
+		"signature": "non-hex-signature",
+	}
+	body, _ := json.Marshal(requestBody)
+	req, err := http.NewRequest(http.MethodPost, "/verify", bytes.NewBuffer(body))
+	assert.NoError(t, err)
+
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusBadRequest, rr.Code)
+}
+
 func TestVerifyHandler_NoActiveChallengeFound(t *testing.T) {
 	handler := http.HandlerFunc(internal.VerifyHandler)
 
 	requestBody := map[string]string{
 		"username":  mockUsername,
-		"signature": "testSignature",
+		"signature": hex.EncodeToString([]byte("testSignature")),
 	}
 	body, _ := json.Marshal(requestBody)
 	req, err := http.NewRequest(http.MethodPost, "/verify", bytes.NewBuffer(body))
@@ -252,8 +269,9 @@ func TestVerifyHandler_NoActiveChallengeFound(t *testing.T) {
 func TestVerifyHandler_InvalidSignature(t *testing.T) {
 	handler := http.HandlerFunc(internal.VerifyHandler)
 
-	internal.GenerateChallenge(hex.EncodeToString(mockPubKey))
+	internal.GenerateChallenge(mockPubKey)
 
+	// Generate random byte slice
 	invalidSignBytes := make([]byte, 32)
 	rand.Read(invalidSignBytes)
 
@@ -274,8 +292,7 @@ func TestVerifyHandler_InvalidSignature(t *testing.T) {
 func TestVerifyHandler_VerificationSuccessful(t *testing.T) {
 	handler := http.HandlerFunc(internal.VerifyHandler)
 
-	pubKeyHex := hex.EncodeToString(mockPubKey)
-	challengeHex, _ := internal.GenerateChallenge(pubKeyHex)
+	challengeHex, _ := internal.GenerateChallenge(mockPubKey)
 	challengeBytes, _ := hex.DecodeString(challengeHex)
 	signature := ed25519.Sign(mockPrivKey, challengeBytes)
 	signatureHex := hex.EncodeToString(signature)

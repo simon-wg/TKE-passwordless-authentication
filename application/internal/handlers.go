@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -145,14 +146,16 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// If the found user is the same as the requested user,
 	// extract the public key. If public key is empty return error
-	pubkey, ok := userData[username]
-	if !ok || pubkey == "" {
+	pubkeyString, ok := userData[username]
+	if !ok || pubkeyString == "" {
 		fmt.Printf("Public key not found for user: %s\n", username)
 		http.Error(w, "Public key not found for specified user", http.StatusNotFound)
 		return
 	}
 
-	fmt.Printf("Found public key for user %s: %s\n", username, pubkey)
+	fmt.Printf("Found public key for user %s: %s\n", username, pubkeyString)
+
+	pubkey := []byte(pubkeyString)
 
 	// Generate a challenge using public key
 	challenge, _ := GenerateChallenge(pubkey)
@@ -184,7 +187,12 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	username := requestBody["username"]
-	signature := requestBody["signature"]
+	signature, err := hex.DecodeString(requestBody["signature"])
+
+	if err != nil {
+		fmt.Println("Invalid request body")
+		http.Error(w, "Invalid signature format", http.StatusBadRequest)
+	}
 
 	// Read user data
 	userData, err := Read(UsersFile)
@@ -194,19 +202,11 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pubkey, exists := userData[username]
+	pubkeyString, exists := userData[username]
 	if !exists {
 		fmt.Println("No user named " + username + " exists")
 	}
-
-	// Find the username associated with the public key
-	// var username string
-	// for user, key := range userData {
-	// 	if key == pubkey {
-	// 		username = user
-	// 		break
-	// 	}
-	// }
+	pubkey := []byte(pubkeyString)
 
 	// Check if publicKey has an active challenge
 	if !HasActiveChallenge(pubkey) {
@@ -224,10 +224,10 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send success response
-	// TODO: Use json.Unmarshal
+	// TODO: Use json.Marshal
 	responseBody := map[string]interface{}{
 		"message":  "Verification successful",
-		"userData": map[string]string{username: pubkey},
+		"userData": map[string]string{username: pubkeyString},
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(responseBody); err != nil {

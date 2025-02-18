@@ -9,11 +9,10 @@ import (
 )
 
 func TestVerifySignedResponse_ValidSignature(t *testing.T) {
-	pubKey, privKey, _ := ed25519.GenerateKey(nil)
-	pubKeyHex := hex.EncodeToString(pubKey)
+	pubkey, privKey, _ := ed25519.GenerateKey(nil)
 
 	// Generate a challenge
-	challengeValue, err := internal.GenerateChallenge(pubKeyHex)
+	challengeValue, err := internal.GenerateChallenge(pubkey)
 	if err != nil {
 		t.Fatalf("Failed to generate challenge: %v", err)
 	}
@@ -21,10 +20,9 @@ func TestVerifySignedResponse_ValidSignature(t *testing.T) {
 	// Sign the challenge
 	challengeBytes, _ := hex.DecodeString(challengeValue)
 	signature := ed25519.Sign(privKey, challengeBytes)
-	signatureHex := hex.EncodeToString(signature)
 
 	// Verify the signed response
-	valid, err := internal.VerifySignature(pubKeyHex, signatureHex)
+	valid, err := internal.VerifySignature(pubkey, signature)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -35,11 +33,9 @@ func TestVerifySignedResponse_ValidSignature(t *testing.T) {
 
 func TestVerifySignedResponse_InvalidSignature(t *testing.T) {
 	pubKey, _, _ := ed25519.GenerateKey(nil)
-	pubKeyHex := hex.EncodeToString(pubKey)
 
 	invalidSignature := []byte("invalidsignature")
-	signatureHex := hex.EncodeToString(invalidSignature)
-	valid, err := internal.VerifySignature(pubKeyHex, signatureHex)
+	valid, err := internal.VerifySignature(pubKey, invalidSignature)
 	if err == nil {
 		t.Fatalf("Expected an error, got none")
 	}
@@ -49,11 +45,10 @@ func TestVerifySignedResponse_InvalidSignature(t *testing.T) {
 }
 
 func TestVerifySignedResponse_NonExistentChallenge(t *testing.T) {
-	pubKey, privKey, _ := ed25519.GenerateKey(nil)
-	pubKeyHex := hex.EncodeToString(pubKey)
+	pubkey, privKey, _ := ed25519.GenerateKey(nil)
 
 	// Generate a challenge
-	challengeValue, err := internal.GenerateChallenge(pubKeyHex)
+	challengeValue, err := internal.GenerateChallenge(pubkey)
 	if err != nil {
 		t.Fatalf("Failed to generate challenge: %v", err)
 	}
@@ -61,11 +56,10 @@ func TestVerifySignedResponse_NonExistentChallenge(t *testing.T) {
 	// Sign the challenge
 	challengeBytes, _ := hex.DecodeString(challengeValue)
 	signature := ed25519.Sign(privKey, challengeBytes)
-	signatureHex := hex.EncodeToString(signature)
 
 	// Test with a non-existent challenge
-	nonExistentPubKey := "nonexistentpubkey"
-	valid, err := internal.VerifySignature(nonExistentPubKey, signatureHex)
+	nonExistentPubKey := []byte("nonexistentpubkey")
+	valid, err := internal.VerifySignature(nonExistentPubKey, signature)
 	if err == nil {
 		t.Fatalf("Expected an error, got none")
 	}
@@ -84,11 +78,10 @@ func TestVerifySignedResponse_ExpiredChallenge(t *testing.T) {
 		internal.ValidDuration = originalValidDuration
 	}()
 
-	pubKey, privKey, _ := ed25519.GenerateKey(nil)
-	pubKeyHex := hex.EncodeToString(pubKey)
+	pubkey, privKey, _ := ed25519.GenerateKey(nil)
 
 	// Generate a challenge
-	challengeValue, err := internal.GenerateChallenge(pubKeyHex)
+	challengeValue, err := internal.GenerateChallenge(pubkey)
 	if err != nil {
 		t.Fatalf("Failed to generate challenge: %v", err)
 	}
@@ -96,11 +89,10 @@ func TestVerifySignedResponse_ExpiredChallenge(t *testing.T) {
 	// Sign the challenge
 	challengeBytes, _ := hex.DecodeString(challengeValue)
 	signature := ed25519.Sign(privKey, challengeBytes)
-	signatureHex := hex.EncodeToString(signature)
 
 	// Test with an expired challenge
 	time.Sleep(internal.ValidDuration + time.Duration(100)*time.Millisecond)
-	valid, err := internal.VerifySignature(pubKeyHex, signatureHex)
+	valid, err := internal.VerifySignature(pubkey, signature)
 	if err == nil {
 		t.Fatalf("Expected an error, got none")
 	}
