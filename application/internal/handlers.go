@@ -28,7 +28,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse request body
-	// TODO: Use JSON object instead
 	var requestBody map[string]string
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -76,7 +75,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send success response
-	// TODO: Use json.Unmarshal
 	responseBody := map[string]string{"message": "User registered successfully"}
 	responseBodyBytes, err := json.Marshal(responseBody)
 	if err != nil {
@@ -215,7 +213,6 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse request body
-	// TODO: Use json.Unmarshal
 	var requestBody map[string]string
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -274,7 +271,6 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send success response
-	// TODO: Use json.Marshal
 	responseBody := map[string]interface{}{
 		"message":  "Verification successful",
 		"userData": map[string]string{username: pubkeyString},
