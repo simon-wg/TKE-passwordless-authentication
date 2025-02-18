@@ -73,16 +73,36 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to send response", http.StatusInternalServerError)
 	}
 }
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	/*
-		1. Check if valid request
-		2. Extract username from request body
-		3. Read user data from csv
-		4. Find the associated public key
-		5. Create a challenge
-		6. Send the challenge back in response
 
-	*/
+// LoginHandler handles user login requests.
+// It ensures the request is a GET, extracts the username from the request body,
+// reads user data from a CSV file, finds the associated public key,
+// creates a challenge, and sends the challenge back in the response.
+//
+// Parameters:
+//   - w: The http.ResponseWriter to write the response to.
+//   - r: The http.Request containing the login request.
+//
+// Returns:
+//   - None
+//
+// Dependencies:
+//   - challenge.go
+//   - config.go
+//   - csvutil.go
+//
+// Expected JSON format in request body:
+//
+//	{
+//	  "username": "example_username"
+//	}
+//
+// JSON format in response body:
+//
+//	{
+//	  "challenge": "generated_challenge"
+//	}
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Ensure it is a GET
 	if r.Method != http.MethodGet {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
@@ -121,8 +141,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// If username == username that is stored in userData, extract public key in
-	// var pubkey. If public key is empty return error
+	// If the found user is the same as the requested user,
+	// extract the public key. If public key is empty return error
 	pubkey, ok := userData[username]
 	if !ok || pubkey == "" {
 		fmt.Printf("Public key not found for user: %s\n", username)
@@ -132,7 +152,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("Found public key for user %s: %s\n", username, pubkey)
 
-	// Generate a challenge using username
+	// Generate a challenge using public key
 	challenge, _ := GenerateChallenge(pubkey)
 
 	// Send the challenge in the response
