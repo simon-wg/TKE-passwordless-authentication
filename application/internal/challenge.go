@@ -41,10 +41,7 @@ func GenerateChallenge(pubKey string) (string, error) {
 	defer challengesLock.Unlock()
 
 	bytes := make([]byte, challengeLength)
-	_, err := rand.Read(bytes)
-	if err != nil {
-		return "", errors.New("failed to generate random bytes")
-	}
+	rand.Read(bytes)
 
 	challenge := &Challenge{
 		Value:     hex.EncodeToString(bytes),
