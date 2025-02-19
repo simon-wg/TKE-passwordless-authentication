@@ -21,6 +21,7 @@ import (
 const usersFilePath = "../data/users.csv"
 const backupFilePath = "../data/users_backup.csv"
 const loginURL = "/api/login"
+const verifyURL = "/api/verify"
 const mockUsername = "MockUser"
 
 var mockPubKey ed25519.PublicKey
@@ -211,7 +212,7 @@ func TestLoginHandler_UserNotFound(t *testing.T) {
 func TestVerifyHandler_InvalidRequestMethod(t *testing.T) {
 	handler := http.HandlerFunc(internal.VerifyHandler)
 
-	req, err := http.NewRequest(http.MethodGet, "/verify", nil)
+	req, err := http.NewRequest(http.MethodGet, verifyURL, nil)
 	assert.NoError(t, err)
 
 	rr := httptest.NewRecorder()
@@ -223,7 +224,7 @@ func TestVerifyHandler_InvalidRequestMethod(t *testing.T) {
 func TestVerifyHandler_InvalidRequestBody(t *testing.T) {
 	handler := http.HandlerFunc(internal.VerifyHandler)
 
-	req, err := http.NewRequest(http.MethodPost, "/verify", bytes.NewBuffer([]byte("invalid body")))
+	req, err := http.NewRequest(http.MethodPost, verifyURL, bytes.NewBuffer([]byte("invalid body")))
 	assert.NoError(t, err)
 
 	rr := httptest.NewRecorder()
@@ -240,7 +241,7 @@ func TestVerifyHandler_NonHexadecimalSignature(t *testing.T) {
 		"signature": "non-hex-signature",
 	}
 	body, _ := json.Marshal(requestBody)
-	req, err := http.NewRequest(http.MethodPost, "/verify", bytes.NewBuffer(body))
+	req, err := http.NewRequest(http.MethodPost, verifyURL, bytes.NewBuffer(body))
 	assert.NoError(t, err)
 
 	rr := httptest.NewRecorder()
@@ -252,12 +253,16 @@ func TestVerifyHandler_NonHexadecimalSignature(t *testing.T) {
 func TestVerifyHandler_NoActiveChallengeFound(t *testing.T) {
 	handler := http.HandlerFunc(internal.VerifyHandler)
 
+	// Generate a valid signature
+	_, privKey, _ := ed25519.GenerateKey(nil)
+	signature := ed25519.Sign(privKey, []byte("testChallenge"))
+
 	requestBody := map[string]string{
 		"username":  mockUsername,
-		"signature": hex.EncodeToString([]byte("testSignature")),
+		"signature": hex.EncodeToString(signature),
 	}
 	body, _ := json.Marshal(requestBody)
-	req, err := http.NewRequest(http.MethodPost, "/verify", bytes.NewBuffer(body))
+	req, err := http.NewRequest(http.MethodPost, verifyURL, bytes.NewBuffer(body))
 	assert.NoError(t, err)
 
 	rr := httptest.NewRecorder()
@@ -269,7 +274,7 @@ func TestVerifyHandler_NoActiveChallengeFound(t *testing.T) {
 func TestVerifyHandler_InvalidSignature(t *testing.T) {
 	handler := http.HandlerFunc(internal.VerifyHandler)
 
-	internal.GenerateChallenge(mockPubKey)
+	internal.GenerateChallenge(mockUsername)
 
 	// Generate random byte slice
 	invalidSignBytes := make([]byte, 32)
@@ -280,7 +285,7 @@ func TestVerifyHandler_InvalidSignature(t *testing.T) {
 		"signature": hex.EncodeToString(invalidSignBytes),
 	}
 	body, _ := json.Marshal(requestBody)
-	req, err := http.NewRequest(http.MethodPost, "/verify", bytes.NewBuffer(body))
+	req, err := http.NewRequest(http.MethodPost, verifyURL, bytes.NewBuffer(body))
 	assert.NoError(t, err)
 
 	rr := httptest.NewRecorder()
@@ -292,7 +297,7 @@ func TestVerifyHandler_InvalidSignature(t *testing.T) {
 func TestVerifyHandler_VerificationSuccessful(t *testing.T) {
 	handler := http.HandlerFunc(internal.VerifyHandler)
 
-	challengeHex, _ := internal.GenerateChallenge(mockPubKey)
+	challengeHex, _ := internal.GenerateChallenge(mockUsername)
 	challengeBytes, _ := hex.DecodeString(challengeHex)
 	signature := ed25519.Sign(mockPrivKey, challengeBytes)
 	signatureHex := hex.EncodeToString(signature)
@@ -302,7 +307,7 @@ func TestVerifyHandler_VerificationSuccessful(t *testing.T) {
 		"signature": signatureHex,
 	}
 	body, _ := json.Marshal(requestBody)
-	req, err := http.NewRequest(http.MethodPost, "/verify", bytes.NewBuffer(body))
+	req, err := http.NewRequest(http.MethodPost, verifyURL, bytes.NewBuffer(body))
 	assert.NoError(t, err)
 
 	rr := httptest.NewRecorder()

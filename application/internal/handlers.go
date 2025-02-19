@@ -130,6 +130,12 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// If the username field is empty, return a bad request error
+	if requestBody.Username == "" {
+		http.Error(w, "Username not provided", http.StatusBadRequest)
+		return
+	}
+
 	// If the username field has a val, put it in a variable
 	username := requestBody.Username
 
@@ -219,7 +225,10 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	_, exists := userData[requestBody.Username]
 	if !exists {
 		fmt.Println("No user named " + requestBody.Username + " exists")
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
 	}
+
 	// Check if publicKey has an active challenge
 	if !HasActiveChallenge(requestBody.Username) {
 		fmt.Println("No active challenge found for the user ")
