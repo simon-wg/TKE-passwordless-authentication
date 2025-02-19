@@ -2,7 +2,6 @@ package internal
 
 import (
 	"chalmers/tkey-group22/application/internal/util"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -28,7 +27,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse request body
-	var requestBody map[string]string
+	requestBody := RegisterRequest{}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -41,13 +40,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Extract username and public key
-	username, usernameExists := requestBody["username"]
-	pubkey, publicKeyExists := requestBody["pubkey"]
-
-	if !usernameExists || !publicKeyExists {
-		http.Error(w, "Username and publicKey are required", http.StatusBadRequest)
-		return
-	}
+	username := requestBody.Username
+	pubkey := requestBody.Pubkey
 
 	fmt.Printf("Received registration request for user: %s\n", username)
 
@@ -67,8 +61,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Store new user data
-	userData[username] = pubkey
-	if err := util.Write(UsersFile, username, pubkey); err != nil {
+	userData[username] = string(pubkey)
+	if err := util.Write(UsersFile, username, string(pubkey)); err != nil {
 		fmt.Printf("Error writing user data: %v\n", err)
 		http.Error(w, "Unable to save user data", http.StatusInternalServerError)
 		return
@@ -122,7 +116,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse request body
-	var requestBody map[string]string
+	requestBody := LoginRequest{}
+
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -135,11 +130,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// If the username field has a val, put it in a variable
-	username, ok := requestBody["username"]
-	if !ok {
-		http.Error(w, "Username not provided", http.StatusBadRequest)
-		return
-	}
+	username := requestBody.Username
 
 	fmt.Printf("Received login request for user: %s\n", username)
 
@@ -169,10 +160,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("Found public key for user %s: %s\n", username, pubkeyString)
 
-	pubkey := []byte(pubkeyString)
-
 	// Generate a challenge using public key
-	challenge, _ := GenerateChallenge(pubkey)
+	challenge, _ := GenerateChallenge(pubkeyString)
 
 	// Send the challenge in the response
 	responseBody := map[string]string{"challenge": challenge}
@@ -213,7 +202,7 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse request body
-	var requestBody map[string]string
+	requestBody := VerifyRequest{}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("Invalid request body")
@@ -227,8 +216,6 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	username := requestBody["username"]
-	signature, err := hex.DecodeString(requestBody["signature"])
 	if err != nil {
 		fmt.Println("Invalid request body")
 		http.Error(w, "Invalid signature format", http.StatusBadRequest)
@@ -242,28 +229,26 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pubkeyString, exists := userData[username]
+	pubkeyString, exists := userData[requestBody.Username]
 	if !exists {
-		fmt.Println("No user named " + username + " exists")
+		fmt.Println("No user named " + requestBody.Username + " exists")
 	}
-	pubkey := []byte(pubkeyString)
-
 	// Check if publicKey has an active challenge
-	if !HasActiveChallenge(pubkey) {
+	if !HasActiveChallenge(pubkeyString) {
 		fmt.Println("No active challenge found for the public key")
 		http.Error(w, "No active challenge found for the public key", http.StatusNotFound)
 		return
 	}
 
 	// Check if publicKey has an active challenge
-	if !HasActiveChallenge(pubkey) {
+	if !HasActiveChallenge(pubkeyString) {
 		fmt.Println("No active challenge found for the public key")
 		http.Error(w, "No active challenge found for the public key", http.StatusNotFound)
 		return
 	}
 
 	// Verify the signed response
-	valid, err := VerifySignature(pubkey, signature)
+	valid, err := VerifySignature(pubkeyString, requestBody.Signature)
 	if !valid {
 		fmt.Println(err)
 		http.Error(w, "Invalid signature", http.StatusUnauthorized)
@@ -273,7 +258,7 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	// Send success response
 	responseBody := map[string]interface{}{
 		"message":  "Verification successful",
-		"userData": map[string]string{username: pubkeyString},
+		"userData": map[string]string{requestBody.Username: pubkeyString},
 	}
 	responseBodyBytes, err := json.Marshal(responseBody)
 	if err != nil {
@@ -285,4 +270,23 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(responseBodyBytes)
 
 	fmt.Println("Verification successful")
+}
+
+type VerifyRequest struct {
+	Username  string `json:"username"`
+	Signature []byte `json:"signature"`
+}
+
+type LoginRequest struct {
+	Username string `json:"username"`
+}
+
+type LoginResponse struct {
+	Challenge string `json:"challenge"`
+	Signature string `json:"signature"`
+}
+
+type RegisterRequest struct {
+	Username string `json:"username"`
+	Pubkey   []byte `json:"pubkey"`
 }

@@ -59,7 +59,7 @@ func signChallenge(username string, challenge *LoginResponse) (*VerifyRequest, e
 
 	return &VerifyRequest{
 		Username:  username,
-		Signature: string(sig),
+		Signature: sig,
 	}, nil
 }
 

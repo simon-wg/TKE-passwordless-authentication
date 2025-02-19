@@ -15,7 +15,7 @@ const progname = "tkey-device-signer"
 
 var le = log.New(os.Stderr, "Error: ", 0)
 
-func GetTkeyPubKey() ([]byte, error) {
+func GetTkeyPubKey() (ssh.PublicKey, error) {
 	signer, err := getSigner()
 
 	if err != nil {
@@ -39,10 +39,7 @@ func GetTkeyPubKey() ([]byte, error) {
 
 	signer.printAuthorizedKey()
 
-	key := ssh.MarshalAuthorizedKey(sshPub)
-	key = key[:len(key)-1]
-
-	return key, nil
+	return sshPub, nil
 }
 
 func Sign(msg []byte) ([]byte, error) {

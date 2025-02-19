@@ -7,6 +7,8 @@ import (
 	"errors"
 	"sync"
 	"time"
+
+	"golang.org/x/crypto/ssh"
 )
 
 type Challenge struct {
@@ -36,7 +38,7 @@ func init() {
 // Returns:
 //   - A string representing the generated challenge.
 //   - An error if the random byte generation fails.
-func GenerateChallenge(pubkey []byte) (string, error) {
+func GenerateChallenge(pubkey string) (string, error) {
 	challengesLock.Lock()
 	defer challengesLock.Unlock()
 
@@ -48,7 +50,7 @@ func GenerateChallenge(pubkey []byte) (string, error) {
 		ExpiresAt: time.Now().Add(ValidDuration),
 	}
 
-	activeChallenges[string(pubkey)] = challenge
+	activeChallenges[pubkey] = challenge
 
 	return challenge.Value, nil
 }
@@ -77,8 +79,8 @@ func cleanupExpiredChallenges() {
 // Returns:
 //   - bool: True if the signature is valid, false otherwise.
 //   - error: An error if the verification fails due to an invalid format, expired challenge, or no active challenge.
-func VerifySignature(pubkey []byte, signature []byte) (bool, error) {
-	challenge, exists := activeChallenges[string(pubkey)]
+func VerifySignature(pubkeyString string, signature []byte) (bool, error) {
+	challenge, exists := activeChallenges[pubkeyString]
 	if !exists {
 		return false, errors.New("no active challenge found for given key")
 	}
@@ -92,17 +94,29 @@ func VerifySignature(pubkey []byte, signature []byte) (bool, error) {
 		return false, errors.New("invalid challenge format")
 	}
 
-	if ed25519.Verify(ed25519.PublicKey(pubkey), challengeBytes, signature) {
+	pubkey, _ := ssh.ParsePublicKey([]byte(pubkeyString))
+
+	ed25519Key, ok := pubkey.(ssh.CryptoPublicKey)
+	if !ok {
+		panic("unexpected public key type")
+	}
+
+	edPubkey, ok := ed25519Key.CryptoPublicKey().(ed25519.PublicKey)
+	if !ok {
+		panic("unexpected public key type")
+	}
+
+	if ed25519.Verify(edPubkey, challengeBytes, signature) {
 		return true, nil
 	}
 
 	return false, errors.New("invalid signature")
 }
 
-func HasActiveChallenge(pubkey []byte) bool {
+func HasActiveChallenge(pubkey string) bool {
 	challengesLock.Lock()
 	defer challengesLock.Unlock()
 
-	_, exists := activeChallenges[string(pubkey)]
+	_, exists := activeChallenges[pubkey]
 	return exists
 }

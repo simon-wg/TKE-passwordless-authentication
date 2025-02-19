@@ -2,11 +2,14 @@ package auth
 
 import (
 	"bytes"
+	. "chalmers/tkey-group22/internal/structs"
 	"chalmers/tkey-group22/internal/tkey"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+
+	"golang.org/x/crypto/ssh"
 )
 
 const regurl = "http://localhost:8080/api/register"
@@ -32,42 +35,25 @@ func getUsername() string {
 	return username
 }
 
-func convertToJSON(data map[string]string) []byte {
-	jsonData, err := json.Marshal(data)
+func sendRequest(pubkey ssh.PublicKey, username string) {
+	c := &http.Client{}
+
+	data := RegisterRequest{Username: username, Pubkey: pubkey.Marshal()}
+
+	reqBody, err := json.Marshal(data)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return jsonData
-}
 
-func createRequest(jsonData []byte, url string) *http.Request {
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	res, err := c.Post(regurl, "application/json", bytes.NewBuffer(reqBody))
 	if err != nil {
 		log.Fatal(err)
 	}
-	return req
-}
 
-func sendRequest(pubkey []byte, username string) {
+	defer res.Body.Close()
 
-	pubkeyStr := string(pubkey[:])
-	data := map[string]string{"username": username, "pubkey": pubkeyStr}
-
-	jsonData := convertToJSON(data)
-
-	req := createRequest(jsonData, regurl)
-
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		fmt.Printf("Could not create user! Error: %s", resp.Status)
+	if res.StatusCode != http.StatusOK {
+		fmt.Printf("Could not create user! Error: %s", res.Status)
 		log.Fatal()
 	} else {
 		fmt.Printf("User '%s' has been successfully created!", username)
