@@ -37,7 +37,12 @@ func GetTkeyPubKey() ([]byte, error) {
 
 	sshPub, _ := ssh.NewPublicKey(ed25519.PublicKey(pub))
 
-	return ssh.MarshalAuthorizedKey(sshPub), nil
+	signer.printAuthorizedKey()
+
+	key := ssh.MarshalAuthorizedKey(sshPub)
+	key = key[:len(key)-1]
+
+	return key, nil
 }
 
 func Sign(msg []byte) ([]byte, error) {
