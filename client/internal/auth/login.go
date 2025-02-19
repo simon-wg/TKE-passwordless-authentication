@@ -3,7 +3,8 @@ package auth
 import (
 	"bytes"
 	. "chalmers/tkey-group22/internal/structs"
-	. "chalmers/tkey-group22/internal/tkey"
+	"chalmers/tkey-group22/internal/tkey"
+	"crypto/ed25519"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -30,6 +31,14 @@ func Login() error {
 		return err
 	}
 
+	pk, _ := tkey.GetTkeyPubKey()
+
+	if ed25519.Verify(pk, []byte(challengeResponse.Challenge), []byte(signedChallenge.Signature)) {
+		fmt.Println("Signature verified")
+	} else {
+		fmt.Println("Signature not verified")
+	}
+
 	baseUrl := "http://localhost:8080"
 	endpoint := "/api/verify"
 
@@ -52,14 +61,14 @@ func Login() error {
 
 func signChallenge(username string, challenge *LoginResponse) (*VerifyRequest, error) {
 	// Sign the challenge
-	sig, err := Sign([]byte(challenge.Challenge))
+	sig, err := tkey.Sign([]byte(challenge.Challenge))
 	if err != nil {
 		return nil, err
 	}
 
 	return &VerifyRequest{
 		Username:  username,
-		Signature: sig,
+		Signature: string(sig),
 	}, nil
 }
 

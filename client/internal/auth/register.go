@@ -4,12 +4,11 @@ import (
 	"bytes"
 	. "chalmers/tkey-group22/internal/structs"
 	"chalmers/tkey-group22/internal/tkey"
+	"crypto/ed25519"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-
-	"golang.org/x/crypto/ssh"
 )
 
 const regurl = "http://localhost:8080/api/register"
@@ -35,10 +34,10 @@ func getUsername() string {
 	return username
 }
 
-func sendRequest(pubkey ssh.PublicKey, username string) {
+func sendRequest(pubkey ed25519.PublicKey, username string) {
 	c := &http.Client{}
 
-	data := RegisterRequest{Username: username, Pubkey: pubkey.Marshal()}
+	data := RegisterRequest{Username: username, Pubkey: []byte(pubkey)}
 
 	reqBody, err := json.Marshal(data)
 	if err != nil {

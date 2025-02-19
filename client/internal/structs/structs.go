@@ -16,5 +16,8 @@ type LoginResponse struct {
 
 type VerifyRequest struct {
 	Username  string `json:"username"`
-	Signature []byte `json:"signature"`
+	Signature string `json:"signature"`
+}
+
+type VerifyResponse struct {
 }

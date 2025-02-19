@@ -1,14 +1,13 @@
 package internal
 
 import (
+	"chalmers/tkey-group22/application/internal/util"
 	"crypto/ed25519"
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
 	"sync"
 	"time"
-
-	"golang.org/x/crypto/ssh"
 )
 
 type Challenge struct {
@@ -38,7 +37,7 @@ func init() {
 // Returns:
 //   - A string representing the generated challenge.
 //   - An error if the random byte generation fails.
-func GenerateChallenge(pubkey string) (string, error) {
+func GenerateChallenge(user string) (string, error) {
 	challengesLock.Lock()
 	defer challengesLock.Unlock()
 
@@ -50,7 +49,7 @@ func GenerateChallenge(pubkey string) (string, error) {
 		ExpiresAt: time.Now().Add(ValidDuration),
 	}
 
-	activeChallenges[pubkey] = challenge
+	activeChallenges[user] = challenge
 
 	return challenge.Value, nil
 }
@@ -79,8 +78,8 @@ func cleanupExpiredChallenges() {
 // Returns:
 //   - bool: True if the signature is valid, false otherwise.
 //   - error: An error if the verification fails due to an invalid format, expired challenge, or no active challenge.
-func VerifySignature(pubkeyString string, signature []byte) (bool, error) {
-	challenge, exists := activeChallenges[pubkeyString]
+func VerifySignature(user string, signature string) (bool, error) {
+	challenge, exists := activeChallenges[user]
 	if !exists {
 		return false, errors.New("no active challenge found for given key")
 	}
@@ -94,29 +93,26 @@ func VerifySignature(pubkeyString string, signature []byte) (bool, error) {
 		return false, errors.New("invalid challenge format")
 	}
 
-	pubkey, _ := ssh.ParsePublicKey([]byte(pubkeyString))
-
-	ed25519Key, ok := pubkey.(ssh.CryptoPublicKey)
-	if !ok {
-		panic("unexpected public key type")
+	userData, err := util.Read(UsersFile)
+	if err != nil {
+		return false, errors.New("unable to read user data")
 	}
 
-	edPubkey, ok := ed25519Key.CryptoPublicKey().(ed25519.PublicKey)
-	if !ok {
-		panic("unexpected public key type")
-	}
+	pubkeyString := userData[user]
 
-	if ed25519.Verify(edPubkey, challengeBytes, signature) {
+	edPubkey := ed25519.PublicKey([]byte(pubkeyString))
+
+	if ed25519.Verify(edPubkey, challengeBytes, []byte(signature)) {
 		return true, nil
 	}
 
 	return false, errors.New("invalid signature")
 }
 
-func HasActiveChallenge(pubkey string) bool {
+func HasActiveChallenge(user string) bool {
 	challengesLock.Lock()
 	defer challengesLock.Unlock()
 
-	_, exists := activeChallenges[pubkey]
+	_, exists := activeChallenges[user]
 	return exists
 }
