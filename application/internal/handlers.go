@@ -42,7 +42,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Extract username and public key
 	username, usernameExists := requestBody["username"]
-	pubkey, publicKeyExists := requestBody["publicKey"]
+	pubkey, publicKeyExists := requestBody["pubkey"]
 
 	if !usernameExists || !publicKeyExists {
 		http.Error(w, "Username and publicKey are required", http.StatusBadRequest)
