@@ -95,6 +95,10 @@ func VerifySignature(user string, signature []byte) (bool, error) {
 
 	pubkeyString := userData[user]
 
+	if len(pubkeyString) != ed25519.PublicKeySize {
+		return false, errors.New("invalid public key length")
+	}
+
 	edPubkey := ed25519.PublicKey([]byte(pubkeyString))
 
 	if ed25519.Verify(edPubkey, []byte(challenge.Value), signature) {
