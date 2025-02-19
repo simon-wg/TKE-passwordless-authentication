@@ -6,6 +6,7 @@ import (
 	. "chalmers/tkey-group22/internal/tkey"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -84,8 +85,13 @@ func getChallenge(user string) (*LoginResponse, error) {
 		return nil, fmt.Errorf("error in response when requesting challenge")
 	}
 
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body")
+	}
+
 	var res *LoginResponse
-	err = json.Unmarshal(body, &res)
+	err = json.Unmarshal(respBody, &res)
 
 	if err != nil {
 		return nil, fmt.Errorf("error decoding challenge response")
