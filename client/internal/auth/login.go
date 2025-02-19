@@ -4,7 +4,6 @@ import (
 	"bytes"
 	. "chalmers/tkey-group22/internal/structs"
 	"chalmers/tkey-group22/internal/tkey"
-	"crypto/ed25519"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -29,14 +28,6 @@ func Login() error {
 	signedChallenge, err := signChallenge(username, challengeResponse)
 	if err != nil {
 		return err
-	}
-
-	pk, _ := tkey.GetTkeyPubKey()
-
-	if ed25519.Verify(pk, []byte(challengeResponse.Challenge), []byte(signedChallenge.Signature)) {
-		fmt.Println("Signature verified")
-	} else {
-		fmt.Println("Signature not verified")
 	}
 
 	baseUrl := "http://localhost:8080"
@@ -68,7 +59,7 @@ func signChallenge(username string, challenge *LoginResponse) (*VerifyRequest, e
 
 	return &VerifyRequest{
 		Username:  username,
-		Signature: string(sig),
+		Signature: sig,
 	}, nil
 }
 

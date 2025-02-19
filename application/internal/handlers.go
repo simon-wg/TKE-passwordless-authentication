@@ -207,11 +207,6 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err != nil {
-		fmt.Println("Invalid request body")
-		http.Error(w, "Invalid signature format", http.StatusBadRequest)
-	}
-
 	// Read user data
 	userData, err := util.Read(UsersFile)
 	if err != nil {
@@ -261,7 +256,7 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 
 type VerifyRequest struct {
 	Username  string `json:"username"`
-	Signature string `json:"signature"`
+	Signature []byte `json:"signature"`
 }
 
 type LoginRequest struct {

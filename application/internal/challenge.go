@@ -78,7 +78,7 @@ func cleanupExpiredChallenges() {
 // Returns:
 //   - bool: True if the signature is valid, false otherwise.
 //   - error: An error if the verification fails due to an invalid format, expired challenge, or no active challenge.
-func VerifySignature(user string, signature string) (bool, error) {
+func VerifySignature(user string, signature []byte) (bool, error) {
 	challenge, exists := activeChallenges[user]
 	if !exists {
 		return false, errors.New("no active challenge found for given key")
@@ -86,11 +86,6 @@ func VerifySignature(user string, signature string) (bool, error) {
 
 	if time.Now().After(challenge.ExpiresAt) {
 		return false, errors.New("challenge expired")
-	}
-
-	challengeBytes, err := hex.DecodeString(challenge.Value)
-	if err != nil {
-		return false, errors.New("invalid challenge format")
 	}
 
 	userData, err := util.Read(UsersFile)
@@ -102,7 +97,7 @@ func VerifySignature(user string, signature string) (bool, error) {
 
 	edPubkey := ed25519.PublicKey([]byte(pubkeyString))
 
-	if ed25519.Verify(edPubkey, challengeBytes, []byte(signature)) {
+	if ed25519.Verify(edPubkey, []byte(challenge.Value), signature) {
 		return true, nil
 	}
 
