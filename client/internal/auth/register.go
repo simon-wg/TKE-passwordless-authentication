@@ -15,7 +15,7 @@ const regurl = "http://localhost:8080/api/register"
 
 func Register() error {
 
-	username := getUsername()
+	username := GetUsername()
 
 	pubkey, err := tkey.GetTkeyPubKey()
 	if err != nil {
@@ -25,13 +25,6 @@ func Register() error {
 	sendRequest(pubkey, username)
 
 	return nil
-}
-
-func getUsername() string {
-	var username string
-	fmt.Print("Please enter username: ")
-	fmt.Scan(&username)
-	return username
 }
 
 func sendRequest(pubkey ed25519.PublicKey, username string) {

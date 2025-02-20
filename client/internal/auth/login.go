@@ -11,7 +11,7 @@ import (
 )
 
 func Login() error {
-	username := getUsername()
+	username := GetUsername()
 
 	c := &http.Client{}
 
