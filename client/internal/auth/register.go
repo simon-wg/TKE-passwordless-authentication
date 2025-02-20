@@ -51,11 +51,17 @@ func sendRequest(pubkey ed25519.PublicKey, username string) {
 
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		fmt.Printf("Could not create user! Error: %s", res.Status)
-		log.Fatal()
-	} else {
-		fmt.Printf("User '%s' has been successfully created!", username)
+	switch res.StatusCode {
+	case http.StatusOK:
+		fmt.Printf("User '%s' has been successfully created!\n", username)
+	case http.StatusConflict:
+		fmt.Printf("User '%s' already exists!\n", username)
+	case http.StatusBadRequest:
+		fmt.Printf("Invalid request body for user '%s'\n", username)
+	case http.StatusInternalServerError:
+		fmt.Printf("Unable to save user data for user '%s'\n", username)
+	default:
+		fmt.Printf("Unexpected error: %s\n", res.Status)
 	}
 
 }
