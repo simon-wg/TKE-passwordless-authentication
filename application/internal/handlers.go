@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"chalmers/tkey-group22/application/internal/structs"
 	"chalmers/tkey-group22/application/internal/util"
 	"encoding/json"
 	"fmt"
@@ -27,7 +28,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse request body
-	requestBody := RegisterRequest{}
+	requestBody := structs.RegisterRequest{}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -116,7 +117,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse request body
-	requestBody := LoginRequest{}
+	requestBody := structs.LoginRequest{}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -126,6 +127,12 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.Unmarshal(body, &requestBody); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// If the username field is empty, return a bad request error
+	if requestBody.Username == "" {
+		http.Error(w, "Username not provided", http.StatusBadRequest)
 		return
 	}
 
@@ -153,7 +160,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	challenge, _ := GenerateChallenge(username)
 
 	// Send the challenge in the response
-	response := LoginResponse{
+	response := structs.LoginResponse{
 		Challenge: challenge,
 	}
 	res, err := json.Marshal(response)
@@ -193,7 +200,7 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse request body
-	requestBody := VerifyRequest{}
+	requestBody := structs.VerifyRequest{}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("Invalid request body")
@@ -218,7 +225,10 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	_, exists := userData[requestBody.Username]
 	if !exists {
 		fmt.Println("No user named " + requestBody.Username + " exists")
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
 	}
+
 	// Check if publicKey has an active challenge
 	if !HasActiveChallenge(requestBody.Username) {
 		fmt.Println("No active challenge found for the user ")
@@ -252,23 +262,4 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	// w.Write(responseBodyBytes)
 
 	fmt.Println("Verification successful")
-}
-
-type VerifyRequest struct {
-	Username  string `json:"username"`
-	Signature []byte `json:"signature"`
-}
-
-type LoginRequest struct {
-	Username string `json:"username"`
-}
-
-type LoginResponse struct {
-	Challenge string `json:"challenge"`
-	Signature string `json:"signature"`
-}
-
-type RegisterRequest struct {
-	Username string `json:"username"`
-	Pubkey   []byte `json:"pubkey"`
 }
