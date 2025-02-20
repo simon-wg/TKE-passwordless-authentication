@@ -46,12 +46,13 @@ func Login() error {
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("error in response when sending signature")
 	}
-
+	fmt.Printf("User '%s' has been successfully logged in!\n", username)
 	return nil
 }
 
 func signChallenge(username string, challenge *LoginResponse) (*VerifyRequest, error) {
 	// Sign the challenge
+	fmt.Printf("Touch the TKey to continue...\n")
 	sig, err := tkey.Sign([]byte(challenge.Challenge))
 	if err != nil {
 		return nil, err
@@ -81,6 +82,9 @@ func getChallenge(user string) (*LoginResponse, error) {
 		return nil, err
 	}
 
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, fmt.Errorf("User not found!")
+	}
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("error in response when requesting challenge")
 	}
