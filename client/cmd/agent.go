@@ -1,6 +1,7 @@
-package tkey
+package main
 
 import (
+	"chalmers/tkey-group22/internal/tkey"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -16,7 +17,7 @@ func main() {
 }
 
 func getTkeyPubKeyHandler(w http.ResponseWriter, r *http.Request) {
-	pubKey, err := GetTkeyPubKey()
+	pubKey, err := tkey.GetTkeyPubKey()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to get public key: %v", err), http.StatusInternalServerError)
 		return
@@ -33,7 +34,7 @@ func signHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sig, err := Sign(body)
+	sig, err := tkey.Sign(body)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to sign message: %v", err), http.StatusInternalServerError)
 		return
