@@ -12,7 +12,7 @@ const RegisterComponent = () => {
     event.preventDefault(); // Prevent the default form submission behavior
 
     // Get the public key from the client server
-    const pubKeyResponse = await fetch(config.agentBaseUrl + '/api/getTkeyPubKey');
+    const pubKeyResponse = await fetch(config.clientBaseUrl + '/api/getTkeyPubKey');
     if (pubKeyResponse.ok) {
       const pubKeyData = await pubKeyResponse.json();
       console.log("Pubkey: " + pubKeyData.publicKey);

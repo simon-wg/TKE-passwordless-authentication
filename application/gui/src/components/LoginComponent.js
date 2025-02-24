@@ -45,22 +45,21 @@ const LoginComponent = () => {
         body: JSON.stringify({ username, signature: signedChallenge }),
       });
 
+      clearMessages()
       if (submitResponse.ok) {
         setSuccess('Login successful');
-        setError('');
       } else {
-        setSuccess('');
         setError('Failed to submit signed challenge');
       }
     } else {
-      setSuccess('');
+      clearMessages()
       setError('Failed to login');
     }
   };
 
   const sign = async (challenge) => {
     // Sign the challenge using the client server
-    const signResponse = await fetch(config.agentBaseUrl + '/api/sign', {
+    const signResponse = await fetch(config.clientBaseUrl + '/api/sign', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -77,6 +76,12 @@ const LoginComponent = () => {
       throw new Error('Failed to sign challenge');
     }
   };
+
+  const clearMessages = async () => {
+    setMessage('');
+    setSuccess('');
+    setError('');
+  }
 
   return (
     <div className="container">
