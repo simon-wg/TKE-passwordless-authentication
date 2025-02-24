@@ -3,8 +3,10 @@ package internal
 import (
 	"crypto/ed25519"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"errors"
+	"strings"
 	"sync"
 	"time"
 )
@@ -92,6 +94,7 @@ func VerifySignature(pubkey []byte, signature []byte) (bool, error) {
 		return false, errors.New("invalid challenge format")
 	}
 
+	pubkey, _ = extractKeyBits(pubkey)
 	if ed25519.Verify(ed25519.PublicKey(pubkey), challengeBytes, signature) {
 		return true, nil
 	}
@@ -105,4 +108,39 @@ func HasActiveChallenge(pubkey []byte) bool {
 
 	_, exists := activeChallenges[string(pubkey)]
 	return exists
+}
+
+// extractKeyBits extracts the key bits from an SSH public key in byte slice format.
+// The function expects the public key to be in the "ssh-ed25519" format and encoded in Base64.
+// It returns the key bits as a byte slice or an error if the public key format is invalid or unsupported.
+//
+// Parameters:
+//   - pubkey: A byte slice containing the SSH public key.
+//
+// Returns:
+//   - A byte slice containing the extracted key bits.
+//   - An error if the public key format is invalid, unsupported, or if there is an issue with Base64 decoding.
+func extractKeyBits(pubkey []byte) ([]byte, error) {
+	pubkeyString := string(pubkey)
+	parts := strings.Split(pubkeyString, " ")
+	if len(parts) < 2 {
+		return nil, errors.New("invalid SSH public key format")
+	}
+
+	keyType := parts[0]
+	if keyType != "ssh-ed25519" {
+		return nil, errors.New("unsupported key type")
+	}
+
+	keyBytes, err := base64.StdEncoding.DecodeString(parts[1])
+	if err != nil {
+		return nil, errors.New("invalid Base64 encoding")
+	}
+
+	// The actual key bytes start after the key type and length prefix
+	if len(keyBytes) < 32 {
+		return nil, errors.New("invalid key length")
+	}
+
+	return keyBytes[len(keyBytes)-32:], nil
 }

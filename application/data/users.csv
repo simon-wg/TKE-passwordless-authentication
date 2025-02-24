@@ -1,3 +1,6 @@
 username, publickey
 bob, banana1234
 alice, apple1234
+
+Test,"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBp2xHe9I5lnVg4OSraJqiFsIGohNstQuVE//224rht5
+"
