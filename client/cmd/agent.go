@@ -12,8 +12,8 @@ func main() {
 	http.Handle("/api/getTkeyPubKey", enableCors(http.HandlerFunc(getTkeyPubKeyHandler)))
 	http.Handle("/api/sign", enableCors(http.HandlerFunc(signHandler)))
 
-	fmt.Println("Server running on http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
+	fmt.Println("Server running on http://localhost:6060")
+	http.ListenAndServe(":6060", nil)
 }
 
 func enableCors(next http.Handler) http.Handler {

@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import RegisterComponent from './components/RegisterComponent';
 import LoginComponent from './components/LoginComponent';
+import Navbar from './components/Navbar';
+import './components/styles.css';
 
 const App = () => {
+  const [page, setPage] = useState('register');
+
   return (
     <div>
-      <h1>TKey Sign in</h1>
-      <RegisterComponent />
-      <LoginComponent />
+      <Navbar setPage={setPage} currentPage={page} />
+      {page === 'register' && <RegisterComponent />}
+      {page === 'login' && <LoginComponent />}
     </div>
   );
 };

@@ -1,97 +1,17 @@
-// import React, { useState } from 'react';
-
-// const LoginComponent = () => {
-//   const [username, setUsername] = useState('');
-//   const [challenge, setChallenge] = useState('');
-//   const [signature, setSignature] = useState('');
-
-//   const handleLogin = async () => {
-//     // Get the challenge from the backend server
-//     const response = await fetch('http://192.168.50.106:8080/api/login', {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify({ username }),
-//     });
-
-//     if (response.ok) {
-//       const data = await response.json();
-//       setChallenge(data.challenge);
-//       alert('Challenge received');
-//     } else {
-//       alert('Failed to login');
-//     }
-//   };
-
-//   const handleSign = async () => {
-//     // Sign the challenge using the client server
-//     const signResponse = await fetch('http://localhost:8080/api/sign', {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify({ challenge }),
-//     });
-
-//     if (signResponse.ok) {
-//         const signData = await signResponse.json();
-//         setSignature(signData.signature);
-//         console.log("Challenge signed")
-
-//         // Send signed challenge to application
-//         const submitResponse = await fetch('http://192.168.50.106:8080/api/verify', {
-//             method: 'POST',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//             },
-//             body: JSON.stringify({ username, signature }),
-//         });
-
-//         if (submitResponse.ok) {
-//             alert('Login successful');
-//         } else {
-//             alert('Failed to submit signed challenge');
-//         }
-//     }
-//     else {
-//         console.log("Failed to sign challenge")
-//     }
-//   };
-
-//   return (
-//     <div>
-//       <h2>Login</h2>
-//       <input
-//         type="text"
-//         placeholder="Username"
-//         value={username}
-//         onChange={(e) => setUsername(e.target.value)}
-//       />
-//       <button onClick={handleLogin}>Login</button>
-//       {challenge && (
-//         <div>
-//           <p>Challenge: {challenge}</p>
-//           <button onClick={handleSign}>Sign Challenge</button>
-//         </div>
-//       )}
-//       {signature && <p>Signature: {signature}</p>}
-//     </div>
-//   );
-// };
-
-// export default LoginComponent;
-
 import React, { useState } from 'react';
+import './styles.css';
+import config from '../config'
 
 const LoginComponent = () => {
   const [username, setUsername] = useState('');
-  const [challenge, setChallenge] = useState('');
-  const [signature, setSignature] = useState('');
+  const [message, setMessage] = useState('');
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
 
   const handleLogin = async () => {
     // Get the challenge from the backend server
-    const response = await fetch('http://192.168.50.106:8080/api/login', {
+    setError('')
+    const response = await fetch(config.serverBaseUrl + '/api/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -101,14 +21,23 @@ const LoginComponent = () => {
 
     if (response.ok) {
       const data = await response.json();
-      setChallenge(data.challenge);
-      alert('Challenge received');
+      console.log('Challenge received');
 
       // Sign the challenge using the client server
-      const signedChallenge = await sign(data.challenge);
+      setMessage('Touch TKey')
+      let signedChallenge;
+      try {
+        signedChallenge = await sign(data.challenge);
+        setMessage('')
+      } catch (error) {
+        setMessage('')
+        setSuccess('');
+        setError('Failed to sign challenge');
+        return;
+      }
 
       // Send signed challenge to application
-      const submitResponse = await fetch('http://192.168.50.106:8080/api/verify', {
+      const submitResponse = await fetch(config.serverBaseUrl + '/api/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,18 +46,21 @@ const LoginComponent = () => {
       });
 
       if (submitResponse.ok) {
-        alert('Login successful');
+        setSuccess('Login successful');
+        setError('');
       } else {
-        alert('Failed to submit signed challenge');
+        setSuccess('');
+        setError('Failed to submit signed challenge');
       }
     } else {
-      alert('Failed to login');
+      setSuccess('');
+      setError('Failed to login');
     }
   };
 
   const sign = async (challenge) => {
     // Sign the challenge using the client server
-    const signResponse = await fetch('http://localhost:8080/api/sign', {
+    const signResponse = await fetch(config.agentBaseUrl + '/api/sign', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -138,7 +70,6 @@ const LoginComponent = () => {
 
     if (signResponse.ok) {
       const signData = await signResponse.json();
-      setSignature(signData.signature);
       console.log("Challenge signed");
       return signData.signature;
     } else {
@@ -148,7 +79,7 @@ const LoginComponent = () => {
   };
 
   return (
-    <div>
+    <div className="container">
       <h2>Login</h2>
       <input
         type="text"
@@ -157,12 +88,15 @@ const LoginComponent = () => {
         onChange={(e) => setUsername(e.target.value)}
       />
       <button onClick={handleLogin}>Login</button>
-      {challenge && (
+      {/* {challenge && (
         <div>
           <p>Challenge: {challenge}</p>
         </div>
-      )}
-      {signature && <p>Signature: {signature}</p>}
+      )} */}
+      {/* {signature && <p>Signature: {signature}</p>} */}
+      {message && <p className='message'>{message}</p>}
+      {success && <p className="success">{success}</p>}
+      {error && <p className="error">{error}</p>}
     </div>
   );
 };

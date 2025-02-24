@@ -1,70 +1,25 @@
-// import React, { useState } from 'react';
-
-// const RegisterComponent = () => {
-//   const [username, setUsername] = useState('');
-//   const [pubkey, setPubkey] = useState('');
-
-//   const handleRegister = async () => {
-//     // Get the public key from the client server
-//     const pubKeyResponse = await fetch('http://localhost:8080/api/getTkeyPubKey');
-//     if (pubKeyResponse.ok) {
-//       const pubKeyData = await pubKeyResponse.json();
-//       setPubkey(pubKeyData.publicKey);
-//     } else {
-//       alert('Failed to get public key');
-//       return;
-//     }
-
-//     // Register the user with the public key
-//     const response = await fetch('http://localhost:8080/api/register', {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify({ username, pubkey }),
-//     });
-
-//     if (response.ok) {
-//       alert('User registered successfully');
-//     } else {
-//       alert('Failed to register user');
-//     }
-//   };
-
-//   return (
-//     <div>
-//       <h2>Register</h2>
-//       <input
-//         type="text"
-//         placeholder="Username"
-//         value={username}
-//         onChange={(e) => setUsername(e.target.value)}
-//       />
-//       <button onClick={handleRegister}>Register</button>
-//     </div>
-//   );
-// };
-
-// export default RegisterComponent;
-
 import React, { useState } from 'react';
+import './styles.css';
+import config from '../config'
 
 const RegisterComponent = () => {
   const [username, setUsername] = useState('');
   const [pubkey, setPubkey] = useState('');
+  const [success, setMessage] = useState('');
+  const [error, setError] = useState('');
 
   const handleRegister = async (event) => {
     event.preventDefault(); // Prevent the default form submission behavior
 
     // Get the public key from the client server
-    const pubKeyResponse = await fetch('http://localhost:8080/api/getTkeyPubKey');
+    const pubKeyResponse = await fetch(config.agentBaseUrl + '/api/getTkeyPubKey');
     if (pubKeyResponse.ok) {
       const pubKeyData = await pubKeyResponse.json();
       console.log("Pubkey: " + pubKeyData.publicKey);
       setPubkey(pubKeyData.publicKey);
 
       // Register the user with the public key
-      const response = await fetch('http://192.168.50.106:8080/api/register', {
+      const response = await fetch(config.serverBaseUrl + '/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -73,18 +28,21 @@ const RegisterComponent = () => {
       });
 
       if (response.ok) {
-        alert('User registered successfully');
+        setMessage('User registered successfully');
+        setError('');
       } else {
-        alert('Failed to register user');
+        setMessage('');
+        setError('Failed to register user');
       }
     } else {
-      alert('Failed to get public key');
+      setMessage('');
+      setError('Failed to get public key');
       return;
     }
   };
 
   return (
-    <div>
+    <div className="container">
       <h2>Register</h2>
       <form onSubmit={handleRegister}>
         <input
@@ -95,6 +53,8 @@ const RegisterComponent = () => {
         />
         <button type="submit">Register</button>
       </form>
+      {success && <p className="success">{success}</p>}
+      {error && <p className="error">{error}</p>}
     </div>
   );
 };
