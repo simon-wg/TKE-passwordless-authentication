@@ -151,7 +151,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "User not found", http.StatusNotFound)
 		return
 	}
-
 	// Generate a challenge using public key
 	challenge, _ := GenerateChallenge(username)
 
@@ -165,6 +164,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to send response", http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(res)
 }
@@ -188,6 +188,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 //	  }
 //	}
 func VerifyHandler(w http.ResponseWriter, r *http.Request) {
+
 	// Ensure it is a POST request
 	if r.Method != http.MethodPost {
 		fmt.Println("Invalid request method")
@@ -225,6 +226,7 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "No active challenge found for the user", http.StatusNotFound)
 		return
 	}
+	print("------------------------------")
 
 	// Verify the signed response
 	valid, err := VerifySignature(requestBody.Username, requestBody.Signature)

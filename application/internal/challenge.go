@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"chalmers/tkey-group22/application/internal/util"
 	"crypto/ed25519"
 	"crypto/rand"
 	"encoding/hex"
@@ -88,12 +87,13 @@ func VerifySignature(user string, signature []byte) (bool, error) {
 		return false, errors.New("challenge expired")
 	}
 
-	userData, err := util.Read(UsersFile)
+	userData, err := UserRepo.GetUser(user)
+
 	if err != nil {
-		return false, errors.New("unable to read user data")
+		return false, err
 	}
 
-	pubkeyString := userData[user]
+	pubkeyString := userData.PublicKey
 
 	if len(pubkeyString) != ed25519.PublicKeySize {
 		return false, errors.New("invalid public key length")

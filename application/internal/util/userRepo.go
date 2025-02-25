@@ -39,12 +39,12 @@ func (repo *UserRepo) CreateUser(userName string, pubkey ed25519.PublicKey) (*mo
 	collection := repo.db.Collection("users")
 
 	// Encodes public key to base64 to allow storing in MongoDB
-	pubkey = ed25519.PublicKey(base64.StdEncoding.EncodeToString(pubkey))
-
+	encodedPubKey := base64.StdEncoding.EncodeToString(pubkey)
+	println(pubkey)
 	user := User{
 		ID:        primitive.NewObjectID(),
 		Username:  userName,
-		PublicKey: string(pubkey),
+		PublicKey: string(encodedPubKey),
 	}
 
 	result, err := collection.InsertOne(context.Background(), user)
