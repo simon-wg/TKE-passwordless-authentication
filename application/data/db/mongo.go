@@ -11,14 +11,12 @@ import (
 
 // MongoDB instance struct
 type MongoDB struct {
-	Client     *mongo.Client
-	Collection *mongo.Collection
+	Client   *mongo.Client
+	Database *mongo.Database
 }
 
 // Initializes MongoDB connection
-func ConnectMongoDB(uri, dbName, collectionName string) (*MongoDB, error) {
-
-	// Sets URI for DB to connect to.
+func ConnectMongoDB(uri, dbName string) (*MongoDB, error) {
 	clientOptions := options.Client().ApplyURI(uri)
 
 	client, err := mongo.Connect(context.TODO(), clientOptions)
@@ -33,14 +31,17 @@ func ConnectMongoDB(uri, dbName, collectionName string) (*MongoDB, error) {
 
 	fmt.Println("Connected to MongoDB")
 
-	collection := client.Database(dbName).Collection(collectionName)
-	return &MongoDB{Client: client, Collection: collection}, nil
+	// Get a reference to the database
+	database := client.Database(dbName)
+
+	return &MongoDB{Client: client, Database: database}, nil
 }
 
+// Close terminates the MongoDB connection
 func (db *MongoDB) Close() {
 	err := db.Client.Disconnect(context.TODO())
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Print("Disconnected from MongoDB.")
+	fmt.Println("Disconnected from MongoDB.")
 }
