@@ -31,11 +31,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	requestBody := structs.RegisterRequest{}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		fmt.Println("Invalid request body")
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	fmt.Println(body)
+
 	if err := json.Unmarshal(body, &requestBody); err != nil {
 		fmt.Println("Failed to parse body")
 		http.Error(w, "Invalid request body", http.StatusBadRequest)

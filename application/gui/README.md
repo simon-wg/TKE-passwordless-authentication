@@ -40,5 +40,5 @@ To start the client, follow these steps:
     ```
 2. Start the client:
     ```sh
-    go run client.go
+    go run main.go
     ```
