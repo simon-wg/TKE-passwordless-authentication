@@ -2,18 +2,15 @@ package main
 
 import (
 	"chalmers/tkey-group22/internal/auth"
-	"chalmers/tkey-group22/internal/tkey"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 func main() {
-	http.Handle("/api/getTkeyPubKey", enableCors(http.HandlerFunc(getTkeyPubKeyHandler)))
-	http.Handle("/api/sign", enableCors(http.HandlerFunc(signHandler)))
-	http.Handle("/api/register", enableCors(http.HandlerFunc(loginHandler)))
-	http.Handle("/api/login", enableCors(http.HandlerFunc(registerHandler)))
+	http.Handle("/api/register", enableCors(http.HandlerFunc(registerHandler)))
+	http.Handle("/api/login", enableCors(http.HandlerFunc(loginHandler)))
 
 	fmt.Println("Client running on http://localhost:6060")
 	http.ListenAndServe(":6060", nil)
@@ -32,53 +29,9 @@ func enableCors(next http.Handler) http.Handler {
 	})
 }
 
-func getTkeyPubKeyHandler(w http.ResponseWriter, r *http.Request) {
-	pubKey, err := tkey.GetTkeyPubKey()
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to get public key: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"publicKey": string(pubKey)})
-}
-
-func signHandler(w http.ResponseWriter, r *http.Request) {
-	origin := r.Header.Get("Origin")
-	fmt.Println("Origin: " + origin)
-	var requestBody map[string]string
-	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	challengeHex, ok := requestBody["challenge"]
-	if !ok {
-		http.Error(w, "Missing challenge field", http.StatusBadRequest)
-		return
-	}
-
-	challenge, err := hex.DecodeString(challengeHex)
-	if err != nil {
-		http.Error(w, "Invalid challenge format", http.StatusBadRequest)
-		return
-	}
-
-	sig, err := tkey.Sign(challenge)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to sign message: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	// signatureHex := hex.EncodeToString(sig)
-
-	w.Header().Set("Content-Type", "application/json")
-	// json.NewEncoder(w).Encode(map[string]string{"signature": signatureHex})
-	json.NewEncoder(w).Encode(map[string]string{"signature": string(sig)})
-}
-
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	r.Header.Get("Origin")
+	origin := r.Header.Get("Origin")
+	origin = replaceOriginPort(origin)
 
 	var requestBody map[string]string
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
@@ -86,15 +39,34 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	username := requestBody["username"]
-	auth.Login(username)
+	err := auth.Login(origin, username)
+	if err != nil {
+		http.Error(w, "Failed to log in", http.StatusBadRequest)
+	}
 }
 
 func registerHandler(w http.ResponseWriter, r *http.Request) {
+	origin := r.Header.Get("Origin")
+	origin = replaceOriginPort(origin)
+
 	var requestBody map[string]string
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 	username := requestBody["username"]
-	auth.Register(username)
+	err := auth.Register(origin, username)
+	if err != nil {
+		http.Error(w, "Failed to register", http.StatusBadRequest)
+	}
+}
+
+// Change port of request to 8080
+func replaceOriginPort(origin string) string {
+	parts := strings.Split(origin, ":")
+	if len(parts) > 1 {
+		parts[len(parts)-1] = "8080"
+		origin = strings.Join(parts, ":")
+	}
+	return origin
 }

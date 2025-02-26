@@ -11,9 +11,9 @@ import (
 	"net/http"
 )
 
-const regurl = "http://localhost:8080/api/register"
+// const regurl = "http://localhost:8080/api/register"
 
-func Register(username string) error {
+func Register(appurl string, username string) error {
 
 	// username := GetUsername()
 
@@ -22,12 +22,15 @@ func Register(username string) error {
 		return err
 	}
 
-	sendRequest(pubkey, username)
+	err = sendRequest(appurl, pubkey, username)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
-func sendRequest(pubkey ed25519.PublicKey, username string) {
+func sendRequest(appurl string, pubkey ed25519.PublicKey, username string) error {
 	c := &http.Client{}
 
 	data := RegisterRequest{Username: username, Pubkey: []byte(pubkey)}
@@ -37,7 +40,7 @@ func sendRequest(pubkey ed25519.PublicKey, username string) {
 		log.Fatal(err)
 	}
 
-	res, err := c.Post(regurl, "application/json", bytes.NewBuffer(reqBody))
+	res, err := c.Post(appurl, "application/json", bytes.NewBuffer(reqBody))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -47,14 +50,15 @@ func sendRequest(pubkey ed25519.PublicKey, username string) {
 	switch res.StatusCode {
 	case http.StatusOK:
 		fmt.Printf("User '%s' has been successfully created!\n", username)
+		return nil
 	case http.StatusConflict:
-		fmt.Printf("User '%s' already exists!\n", username)
+		return fmt.Errorf("user '%s' already exists", username)
 	case http.StatusBadRequest:
-		fmt.Printf("Invalid request body for user '%s'\n", username)
+		return fmt.Errorf("invalid request body for user '%s'", username)
 	case http.StatusInternalServerError:
-		fmt.Printf("Unable to save user data for user '%s'\n", username)
+		return fmt.Errorf("unable to save user data for user '%s'", username)
 	default:
-		fmt.Printf("Unexpected error: %s\n", res.Status)
+		return fmt.Errorf("unexpected error: %s", res.Status)
 	}
 
 }
