@@ -10,8 +10,8 @@ import (
 	"net/http"
 )
 
-func Login() error {
-	username := GetUsername()
+func Login(username string) error {
+	// username := GetUsername()
 
 	c := &http.Client{}
 

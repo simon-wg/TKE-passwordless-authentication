@@ -13,9 +13,9 @@ import (
 
 const regurl = "http://localhost:8080/api/register"
 
-func Register() error {
+func Register(username string) error {
 
-	username := GetUsername()
+	// username := GetUsername()
 
 	pubkey, err := tkey.GetTkeyPubKey()
 	if err != nil {

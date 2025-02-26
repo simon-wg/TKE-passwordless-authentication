@@ -10,8 +10,9 @@ const LoginComponent = () => {
 
   const handleLogin = async () => {
     // Get the challenge from the backend server
-    setError('')
-    const response = await fetch(config.serverBaseUrl + '/api/login', {
+    clearMessages()
+
+    const response = await fetch(config.clientBaseUrl + '/api/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -20,41 +21,49 @@ const LoginComponent = () => {
     });
 
     if (response.ok) {
-      const data = await response.json();
-      console.log('Challenge received');
-
-      // Sign the challenge using the client server
-      setMessage('Touch TKey')
-      let signedChallenge;
-      try {
-        signedChallenge = await sign(data.challenge);
-        setMessage('')
-      } catch (error) {
-        setMessage('')
-        setSuccess('');
-        setError('Failed to sign challenge');
-        return;
-      }
-
-      // Send signed challenge to application
-      const submitResponse = await fetch(config.serverBaseUrl + '/api/verify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, signature: signedChallenge }),
-      });
-
-      clearMessages()
-      if (submitResponse.ok) {
-        setSuccess('Login successful');
-      } else {
-        setError('Failed to submit signed challenge');
-      }
-    } else {
-      clearMessages()
-      setError('Failed to login');
+      setSuccess('Successfully signed in')
     }
+
+    else {
+      setError('Failed to sign in user')
+    }
+
+    // if (response.ok) {
+    //   const data = await response.json();
+    //   console.log('Challenge received');
+
+    //   // Sign the challenge using the client server
+    //   setMessage('Touch TKey')
+    //   let signedChallenge;
+    //   try {
+    //     signedChallenge = await sign(data.challenge);
+    //     setMessage('')
+    //   } catch (error) {
+    //     setMessage('')
+    //     setSuccess('');
+    //     setError('Failed to sign challenge');
+    //     return;
+    //   }
+
+    //   // Send signed challenge to application
+    //   const submitResponse = await fetch(config.serverBaseUrl + '/api/verify', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({ username, signature: signedChallenge }),
+    //   });
+
+    //   clearMessages()
+    //   if (submitResponse.ok) {
+    //     setSuccess('Login successful');
+    //   } else {
+    //     setError('Failed to submit signed challenge');
+    //   }
+    // } else {
+    //   clearMessages()
+    //   setError('Failed to login');
+    // }
   };
 
   const sign = async (challenge) => {

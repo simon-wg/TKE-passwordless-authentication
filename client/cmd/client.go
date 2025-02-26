@@ -1,6 +1,7 @@
 package main
 
 import (
+	"chalmers/tkey-group22/internal/auth"
 	"chalmers/tkey-group22/internal/tkey"
 	"encoding/hex"
 	"encoding/json"
@@ -11,6 +12,8 @@ import (
 func main() {
 	http.Handle("/api/getTkeyPubKey", enableCors(http.HandlerFunc(getTkeyPubKeyHandler)))
 	http.Handle("/api/sign", enableCors(http.HandlerFunc(signHandler)))
+	http.Handle("/api/register", enableCors(http.HandlerFunc(loginHandler)))
+	http.Handle("/api/login", enableCors(http.HandlerFunc(registerHandler)))
 
 	fmt.Println("Client running on http://localhost:6060")
 	http.ListenAndServe(":6060", nil)
@@ -41,6 +44,8 @@ func getTkeyPubKeyHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func signHandler(w http.ResponseWriter, r *http.Request) {
+	origin := r.Header.Get("Origin")
+	fmt.Println("Origin: " + origin)
 	var requestBody map[string]string
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -65,8 +70,31 @@ func signHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	signatureHex := hex.EncodeToString(sig)
+	// signatureHex := hex.EncodeToString(sig)
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"signature": signatureHex})
+	// json.NewEncoder(w).Encode(map[string]string{"signature": signatureHex})
+	json.NewEncoder(w).Encode(map[string]string{"signature": string(sig)})
+}
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	r.Header.Get("Origin")
+
+	var requestBody map[string]string
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	username := requestBody["username"]
+	auth.Login(username)
+}
+
+func registerHandler(w http.ResponseWriter, r *http.Request) {
+	var requestBody map[string]string
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	username := requestBody["username"]
+	auth.Register(username)
 }

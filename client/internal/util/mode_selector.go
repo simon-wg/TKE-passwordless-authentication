@@ -1,7 +1,6 @@
 package util
 
 import (
-	"chalmers/tkey-group22/internal/auth"
 	"fmt"
 	"log"
 	"os"
@@ -22,15 +21,15 @@ func SelectMode() int {
 }
 
 func CallLogin() {
-	err := auth.Login()
-	if err != nil {
-		le.Println(err)
-	}
+	// err := auth.Login()
+	// if err != nil {
+	// 	le.Println(err)
+	// }
 }
 
 func CallRegister() {
-	err := auth.Register()
-	if err != nil {
-		le.Println(err)
-	}
+	// err := auth.Register()
+	// if err != nil {
+	// 	le.Println(err)
+	// }
 }
