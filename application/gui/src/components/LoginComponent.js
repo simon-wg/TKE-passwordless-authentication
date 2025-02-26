@@ -28,26 +28,6 @@ const LoginComponent = () => {
     }
   };
 
-  const sign = async (challenge) => {
-    // Sign the challenge using the client server
-    const signResponse = await fetch(config.clientBaseUrl + '/api/sign', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ challenge }),
-    });
-
-    if (signResponse.ok) {
-      const signData = await signResponse.json();
-      console.log("Challenge signed");
-      return signData.signature;
-    } else {
-      console.log("Failed to sign challenge");
-      throw new Error('Failed to sign challenge');
-    }
-  };
-
   const clearMessages = async () => {
     setMessage('');
     setSuccess('');

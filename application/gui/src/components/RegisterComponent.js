@@ -16,7 +16,7 @@ const RegisterComponent = () => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ username, appurl: config.serverBaseUrl }),
+      body: JSON.stringify({ username }),
     })
 
     if (result.ok) {

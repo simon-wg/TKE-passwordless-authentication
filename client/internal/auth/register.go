@@ -11,12 +11,7 @@ import (
 	"net/http"
 )
 
-// const regurl = "http://localhost:8080/api/register"
-
 func Register(appurl string, username string) error {
-
-	// username := GetUsername()
-
 	pubkey, err := tkey.GetTkeyPubKey()
 	if err != nil {
 		return err

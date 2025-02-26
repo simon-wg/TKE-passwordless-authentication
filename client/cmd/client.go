@@ -47,14 +47,17 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func registerHandler(w http.ResponseWriter, r *http.Request) {
+	origin := r.Header.Get("Origin")
+	origin = replaceOriginPort(origin)
+
 	var requestBody map[string]string
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
+
 	username := requestBody["username"]
-	appurl := requestBody["appurl"]
-	err := auth.Register(appurl, username)
+	err := auth.Register(origin, username)
 	if err != nil {
 		http.Error(w, "Failed to register", http.StatusBadRequest)
 	}
