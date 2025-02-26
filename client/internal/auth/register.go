@@ -22,7 +22,8 @@ func Register(appurl string, username string) error {
 		return err
 	}
 
-	err = sendRequest(appurl, pubkey, username)
+	regurl := appurl + "/api/register"
+	err = sendRequest(regurl, pubkey, username)
 	if err != nil {
 		return err
 	}
@@ -60,5 +61,4 @@ func sendRequest(appurl string, pubkey ed25519.PublicKey, username string) error
 	default:
 		return fmt.Errorf("unexpected error: %s", res.Status)
 	}
-
 }

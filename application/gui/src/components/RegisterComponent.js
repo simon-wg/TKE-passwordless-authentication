@@ -16,7 +16,7 @@ const RegisterComponent = () => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ username }),
+      body: JSON.stringify({ username, appurl: config.serverBaseUrl }),
     })
 
     if (result.ok) {
@@ -28,34 +28,6 @@ const RegisterComponent = () => {
       setSuccess('')
       setError('Error creating user')
     }
-
-    // const pubKeyResponse = await fetch(config.clientBaseUrl + '/api/getTkeyPubKey');
-    // if (pubKeyResponse.ok) {
-    //   const pubKeyData = await pubKeyResponse.json();
-    //   console.log("Pubkey: " + pubKeyData.publicKey);
-    //   setPubkey(pubKeyData.publicKey);
-
-    //   // Register the user with the public key
-    //   const response = await fetch(config.serverBaseUrl + '/api/register', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({ username, pubkey: pubKeyData.publicKey }),
-    //   });
-
-    //   if (response.ok) {
-    //     setMessage('User registered successfully');
-    //     setError('');
-    //   } else {
-    //     setMessage('');
-    //     setError('Failed to register user');
-    //   }
-    // } else {
-    //   setMessage('');
-    //   setError('Failed to get public key');
-    //   return;
-    // }
   };
 
   return (
