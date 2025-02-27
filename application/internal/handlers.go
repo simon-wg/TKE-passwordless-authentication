@@ -286,7 +286,7 @@ func UnregisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract username and public key
 	username := requestBody.Username
 
-	fmt.Printf("Received registration request for user: %s\n", username)
+	fmt.Printf("Received unregistration request for user: %s\n", username)
 
 	// Check that the user exists in database
 	userExists, err := UserRepo.GetUser(username)
