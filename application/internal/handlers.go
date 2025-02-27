@@ -7,11 +7,16 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"go.mongodb.org/mongo-driver/mongo"
 )
+
+var UserRepo util.UserRepository
 
 // Handlers for register, login and verify
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+
 	/*
 		1. Ensure it is a POST request
 		2. Parse request body
@@ -46,26 +51,23 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("Received registration request for user: %s\n", username)
 
-	// Read existing user data
-	userData, err := util.Read(UsersFile)
-	if err != nil {
-		fmt.Printf("Error reading user data: %v\n", err)
-		http.Error(w, "Unable to read user data", http.StatusInternalServerError)
-		return
-	}
-
 	// Check if user already exists
-	if _, userExists := userData[username]; userExists {
+	userExists, err := UserRepo.GetUser(username)
+
+	fmt.Println(userExists)
+	fmt.Println(err)
+
+	if userExists != nil || err != mongo.ErrNoDocuments {
 		fmt.Printf("User already exists: %s\n", username)
 		http.Error(w, "User already exists", http.StatusConflict)
 		return
 	}
 
 	// Store new user data
-	userData[username] = string(pubkey)
-	if err := util.Write(UsersFile, username, string(pubkey)); err != nil {
-		fmt.Printf("Error writing user data: %v\n", err)
-		http.Error(w, "Unable to save user data", http.StatusInternalServerError)
+	user, err := UserRepo.CreateUser(username, pubkey)
+	if err != nil || user == nil {
+		fmt.Printf("Error creating user: %v\n", err)
+		http.Error(w, "Unable to create user", http.StatusInternalServerError)
 		return
 	}
 
@@ -141,21 +143,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("Received login request for user: %s\n", username)
 
-	// Read user data from csv and store in var userData
-	userData, err := util.Read(UsersFile)
-	if err != nil {
-		fmt.Printf("Error reading user data: %v\n", err)
-		http.Error(w, "Unable to read user data", http.StatusInternalServerError)
-		return
-	}
-
 	// Check if the specified user is found
-	if _, userExists := userData[username]; !userExists {
+	userExists, err := UserRepo.GetUser(username)
+
+	if userExists == nil || err != nil {
 		fmt.Printf("User not found: %s\n", username)
 		http.Error(w, "User not found", http.StatusNotFound)
 		return
 	}
-
 	// Generate a challenge using public key
 	challenge, _ := GenerateChallenge(username)
 
@@ -169,6 +164,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to send response", http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(res)
 }
@@ -192,6 +188,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 //	  }
 //	}
 func VerifyHandler(w http.ResponseWriter, r *http.Request) {
+
 	// Ensure it is a POST request
 	if r.Method != http.MethodPost {
 		fmt.Println("Invalid request method")
@@ -214,17 +211,11 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Read user data
-	userData, err := util.Read(UsersFile)
-	if err != nil {
-		fmt.Printf("Error reading user data: %v\n", err)
-		http.Error(w, "Unable to read user data", http.StatusInternalServerError)
-		return
-	}
+	// Check if the specified user is found
+	userExists, err := UserRepo.GetUser(requestBody.Username)
 
-	_, exists := userData[requestBody.Username]
-	if !exists {
-		fmt.Println("No user named " + requestBody.Username + " exists")
+	if userExists == nil || err != nil {
+		fmt.Printf("User not found: %s\n", requestBody.Username)
 		http.Error(w, "User not found", http.StatusNotFound)
 		return
 	}
@@ -235,6 +226,7 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "No active challenge found for the user", http.StatusNotFound)
 		return
 	}
+	print("------------------------------")
 
 	// Verify the signed response
 	valid, err := VerifySignature(requestBody.Username, requestBody.Signature)
