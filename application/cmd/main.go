@@ -24,6 +24,7 @@ func main() {
 	http.HandleFunc("/api/register", internal.RegisterHandler)
 	http.HandleFunc("/api/login", internal.LoginHandler)
 	http.HandleFunc("/api/verify", internal.VerifyHandler)
+	http.HandleFunc("/api/unregister", internal.UnregisterHandler)
 
 	fmt.Println("Mock application running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)

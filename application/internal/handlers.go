@@ -54,9 +54,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if user already exists
 	userExists, err := UserRepo.GetUser(username)
 
-	fmt.Println(userExists)
-	fmt.Println(err)
-
 	if userExists != nil || err != mongo.ErrNoDocuments {
 		fmt.Printf("User already exists: %s\n", username)
 		http.Error(w, "User already exists", http.StatusConflict)
@@ -254,4 +251,68 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	// w.Write(responseBodyBytes)
 
 	fmt.Println("Verification successful")
+}
+
+func UnregisterHandler(w http.ResponseWriter, r *http.Request) {
+
+	/*
+		1. Ensure it is a POST request
+		2. Parse request body
+		3. Extract username and pubkey
+		4. Check that user exists in database
+		5. Remove user from database
+		6. Send success response
+	*/
+
+	// Ensure it is a POST request
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Parse request body
+	requestBody := structs.RegisterRequest{}
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := json.Unmarshal(body, &requestBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Extract username and public key
+	username := requestBody.Username
+
+	fmt.Printf("Received registration request for user: %s\n", username)
+
+	// Check that the user exists in database
+	userExists, err := UserRepo.GetUser(username)
+
+	if userExists == nil || err == mongo.ErrNoDocuments {
+		fmt.Printf("User does not exist: %s\n", username)
+		http.Error(w, "Could not unregister. User does not exist", http.StatusConflict)
+		return
+	}
+
+	// Delete user from database
+	user, err := UserRepo.DeleteUser(username)
+	if err != nil || user == nil {
+		fmt.Printf("Error deleting user: %v\n", err)
+		http.Error(w, "Unable to deleting user", http.StatusInternalServerError)
+		return
+	}
+
+	// Send success response
+	responseBody := map[string]string{"message": "User unregistered successfully"}
+	responseBodyBytes, err := json.Marshal(responseBody)
+	if err != nil {
+		fmt.Printf("Unable to marshal response for user: %s\n", username)
+		http.Error(w, "Unable to send response", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseBodyBytes)
 }

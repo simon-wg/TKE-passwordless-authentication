@@ -5,6 +5,10 @@ type RegisterRequest struct {
 	Pubkey   []byte `json:"pubkey"`
 }
 
+type UnregisterRequest struct {
+	Username string `json:"username"`
+}
+
 type LoginRequest struct {
 	Username string `json:"username"`
 }

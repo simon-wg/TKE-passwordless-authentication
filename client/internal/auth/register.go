@@ -11,8 +11,6 @@ import (
 	"net/http"
 )
 
-const regurl = "http://localhost:8080/api/register"
-
 func Register() error {
 
 	username := GetUsername()
@@ -21,12 +19,13 @@ func Register() error {
 		return err
 	}
 
-	sendRequest(pubkey, username)
+	sendRegisterRequest(pubkey, username)
 
 	return nil
 }
 
-func sendRequest(pubkey ed25519.PublicKey, username string) {
+func sendRegisterRequest(pubkey ed25519.PublicKey, username string) {
+	const regurl = "http://localhost:8080/api/register"
 	c := &http.Client{}
 
 	data := RegisterRequest{Username: username, Pubkey: []byte(pubkey)}
