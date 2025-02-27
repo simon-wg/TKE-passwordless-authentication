@@ -13,6 +13,30 @@ import (
 func Login() error {
 	username := GetUsername()
 
+	err := VerifyUser(username)
+
+	if err != nil {
+		return fmt.Errorf("could not verify user")
+	}
+
+	return nil
+}
+
+func signChallenge(username string, challenge *LoginResponse) (*VerifyRequest, error) {
+	// Sign the challenge
+	fmt.Printf("Touch the TKey to continue...\n")
+	sig, err := tkey.Sign([]byte(challenge.Challenge))
+	if err != nil {
+		return nil, err
+	}
+
+	return &VerifyRequest{
+		Username:  username,
+		Signature: sig,
+	}, nil
+}
+
+func VerifyUser(username string) error {
 	c := &http.Client{}
 
 	challengeResponse, err := getChallenge(username)
@@ -55,22 +79,7 @@ func Login() error {
 	default:
 		return fmt.Errorf("unexpected error: %s", resp.Status)
 	}
-
 	return nil
-}
-
-func signChallenge(username string, challenge *LoginResponse) (*VerifyRequest, error) {
-	// Sign the challenge
-	fmt.Printf("Touch the TKey to continue...\n")
-	sig, err := tkey.Sign([]byte(challenge.Challenge))
-	if err != nil {
-		return nil, err
-	}
-
-	return &VerifyRequest{
-		Username:  username,
-		Signature: sig,
-	}, nil
 }
 
 func getChallenge(user string) (*LoginResponse, error) {

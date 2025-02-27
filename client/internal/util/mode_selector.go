@@ -13,10 +13,11 @@ func SelectMode() int {
 	fmt.Println("\nSelect Mode:")
 	fmt.Println("1. Register")
 	fmt.Println("2. Login")
-	fmt.Println("3. Exit")
+	fmt.Println("3. Unregister")
+	fmt.Println("4. Exit")
 
 	var choice int
-	fmt.Print("Enter choice (1/2/3): ")
+	fmt.Print("Enter choice (1/2/3/4): ")
 	fmt.Scanln(&choice)
 	return choice
 }
@@ -30,6 +31,13 @@ func CallLogin() {
 
 func CallRegister() {
 	err := auth.Register()
+	if err != nil {
+		le.Println(err)
+	}
+}
+
+func CallUnregister() {
+	err := auth.Unregister()
 	if err != nil {
 		le.Println(err)
 	}
