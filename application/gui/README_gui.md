@@ -30,9 +30,9 @@ To start the GUI, follow these steps:
     npm start
     ```
     
-## Starting the Client
+## Starting the Web-Client
 
-To start the client, follow these steps:
+To start the web-client, follow these steps:
 
 1. Navigate to the client directory:
     ```sh
@@ -40,5 +40,17 @@ To start the client, follow these steps:
     ```
 2. Start the client:
     ```sh
-    go run main.go
+    go run client.go
+    ```
+
+## Starting the CMD-Client
+
+To instead start the cmd-client, follow these steps:
+1. Navigate to the client directory:
+    ```sh
+    cd ./client/cmd
+    ```
+2. Start the client:
+    ```sh
+    go run client.go -mode=cmd
     ```

@@ -2,13 +2,54 @@ package main
 
 import (
 	"chalmers/tkey-group22/internal/auth"
+	"chalmers/tkey-group22/internal/util"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net/http"
 	"strings"
 )
 
 func main() {
+	// Define a flag to choose between cmd-client and web-client
+	// Run web-client by default
+	mode := flag.String("mode", "web", "Choose the mode to run: cmd or web")
+	flag.Parse()
+
+	// Start the appropriate client based on the flag value
+	switch *mode {
+	case "cmd":
+		fmt.Println("Starting command-line client...")
+		startCmdClient()
+	default:
+		fmt.Println("Starting web client...")
+		startWebClient()
+	}
+}
+
+func startCmdClient() {
+
+	// Gets mode from user inputs and runs selected mode. Loops until program is told to exit.
+	for {
+		mode := util.SelectMode()
+
+		switch mode {
+		case 1:
+			// Perform register
+			util.CallRegister()
+		case 2:
+			// Perform login
+			util.CallLogin()
+		case 3:
+			// Stop program
+			return
+		default:
+			fmt.Println("Invalid choice, please try again.")
+		}
+	}
+}
+
+func startWebClient() {
 	http.Handle("/api/register", enableCors(http.HandlerFunc(registerHandler)))
 	http.Handle("/api/login", enableCors(http.HandlerFunc(loginHandler)))
 
