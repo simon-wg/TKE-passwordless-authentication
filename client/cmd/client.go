@@ -8,7 +8,11 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/gorilla/sessions"
 )
+
+var store = sessions.NewCookieStore([]byte("your-secret-key"))
 
 func main() {
 	// Define a flag to choose between cmd-client and web-client
@@ -84,7 +88,27 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	err := auth.Login(origin, username)
 	if err != nil {
 		http.Error(w, "Failed to log in", http.StatusBadRequest)
+		return
 	}
+
+	session, _ := store.Get(r, "session-name")
+	session.Values["authenticated"] = true
+	session.Values["username"] = username
+
+	session.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   3600,  
+		HttpOnly: true,  
+		Secure:   true, 
+	}
+
+	err = session.Save(r, w)
+	if err != nil {
+		http.Error(w, "Failed to save session", http.StatusInternalServerError)
+		return
+	}
+	
+	w.Write([]byte(fmt.Sprintf("User '%s' has been successfully logged in!", username)))
 }
 
 func registerHandler(w http.ResponseWriter, r *http.Request) {
