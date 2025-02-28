@@ -19,11 +19,11 @@ To start the GUI, follow these steps:
 
 1. Navigate to the GUI directory:
     ```sh
-    cd ./application/gui/cmd
+    cd ./application/gui
     ```
 2. Install the required dependencies:
     ```sh
-    npm install react-scripts --save
+    npm install
     ```
 3. Start the GUI:
     ```sh

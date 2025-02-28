@@ -36,7 +36,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.Unmarshal(body, &requestBody); err != nil {
-		fmt.Println("Failed to parse body")
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}

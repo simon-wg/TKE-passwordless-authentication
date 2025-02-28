@@ -8,9 +8,8 @@ const RegisterComponent = () => {
   const [error, setError] = useState('');
 
   const handleRegister = async (event) => {
-    event.preventDefault(); // Prevent the default form submission behavior
+    event.preventDefault();
 
-    // Get the public key from the client server
     const result = await fetch(config.clientBaseUrl + '/api/register', {
       method: 'POST',
       headers: {
