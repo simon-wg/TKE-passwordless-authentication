@@ -90,16 +90,17 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to log in", http.StatusBadRequest)
 		return
 	}
-
+	// stores username in session and sets authenticated to true
 	session, _ := store.Get(r, "session-name")
 	session.Values["authenticated"] = true
 	session.Values["username"] = username
 
+	// session length is 1 hour and can only be sent via https (works on localhost)
 	session.Options = &sessions.Options{
 		Path:     "/",
-		MaxAge:   3600,  
-		HttpOnly: true,  
-		Secure:   true, 
+		MaxAge:   3600,
+		HttpOnly: true,
+		Secure:   true,
 	}
 
 	err = session.Save(r, w)
@@ -107,8 +108,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to save session", http.StatusInternalServerError)
 		return
 	}
-	
-	w.Write([]byte(fmt.Sprintf("User '%s' has been successfully logged in!", username)))
 }
 
 func registerHandler(w http.ResponseWriter, r *http.Request) {
