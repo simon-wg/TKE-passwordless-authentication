@@ -30,7 +30,6 @@ func sendRequest(appurl string, pubkey ed25519.PublicKey, username string) error
 	c := &http.Client{}
 
 	data := RegisterRequest{Username: username, Pubkey: []byte(pubkey)}
-
 	reqBody, err := json.Marshal(data)
 	if err != nil {
 		log.Fatal(err)
