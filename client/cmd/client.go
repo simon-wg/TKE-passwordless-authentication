@@ -108,6 +108,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to save session", http.StatusInternalServerError)
 		return
 	}
+
+	session_user := session.Values["username"]
+	fmt.Printf("Session user is: %s", session_user)
 }
 
 func registerHandler(w http.ResponseWriter, r *http.Request) {
