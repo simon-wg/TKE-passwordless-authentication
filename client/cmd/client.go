@@ -63,7 +63,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// TODO: Auto-detect which port client is running on
+// TODO: Auto-detect which port application is running on
 // Change port of request to 8080
 func replaceOriginPort(origin string) string {
 	parts := strings.Split(origin, ":")
