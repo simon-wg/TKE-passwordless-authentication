@@ -1,3 +1,4 @@
+// Package contains structs used to represent requests to the server.
 package structs
 
 // VerifyRequest represents a request to verify a user's identity.
