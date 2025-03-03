@@ -1,42 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import useAuthCheck from "../../hooks/useAuthCheck";
+import useFetchUser from "../../hooks/useFetchUser";
 
 const LoginSuccessPage = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const checkAuthentication = async () => {
-      try {
-        const response = await fetch("http://localhost:6060/api/verify_session", {
-          method: "GET",
-          credentials: "include", // Send session cookie
-        });
-  
-        if (response.ok) {
-          setIsAuthenticated(true);  // User is authenticated
-        } else {
-          console.log("Authentication error")
-          navigate("/");  // Redirect to login page if not authenticated
-        }
-      } catch (error) {
-        console.log("Error Authenticating")
-        navigate("/");  // Redirect to login page if there's an error
-      }
-    };
-  
-    checkAuthentication();
-  }, [navigate]);
-  
+  const isAuthenticated = useAuthCheck();
+  const user = useFetchUser(isAuthenticated);
 
   if (!isAuthenticated) {
-    return <div>Loading...</div>;  // Or show a loading spinner
+    return <div>Loading...</div>;
   }
 
   return (
     <div>
-      <h1>Welcome to the Login Success Page!</h1>
-      {/* Add content for the success page */}
+      <h1>Welcome back, {user}</h1>
     </div>
   );
 };

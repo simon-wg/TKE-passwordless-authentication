@@ -55,6 +55,7 @@ func startWebClient() {
 		http.Handle("/api/register", enableCors(http.HandlerFunc(registerHandler)))
 		http.Handle("/api/login", enableCors(http.HandlerFunc(loginHandler)))
 		http.Handle("/api/verify_session", enableCors(http.HandlerFunc(session_util.CheckAuthHandler)))
+		http.Handle("/getuser", enableCors(session_util.SessionMiddleware(http.HandlerFunc(getUserHandler))))
 
 		
 		fmt.Println("Client running on http://localhost:6060")
@@ -128,4 +129,17 @@ func replaceOriginPort(origin string) string {
 		origin = strings.Join(parts, ":")
 	}
 	return origin
+}
+
+func getUserHandler(w http.ResponseWriter, r *http.Request) {
+    session, _ := session_util.Store.Get(r, "session-name")
+    username, ok := session.Values["username"].(string)
+   
+	if !ok {
+        http.Error(w, "Unauthorized", http.StatusUnauthorized)
+        return
+    }
+    response := map[string]string{"message": "Access granted", "user": username}
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(response)
 }

@@ -1,39 +1,37 @@
-import React, { useState } from 'react';
-import './styles.css';
-import config from '../config'
+import React, { useState } from "react";
+import "./styles.css";
+import config from "../config";
 
 const LoginComponent = () => {
-  const [username, setUsername] = useState('');
-  const [message, setMessage] = useState('');
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [message, setMessage] = useState("");
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
   const handleLogin = async () => {
-    clearMessages()
+    clearMessages();
 
-    const response = await fetch(config.clientBaseUrl + '/api/login', {
-      method: 'POST',
+    const response = await fetch(config.clientBaseUrl + "/api/login", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      credentials: 'include',
+      credentials: "include",
       body: JSON.stringify({ username }),
     });
 
     if (response.ok) {
-      setSuccess('Successfully signed in')
-    }
-
-    else {
-      setError('Failed to sign in user')
+      setSuccess("Successfully signed in");
+    } else {
+      setError("Failed to sign in user");
     }
   };
 
   const clearMessages = async () => {
-    setMessage('');
-    setSuccess('');
-    setError('');
-  }
+    setMessage("");
+    setSuccess("");
+    setError("");
+  };
 
   return (
     <div className="container">
@@ -45,7 +43,7 @@ const LoginComponent = () => {
         onChange={(e) => setUsername(e.target.value)}
       />
       <button onClick={handleLogin}>Login</button>
-      {message && <p className='message'>{message}</p>}
+      {message && <p className="message">{message}</p>}
       {success && <p className="success">{success}</p>}
       {error && <p className="error">{error}</p>}
     </div>
