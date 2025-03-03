@@ -9,7 +9,7 @@ import (
 	"crypto/sha256"
 )
 
-// encrypt_message encrypts a given message in form []byte using the provided RSA public key and returns an encrypted message
+// encryptMessage encrypts a given message in form []byte using the provided RSA public key and returns an encrypted message
 // It uses RSA-OAEP with SHA-256 hashing for encryption.
 //
 // Parameters:
@@ -18,10 +18,10 @@ import (
 //
 // Returns:
 // Returns encrypted message with type []byte
-func encrypt_message(message []byte, public_key *rsa.PublicKey) []byte {
+func encryptMessage(message []byte, publicKey *rsa.PublicKey) []byte {
 	hash := sha256.New()
 	random := rand.Reader
-	encrypted_message, err := rsa.EncryptOAEP(hash, random, public_key, message, nil)
+	encrypted_message, err := rsa.EncryptOAEP(hash, random, publicKey, message, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -29,7 +29,7 @@ func encrypt_message(message []byte, public_key *rsa.PublicKey) []byte {
 	return encrypted_message
 }
 
-// decrypt_message decrypts a given ciphertext in form []byte using the provided RSA private key and returns a decrypted message
+// decryptMessage decrypts a given ciphertext in form []byte using the provided RSA private key and returns a decrypted message
 // It uses RSA-OAEP with SHA-256 hashing for decryption.
 //
 // Parameters:
@@ -38,10 +38,10 @@ func encrypt_message(message []byte, public_key *rsa.PublicKey) []byte {
 //
 // Returns:
 // Returns decrypted message with type []byte
-func decrypt_message(ciphertext []byte, private_key *rsa.PrivateKey) []byte {
+func decryptMessage(ciphertext []byte, privateKey *rsa.PrivateKey) []byte {
 	hash := sha256.New()
 	random := rand.Reader
-	decrypted_message, err := rsa.DecryptOAEP(hash, random, private_key, ciphertext, nil)
+	decrypted_message, err := rsa.DecryptOAEP(hash, random, privateKey, ciphertext, nil)
 	if err != nil {
 		panic(err)
 	}

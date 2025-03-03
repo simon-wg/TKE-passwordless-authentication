@@ -22,6 +22,7 @@ var (
 	challengesLock   sync.Mutex
 )
 
+// Asynchronous function that runs in the background to clean up expired challenges.
 func init() {
 	go cleanupExpiredChallenges()
 }
@@ -53,6 +54,9 @@ func GenerateChallenge(user string) (string, error) {
 	return challenge.Value, nil
 }
 
+// cleanupExpiredChallenges periodically removes expired challenges from the activeChallenges map.
+// It locks the challengesLock mutex to ensure thread safety while accessing the map.
+// The function runs indefinitely, sleeping for a duration specified by cleanupInterval between each cleanup cycle.
 func cleanupExpiredChallenges() {
 	for {
 		time.Sleep(cleanupInterval)
@@ -108,6 +112,14 @@ func VerifySignature(user string, signature []byte) (bool, error) {
 	return false, errors.New("invalid signature")
 }
 
+// HasActiveChallenge checks if there is an active challenge for the given user.
+// It locks the challengesLock mutex to ensure thread safety while accessing the activeChallenges map.
+//
+// Parameters:
+//   - user: The username to check for an active challenge.
+//
+// Returns:
+//   - bool: True if there is an active challenge for the user, false otherwise.
 func HasActiveChallenge(user string) bool {
 	challengesLock.Lock()
 	defer challengesLock.Unlock()

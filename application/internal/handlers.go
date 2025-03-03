@@ -13,19 +13,27 @@ import (
 
 var UserRepo util.UserRepository
 
-// Handlers for register, login and verify
-
+// RegisterHandler handles the user registration process.
+//
+// This function performs the following steps:
+// 1. Ensures the request method is POST.
+// 2. Parses the request body to extract the registration details.
+// 3. Extracts the username and public key from the parsed request body.
+// 4. Checks if the user is already registered in the database.
+// 5. Stores the new user data if the user is not already registered.
+// 6. Sends a success response if the registration is successful.
+//
+// Parameters:
+// - w: http.ResponseWriter to write the response.
+// - r: *http.Request containing the registration request.
+//
+// Possible responses:
+// - 405 Method Not Allowed: if the request method is not POST.
+// - 400 Bad Request: if the request body is invalid or cannot be parsed.
+// - 409 Conflict: if the user already exists.
+// - 500 Internal Server Error: if there is an error creating the user or sending the response.
+// - 200 OK: if the user is registered successfully.
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-
-	/*
-		1. Ensure it is a POST request
-		2. Parse request body
-		3. Extract username and pubkey
-		4. Check that user is not already registered
-		5. Store user data
-		6. Send success response
-	*/
-
 	// Ensure it is a POST request
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
@@ -99,18 +107,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 //   - challenge.go
 //   - config.go
 //   - csvutil.go
-//
-// Expected JSON format in request body:
-//
-//	{
-//	  "username": "example_username"
-//	}
-//
-// JSON format in response body:
-//
-//	{
-//	  "challenge": "generated_challenge"
-//	}
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Ensure it is a POST
 	if r.Method != http.MethodPost {

@@ -9,11 +9,13 @@ import (
 	"net/http"
 )
 
+// Starts the application
 func main() {
 
+	// Connects to the MongoDB database named tkeyUserDB
 	db, err := db.ConnectMongoDB("mongodb://localhost:27017", "tkeyUserDB")
 
-	// Initialize the User Repository
+	// Initialize the UserRepository struct with the database reference
 	internal.UserRepo = util.NewUserRepo(db.Database)
 
 	if err != nil || db == nil || internal.UserRepo == nil {
