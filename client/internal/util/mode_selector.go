@@ -1,10 +1,12 @@
 package util
 
 import (
+	"bufio"
 	"chalmers/tkey-group22/internal/auth"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 var le = log.New(os.Stderr, "Error: ", 0)
@@ -23,7 +25,7 @@ func SelectMode() int {
 }
 
 func CallLogin() {
-	username := auth.GetUsername()
+	username := getUsername()
 	err := auth.Login(appurl, username)
 	if err != nil {
 		le.Println(err)
@@ -31,9 +33,16 @@ func CallLogin() {
 }
 
 func CallRegister() {
-	username := auth.GetUsername()
+	username := getUsername()
 	err := auth.Register(appurl, username)
 	if err != nil {
 		le.Println(err)
 	}
+}
+
+func getUsername() string {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Please enter username: ")
+	username, _ := reader.ReadString('\n')
+	return strings.TrimSpace(username)
 }
