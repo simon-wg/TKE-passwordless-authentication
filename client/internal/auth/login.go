@@ -35,6 +35,7 @@ func Login(appurl string, username string) error {
 		return err
 	}
 
+
 	resp, err := c.Post(appurl+endpoint, "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		return err
