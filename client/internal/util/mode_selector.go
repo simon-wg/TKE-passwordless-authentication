@@ -12,6 +12,11 @@ import (
 var le = log.New(os.Stderr, "Error: ", 0)
 var appurl = "http://localhost:8080"
 
+// SelectMode prompts the user to select a mode of operation from the options:
+// 1. Register
+// 2. Login
+// 3. Exit
+// It returns the user's choice as an integer.
 func SelectMode() int {
 	fmt.Println("\nSelect Mode:")
 	fmt.Println("1. Register")
@@ -24,6 +29,8 @@ func SelectMode() int {
 	return choice
 }
 
+// CallLogin retrieves the username and attempts to log in the user using the provided app URL.
+// If an error occurs during the login process, it prints the error.
 func CallLogin() {
 	username := getUsername()
 	err := auth.Login(appurl, username)
@@ -32,6 +39,8 @@ func CallLogin() {
 	}
 }
 
+// CallRegister retrieves the username and attempts to register it with the authentication service.
+// If an error occurs during the registration process, it prints the error.
 func CallRegister() {
 	username := getUsername()
 	err := auth.Register(appurl, username)

@@ -10,9 +10,12 @@ import (
 	"net/http"
 )
 
+// Sends a request to the server to login a user
+// Returns an error if the request fails
 func Login(appurl string, username string) error {
 	c := &http.Client{}
 
+	// Fetches the generated challenge from the server
 	challengeResponse, err := getChallenge(appurl, username)
 	if err != nil {
 		return err
@@ -23,11 +26,13 @@ func Login(appurl string, username string) error {
 	// 	return fmt.Errorf("signature verification failed")
 	// }
 
-	signedChallenge, err := signChallenge(appurl, username, challengeResponse)
+	// Signs the challenge
+	signedChallenge, err := signChallenge(username, challengeResponse)
 	if err != nil {
 		return err
 	}
 
+	// TODO: Make more customizable
 	endpoint := "/api/verify"
 
 	body, err := json.Marshal(signedChallenge)
@@ -35,6 +40,7 @@ func Login(appurl string, username string) error {
 		return err
 	}
 
+	// Sends the signed challenge to the server in the format of a VerifyRequest
 	resp, err := c.Post(appurl+endpoint, "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		return err
@@ -56,8 +62,8 @@ func Login(appurl string, username string) error {
 	return nil
 }
 
-func signChallenge(appurl string, username string, challenge *LoginResponse) (*VerifyRequest, error) {
-	// Sign the challenge
+// An internal function that signs the challenge using the tkey
+func signChallenge(username string, challenge *LoginResponse) (*VerifyRequest, error) {
 	fmt.Printf("Touch the TKey to continue...\n")
 	sig, err := tkey.Sign([]byte(challenge.Challenge))
 	if err != nil {
@@ -70,9 +76,13 @@ func signChallenge(appurl string, username string, challenge *LoginResponse) (*V
 	}, nil
 }
 
+// An internal function that fetches the challenge from the server
 func getChallenge(appurl string, user string) (*LoginResponse, error) {
 	endpoint := "/api/login"
+<<<<<<< HEAD
 	// Get the signature and message from the endpoint
+=======
+>>>>>>> f1c36b2 (Added comments in the form of godoc everywhere (i think))
 
 	c := &http.Client{}
 
@@ -81,6 +91,7 @@ func getChallenge(appurl string, user string) (*LoginResponse, error) {
 		return nil, err
 	}
 
+	// Get the signature and message from the endpoint
 	resp, err := c.Post(appurl+endpoint, "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
@@ -104,6 +115,7 @@ func getChallenge(appurl string, user string) (*LoginResponse, error) {
 		return nil, fmt.Errorf("error reading response body")
 	}
 
+	// Decode the response body into a LoginResponse struct
 	var res *LoginResponse
 	err = json.Unmarshal(respBody, &res)
 
