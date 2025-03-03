@@ -1,3 +1,4 @@
+// Package starts the backend server and connects to the MongoDB database
 package main
 
 import (
