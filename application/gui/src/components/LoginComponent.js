@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import "./styles.css";
 import config from "../config";
+import { useNavigate } from "react-router-dom";
 
 const LoginComponent = () => {
   const [username, setUsername] = useState("");
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
     clearMessages();
@@ -21,7 +23,7 @@ const LoginComponent = () => {
     });
 
     if (response.ok) {
-      setSuccess("Successfully signed in");
+      navigate("/loginsuccess");
     } else {
       setError("Failed to sign in user");
     }
