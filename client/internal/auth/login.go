@@ -55,6 +55,10 @@ func Login(appurl string, username string) error {
 	return nil
 }
 
+func VerifyUser(appurl string, username string) {
+
+}
+
 func signChallenge(appurl string, username string, challenge *LoginResponse) (*VerifyRequest, error) {
 	// Sign the challenge
 	fmt.Printf("Touch the TKey to continue...\n")

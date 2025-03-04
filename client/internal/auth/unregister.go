@@ -10,10 +10,9 @@ import (
 	"net/http"
 )
 
-func Unregister() error {
+func Unregister(appurl string, username string) error {
 
-	username := GetUsername()
-	err := VerifyUser(username)
+	err := Login(appurl, username)
 
 	if err != nil {
 		return fmt.Errorf("user verification failed for %s", username)

@@ -40,7 +40,8 @@ func CallRegister() {
 }
 
 func CallUnregister() {
-	err := auth.Unregister()
+	username := auth.GetUsername()
+	err := auth.Unregister(appurl, username)
 	if err != nil {
 		le.Println(err)
 	}

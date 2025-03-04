@@ -46,7 +46,7 @@ func startCmdClient() {
 			util.CallLogin()
 		case 3:
 			// Perform unregister
-			auth.Unregister()
+			util.CallUnregister()
 		case 4:
 			// Stop program
 			return
