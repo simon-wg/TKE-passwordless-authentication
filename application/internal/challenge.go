@@ -3,6 +3,7 @@ package internal
 import (
 	"crypto/ed25519"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"sync"
@@ -27,17 +28,17 @@ func init() {
 	go cleanupExpiredChallenges()
 }
 
-// GenerateChallenge generates a new challenge for the given public key.
+// GenerateChallenge generates a new challenge for the given user.
 // It creates a random byte sequence, encodes it to a hexadecimal string,
 // and stores it in the activeChallenges map with an expiration time.
 //
 // Parameters:
-//   - pubKey: The public key for which the challenge is generated.
+//   - username: The public key for which the challenge is generated.
 //
 // Returns:
 //   - A string representing the generated challenge.
 //   - An error if the random byte generation fails.
-func GenerateChallenge(user string) (string, error) {
+func GenerateChallenge(username string) (string, error) {
 	challengesLock.Lock()
 	defer challengesLock.Unlock()
 
@@ -49,7 +50,7 @@ func GenerateChallenge(user string) (string, error) {
 		ExpiresAt: time.Now().Add(ValidDuration),
 	}
 
-	activeChallenges[user] = challenge
+	activeChallenges[username] = challenge
 
 	return challenge.Value, nil
 }
@@ -70,43 +71,41 @@ func cleanupExpiredChallenges() {
 	}
 }
 
-// VerifySignature verifies the signed response for a given public key.
-// It checks if there is an active challenge for the provided public key, if the challenge has not expired,
+// VerifySignature verifies the signed response for a given user.
+// It checks if there is an active challenge for the provided user, if the challenge has not expired,
 // and if the provided signature is valid for the challenge.
 //
 // Parameters:
 //   - username: The username as a string.
-//   - signature: The signature as a hexadecimal string.
+//   - signature: The signature as a byte slice.
 //
 // Returns:
 //   - bool: True if the signature is valid, false otherwise.
 //   - error: An error if the verification fails due to an invalid format, expired challenge, or no active challenge.
-func VerifySignature(user string, signature []byte) (bool, error) {
-	challenge, exists := activeChallenges[user]
+func VerifySignature(username string, signature []byte) (bool, error) {
+	challenge, exists := activeChallenges[username]
 	if !exists {
-		return false, errors.New("no active challenge found for given key")
+		return false, errors.New("no active challenge found for given user")
 	}
 
 	if time.Now().After(challenge.ExpiresAt) {
 		return false, errors.New("challenge expired")
 	}
 
-	userData, err := UserRepo.GetUser(user)
-
+	userData, err := UserRepo.GetUser(username)
 	if err != nil {
 		return false, err
 	}
 
-	pubkeyString := userData.PublicKey
-
-	if len(pubkeyString) != ed25519.PublicKeySize {
-		return false, errors.New("invalid public key length")
-	}
-
-	edPubkey := ed25519.PublicKey([]byte(pubkeyString))
-
-	if ed25519.Verify(edPubkey, []byte(challenge.Value), signature) {
-		return true, nil
+	for _, encodedPubKey := range userData.PublicKeys {
+		pubKeyBytes, err := base64.StdEncoding.DecodeString(encodedPubKey)
+		if err != nil {
+			return false, err
+		}
+		edPubKey := ed25519.PublicKey(pubKeyBytes)
+		if ed25519.Verify(edPubKey, []byte(challenge.Value), signature) {
+			return true, nil
+		}
 	}
 
 	return false, errors.New("invalid signature")
@@ -116,14 +115,14 @@ func VerifySignature(user string, signature []byte) (bool, error) {
 // It locks the challengesLock mutex to ensure thread safety while accessing the activeChallenges map.
 //
 // Parameters:
-//   - user: The username to check for an active challenge.
+//   - username: The username to check for an active challenge.
 //
 // Returns:
 //   - bool: True if there is an active challenge for the user, false otherwise.
-func HasActiveChallenge(user string) bool {
+func HasActiveChallenge(username string) bool {
 	challengesLock.Lock()
 	defer challengesLock.Unlock()
 
-	_, exists := activeChallenges[user]
+	_, exists := activeChallenges[username]
 	return exists
 }
