@@ -1,3 +1,6 @@
+// Package main starts the client application and provides the user with a choice between a command-line client and a web client.
+// The command-line client allows the user to register and log in to the application.
+// The web client allows the user to register and log in to the application through a web interface.
 package main
 
 import (
@@ -53,10 +56,10 @@ func startCmdClient() {
 	}
 }
 
+// Starts http listeners for the web client to use
 func startWebClient() {
 	http.Handle("/api/register", enableCors(http.HandlerFunc(registerHandler)))
 	http.Handle("/api/login", enableCors(http.HandlerFunc(loginHandler)))
-
 	fmt.Println("Client running on http://localhost:6060")
 	http.ListenAndServe(":6060", nil)
 }
@@ -74,7 +77,10 @@ func enableCors(next http.Handler) http.Handler {
 	})
 }
 
+// Handles login requests from the web client
 func loginHandler(w http.ResponseWriter, r *http.Request) {
+	// Get origin from request header and replace port with 8080
+	// We use this order to be able to know what to send to auth.Login
 	origin := r.Header.Get("Origin")
 	origin = replaceOriginPort(origin)
 
@@ -90,12 +96,12 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to log in", http.StatusBadRequest)
 		return
 	}
-	// stores username in session and sets authenticated to true
+	// Stores username in session and sets authenticated to true
 	session, _ := store.Get(r, "session-name")
 	session.Values["authenticated"] = true
 	session.Values["username"] = username
 
-	// session length is 1 hour and can only be sent via https (works on localhost)
+	// Session length is 1 hour and can only be sent via https (works on localhost)
 	session.Options = &sessions.Options{
 		Path:     "/",
 		MaxAge:   3600,
@@ -109,11 +115,14 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session_user := session.Values["username"]
-	fmt.Printf("Session user is: %s", session_user)
+	sessionUser := session.Values["username"]
+	fmt.Printf("Session user is: %s", sessionUser)
 }
 
+// Handles register requests from the web client
 func registerHandler(w http.ResponseWriter, r *http.Request) {
+	// Get origin from request header and replace port with 8080
+	// We use this order to be able to know what to send to auth.Register
 	origin := r.Header.Get("Origin")
 	origin = replaceOriginPort(origin)
 

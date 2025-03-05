@@ -35,6 +35,16 @@ func NewUserRepo(db *mongo.Database) *UserRepo {
 	return &UserRepo{db: db}
 }
 
+// CreateUser inserts a new user with the specified username and public key into the MongoDB collection.
+// The public key is encoded to base64 before storing.
+//
+// Parameters:
+//   - userName: The username of the new user.
+//   - pubkey: The ed25519 public key of the new user.
+//
+// Returns:
+//   - *mongo.InsertOneResult: The result of the insert operation.
+//   - error: An error if the insert operation fails.
 func (repo *UserRepo) CreateUser(userName string, pubkey ed25519.PublicKey) (*mongo.InsertOneResult, error) {
 	collection := repo.db.Collection("users")
 
@@ -55,6 +65,10 @@ func (repo *UserRepo) CreateUser(userName string, pubkey ed25519.PublicKey) (*mo
 	return result, nil
 }
 
+// GetUser retrieves a user from the database by their username.
+// It takes a username as a string and returns a pointer to a User object and an error.
+// If the user is found, their public key is decoded and assigned to the PublicKey field of the User object.
+// If any error occurs during the process, it returns nil and the error.
 func (repo *UserRepo) GetUser(userName string) (*User, error) {
 	collection := repo.db.Collection("users")
 
@@ -76,6 +90,16 @@ func (repo *UserRepo) GetUser(userName string) (*User, error) {
 	return &user, nil
 }
 
+// UpdateUser updates the user document in the MongoDB collection with the given username.
+// It replaces the username and public key fields with the values from the updatedUser parameter.
+//
+// Parameters:
+//   - userName: The username of the user to be updated.
+//   - updatedUser: A User struct containing the new values for the username and public key.
+//
+// Returns:
+//   - *mongo.UpdateResult: The result of the update operation.
+//   - error: An error if the update operation fails.
 func (repo *UserRepo) UpdateUser(userName string, updatedUser User) (*mongo.UpdateResult, error) {
 	collection := repo.db.Collection("users")
 
@@ -95,6 +119,16 @@ func (repo *UserRepo) UpdateUser(userName string, updatedUser User) (*mongo.Upda
 	return result, nil
 }
 
+// DeleteUser deletes a user from the "users" collection in the MongoDB database.
+// It takes a userName as a parameter, which specifies the username of the user to be deleted.
+// It returns a pointer to mongo.DeleteResult and an error if the deletion fails.
+//
+// Parameters:
+//   - userName: The username of the user to be deleted.
+//
+// Returns:
+//   - *mongo.DeleteResult: The result of the delete operation.
+//   - error: An error if the deletion fails, otherwise nil.
 func (repo *UserRepo) DeleteUser(userName string) (*mongo.DeleteResult, error) {
 	collection := repo.db.Collection("users")
 
