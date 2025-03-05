@@ -12,9 +12,9 @@ import (
 
 // User struct represents a user in DB
 type User struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty"` // Unique ID set by MongoDB
-	Username  string             `bson:"username"`      // Username of the user
-	PublicKey string             `bson:"publicKey"`     // Public key of the user
+	ID         primitive.ObjectID `bson:"_id,omitempty"` // Unique ID set by MongoDB
+	Username   string             `bson:"username"`      // Username of the user
+	PublicKeys []string           `bson:"publicKeys"`    // Public key of the user
 }
 
 // Interface for UserRepository
@@ -42,9 +42,9 @@ func (repo *UserRepo) CreateUser(userName string, pubkey ed25519.PublicKey) (*mo
 	encodedPubKey := base64.StdEncoding.EncodeToString(pubkey)
 	println(pubkey)
 	user := User{
-		ID:        primitive.NewObjectID(),
-		Username:  userName,
-		PublicKey: string(encodedPubKey),
+		ID:         primitive.NewObjectID(),
+		Username:   userName,
+		PublicKeys: []string{encodedPubKey},
 	}
 
 	result, err := collection.InsertOne(context.Background(), user)
@@ -65,13 +65,13 @@ func (repo *UserRepo) GetUser(userName string) (*User, error) {
 		return nil, err
 	}
 
-	decodedKey, err := DecodePublicKey(user.PublicKey)
+	decodedKeys, err := decodePublicKeys(user.PublicKeys)
 
 	if err != nil {
 		return nil, err
 	}
 
-	user.PublicKey = string(decodedKey)
+	user.PublicKeys = convertDecodedKeysToStrings(decodedKeys)
 
 	return &user, nil
 }
@@ -82,8 +82,8 @@ func (repo *UserRepo) UpdateUser(userName string, updatedUser User) (*mongo.Upda
 	filter := bson.M{"username": userName}
 	updatedData := bson.M{
 		"$set": bson.M{
-			"username":  updatedUser.Username,
-			"publicKey": updatedUser.PublicKey,
+			"username":   updatedUser.Username,
+			"publicKeys": updatedUser.PublicKeys,
 		},
 	}
 
@@ -107,11 +107,24 @@ func (repo *UserRepo) DeleteUser(userName string) (*mongo.DeleteResult, error) {
 	return result, nil
 }
 
-// Decodes Public Key from stored base64 format to ed25519.PublicKey
-func DecodePublicKey(encodedKey string) (ed25519.PublicKey, error) {
-	data, err := base64.StdEncoding.DecodeString(encodedKey)
-	if err != nil {
-		return nil, err
+// Decodes Public Keys from stored base64 format to a slice of ed25519.PublicKey
+func decodePublicKeys(encodedKeys []string) ([]ed25519.PublicKey, error) {
+	var publicKeys []ed25519.PublicKey
+	for _, encodedKey := range encodedKeys {
+		data, err := base64.StdEncoding.DecodeString(encodedKey)
+		if err != nil {
+			return nil, err
+		}
+		publicKeys = append(publicKeys, ed25519.PublicKey(data))
 	}
-	return ed25519.PublicKey(data), nil
+	return publicKeys, nil
+}
+
+// convertDecodedKeysToStrings converts a slice of ed25519.PublicKey to a slice of strings
+func convertDecodedKeysToStrings(decodedKeys []ed25519.PublicKey) []string {
+	publicKeys := make([]string, len(decodedKeys))
+	for i, key := range decodedKeys {
+		publicKeys[i] = string(key)
+	}
+	return publicKeys
 }
