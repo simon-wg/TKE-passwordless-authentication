@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ed25519"
 	"encoding/base64"
+	"errors"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -34,6 +35,9 @@ type UserRepo struct {
 func NewUserRepo(db *mongo.Database) *UserRepo {
 	return &UserRepo{db: db}
 }
+
+// Max num of keys a single user can have
+const MaxPublicKeys = 5
 
 // CreateUser inserts a new user with the specified username and public key into the MongoDB collection.
 // The public key is encoded to base64 before storing.
@@ -141,6 +145,81 @@ func (repo *UserRepo) DeleteUser(userName string) (*mongo.DeleteResult, error) {
 	return result, nil
 }
 
+// AddPublicKey adds a new public key to the user's list of public keys.
+// It encodes the new public key to base64 and updates the user's document in the MongoDB collection.
+//
+// Parameters:
+//   - userName: The username of the user to be updated.
+//   - newPubKey: The new ed25519 public key to be added.
+//
+// Returns:
+//   - *mongo.UpdateResult: The result of the update operation.
+//   - error: An error if the update operation fails.
+func (repo *UserRepo) AddPublicKey(userName string, newPubKey ed25519.PublicKey) (*mongo.UpdateResult, error) {
+	user, err := repo.GetUser(userName)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(user.PublicKeys) >= MaxPublicKeys {
+		return nil, errors.New("user already has the maximum number of public keys")
+	}
+
+	encodedPubKey := base64.StdEncoding.EncodeToString(newPubKey)
+
+	user.PublicKeys = append(user.PublicKeys, encodedPubKey)
+
+	result, err := repo.UpdateUser(userName, *user)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// RemovePublicKey removes an existing public key from the user's list of public keys.
+// It encodes the public key to be removed to base64 and updates the user's document in the MongoDB collection.
+//
+// Parameters:
+//   - userName: The username of the user to be updated.
+//   - pubKeyToRemove: The ed25519 public key to be removed.
+//
+// Returns:
+//   - *mongo.UpdateResult: The result of the update operation.
+//   - error: An error if the update operation fails.
+func (repo *UserRepo) RemovePublicKey(userName string, pubKeyToRemove ed25519.PublicKey) (*mongo.UpdateResult, error) {
+	user, err := repo.GetUser(userName)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(user.PublicKeys) <= 1 {
+		return nil, errors.New("user must have at least two public keys to remove one")
+	}
+
+	encodedPubKey := base64.StdEncoding.EncodeToString(pubKeyToRemove)
+
+	keyFound := false
+	for i, key := range user.PublicKeys {
+		if key == encodedPubKey {
+			user.PublicKeys = append(user.PublicKeys[:i], user.PublicKeys[i+1:]...)
+			keyFound = true
+			break
+		}
+	}
+
+	if !keyFound {
+		return nil, errors.New("specified public key to be removed is not found")
+	}
+
+	result, err := repo.UpdateUser(userName, *user)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // Decodes Public Keys from stored base64 format to a slice of ed25519.PublicKey
 func decodePublicKeys(encodedKeys []string) ([]ed25519.PublicKey, error) {
 	var publicKeys []ed25519.PublicKey
@@ -158,7 +237,7 @@ func decodePublicKeys(encodedKeys []string) ([]ed25519.PublicKey, error) {
 func convertDecodedKeysToStrings(decodedKeys []ed25519.PublicKey) []string {
 	publicKeys := make([]string, len(decodedKeys))
 	for i, key := range decodedKeys {
-		publicKeys[i] = string(key)
+		publicKeys[i] = base64.StdEncoding.EncodeToString(key)
 	}
 	return publicKeys
 }

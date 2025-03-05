@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/ed25519"
 	"encoding/base64"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,7 +29,7 @@ func setup() {
 }
 
 func teardown() {
-	testDB.Drop(context.Background())
+	//testDB.Drop(context.Background())
 }
 
 func TestCreateUser(t *testing.T) {
@@ -66,7 +67,7 @@ func TestGetUser(t *testing.T) {
 	assert.NotNil(t, user)
 	assert.Equal(t, username, user.Username)
 	assert.Equal(t, 1, len(user.PublicKeys))
-	assert.Equal(t, string(pubkey), user.PublicKeys[0])
+	assert.Equal(t, base64.StdEncoding.EncodeToString(pubkey), user.PublicKeys[0])
 }
 
 func TestUpdateUser(t *testing.T) {
@@ -95,7 +96,7 @@ func TestUpdateUser(t *testing.T) {
 	assert.NotNil(t, user)
 	assert.Equal(t, username, user.Username)
 	assert.Equal(t, 1, len(user.PublicKeys))
-	assert.Equal(t, string(updatedPubkey), user.PublicKeys[0])
+	assert.Equal(t, base64.StdEncoding.EncodeToString(updatedPubkey), user.PublicKeys[0])
 }
 
 func TestDeleteUser(t *testing.T) {
@@ -117,4 +118,77 @@ func TestDeleteUser(t *testing.T) {
 	err = testDB.Collection("users").FindOne(context.Background(), bson.M{"username": username}).Decode(&user)
 	assert.Error(t, err)
 	assert.Equal(t, mongo.ErrNoDocuments, err)
+}
+
+func TestAddPublicKey(t *testing.T) {
+	setup()
+	defer teardown()
+
+	username := "testuser"
+	initialPubkey := ed25519.PublicKey([]byte("initialpublickey"))
+
+	// Create the user with the initial public key
+	_, err := userRepo.CreateUser(username, initialPubkey)
+	assert.NoError(t, err)
+
+	// Add a new public key to the existing user
+	newPubkey := ed25519.PublicKey([]byte("newpublickey"))
+	result, err := userRepo.AddPublicKey(username, newPubkey)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+
+	// Verify the new public key was added
+	user, err := userRepo.GetUser(username)
+	assert.NoError(t, err)
+	assert.NotNil(t, user)
+	assert.Equal(t, 2, len(user.PublicKeys))
+	assert.Equal(t, base64.StdEncoding.EncodeToString(initialPubkey), user.PublicKeys[0])
+	assert.Equal(t, base64.StdEncoding.EncodeToString(newPubkey), user.PublicKeys[1])
+
+	// Add more public keys until the maximum limit is reached
+	for i := 2; i < util.MaxPublicKeys; i++ {
+		pubkey := ed25519.PublicKey([]byte("pubkey" + strconv.Itoa(i)))
+		_, err := userRepo.AddPublicKey(username, pubkey)
+		assert.NoError(t, err)
+	}
+
+	// Try to add another public key beyond the maximum limit
+	extraPubkey := ed25519.PublicKey([]byte("extrapubkey"))
+	_, err = userRepo.AddPublicKey(username, extraPubkey)
+	assert.Error(t, err)
+	assert.Equal(t, "user already has the maximum number of public keys", err.Error())
+}
+
+func TestRemovePublicKey(t *testing.T) {
+	setup()
+	defer teardown()
+
+	username := "testuser"
+	initialPubkey := ed25519.PublicKey([]byte("initialpublickey"))
+
+	// Create the user with the initial public key
+	_, err := userRepo.CreateUser(username, initialPubkey)
+	assert.NoError(t, err)
+
+	// Add a new public key to the existing user
+	newPubkey := ed25519.PublicKey([]byte("newpublickey"))
+	_, err = userRepo.AddPublicKey(username, newPubkey)
+	assert.NoError(t, err)
+
+	// Remove the new public key
+	result, err := userRepo.RemovePublicKey(username, newPubkey)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+
+	// Verify the public key was removed
+	user, err := userRepo.GetUser(username)
+	assert.NoError(t, err)
+	assert.NotNil(t, user)
+	assert.Equal(t, 1, len(user.PublicKeys))
+	assert.Equal(t, base64.StdEncoding.EncodeToString(initialPubkey), user.PublicKeys[0])
+
+	// Try to remove the last remaining public key
+	_, err = userRepo.RemovePublicKey(username, initialPubkey)
+	assert.Error(t, err)
+	assert.Equal(t, "user must have at least two public keys to remove one", err.Error())
 }
