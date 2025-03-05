@@ -1,38 +1,38 @@
-import React, { useState } from 'react';
-import './styles.css';
-import config from '../config'
+import React, { use, useState } from "react";
+import "./styles.css";
+import config from "../config";
+import { useNavigate } from "react-router-dom";
 
 const LoginComponent = () => {
-  const [username, setUsername] = useState('');
-  const [message, setMessage] = useState('');
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [message, setMessage] = useState("");
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
-    clearMessages()
-
-    const response = await fetch(config.clientBaseUrl + '/api/login', {
-      method: 'POST',
+    clearMessages();
+    // Send POST Request to localhost:8080/api/initialize-login
+    const response = await fetch("http://localhost:8080/api/initialize-login", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify({ username }),
     });
-
     if (response.ok) {
-      setSuccess('Successfully signed in')
-    }
-
-    else {
-      setError('Failed to sign in user')
+      navigate("/loginsuccess");
+    } else {
+      setError("Failed to sign in user");
     }
   };
 
   const clearMessages = async () => {
-    setMessage('');
-    setSuccess('');
-    setError('');
-  }
+    setMessage("");
+    setSuccess("");
+    setError("");
+  };
 
   return (
     <div className="container">
@@ -44,7 +44,7 @@ const LoginComponent = () => {
         onChange={(e) => setUsername(e.target.value)}
       />
       <button onClick={handleLogin}>Login</button>
-      {message && <p className='message'>{message}</p>}
+      {message && <p className="message">{message}</p>}
       {success && <p className="success">{success}</p>}
       {error && <p className="error">{error}</p>}
     </div>
