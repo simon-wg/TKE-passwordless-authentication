@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
-	"chalmers/tkey-group22/internal/session_util"
 )
 
 func main() {
@@ -52,19 +50,16 @@ func startCmdClient() {
 }
 
 func startWebClient() {
-		http.Handle("/api/register", enableCors(http.HandlerFunc(registerHandler)))
-		http.Handle("/api/login", enableCors(http.HandlerFunc(loginHandler)))
-		http.Handle("/api/verify_session", enableCors(http.HandlerFunc(session_util.CheckAuthHandler)))
-		http.Handle("/getuser", enableCors(session_util.SessionMiddleware(http.HandlerFunc(getUserHandler))))
+	http.Handle("/api/register", enableCors(http.HandlerFunc(registerHandler)))
+	http.Handle("/api/login", enableCors(http.HandlerFunc(loginHandler)))
 
-		
-		fmt.Println("Client running on http://localhost:6060")
-		http.ListenAndServe(":6060", nil)
-	}
+	fmt.Println("Client running on http://localhost:6060")
+	http.ListenAndServe(":6060", nil)
+}
 
 func enableCors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -77,8 +72,8 @@ func enableCors(next http.Handler) http.Handler {
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	origin := r.Header.Get("Origin")
-	origin = replaceOriginPort(origin)
+	//origin := r.Header.Get("Origin")
+	//origin = replaceOriginPort(origin)
 
 	var requestBody map[string]string
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
@@ -86,21 +81,12 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	username := requestBody["username"]
-
-	
-
-	err := auth.Login(origin, username)
+	err := auth.Login("http://localhost:8080", username)
 	if err != nil {
 		http.Error(w, "Failed to log in", http.StatusBadRequest)
 		return
 	}
 
-	err = session_util.SetSession(w, r, username)
-	if err != nil {
-		http.Error(w, "Failed to save session", http.StatusInternalServerError)
-		return
-	}
-	
 }
 
 func registerHandler(w http.ResponseWriter, r *http.Request) {
@@ -129,17 +115,4 @@ func replaceOriginPort(origin string) string {
 		origin = strings.Join(parts, ":")
 	}
 	return origin
-}
-
-func getUserHandler(w http.ResponseWriter, r *http.Request) {
-    session, _ := session_util.Store.Get(r, "session-name")
-    username, ok := session.Values["username"].(string)
-   
-	if !ok {
-        http.Error(w, "Unauthorized", http.StatusUnauthorized)
-        return
-    }
-    response := map[string]string{"message": "Access granted", "user": username}
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(response)
 }

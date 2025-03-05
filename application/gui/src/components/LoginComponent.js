@@ -12,8 +12,8 @@ const LoginComponent = () => {
 
   const handleLogin = async () => {
     clearMessages();
-
-    const response = await fetch(config.clientBaseUrl + "/api/login", {
+    // Send POST Request to localhost:8080/api/initialize-login
+    const response = await fetch("http://localhost:8080/api/initialize-login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -21,7 +21,6 @@ const LoginComponent = () => {
       credentials: "include",
       body: JSON.stringify({ username }),
     });
-
     if (response.ok) {
       navigate("/loginsuccess");
     } else {

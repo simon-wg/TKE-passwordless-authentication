@@ -35,7 +35,6 @@ func Login(appurl string, username string) error {
 		return err
 	}
 
-
 	resp, err := c.Post(appurl+endpoint, "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		return err
@@ -73,7 +72,6 @@ func signChallenge(appurl string, username string, challenge *LoginResponse) (*V
 
 func getChallenge(appurl string, user string) (*LoginResponse, error) {
 	endpoint := "/api/login"
-
 	// Get the signature and message from the endpoint
 
 	c := &http.Client{}

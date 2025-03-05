@@ -17,6 +17,7 @@ func CheckAuthHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// This protects routes from being accessed if the user is not logged in
 func SessionMiddleware(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         session, _ := Store.Get(r, "session-name")
