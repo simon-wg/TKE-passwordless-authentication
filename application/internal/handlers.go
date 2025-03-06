@@ -253,16 +253,34 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Verification successful")
 }
 
-func UnregisterHandler(w http.ResponseWriter, r *http.Request) {
+// UnregisterHandler handles user unregistration requests.
+// It ensures the request is a POST, extracts the username from the request body,
+// checks that the user exists in the database, deletes the user from the database if they exist,
+// and then sends a success response.
+//
+// Parameters:
+//   - w: The http.ResponseWriter to write the response to.
+//   - r: The http.Request containing the unregistration request.
+//
+// Returns:
+//   - None
+//
+// Dependencies:
+//   - UserRepo.go
+//
+// Expected JSON format in request body:
+//
+//	{
+//	  "username": "username"
+//	}
+//
+// JSON format in response body:
+//
+//	{
+//	  "message": "User unregistered successfully"
+//	}
 
-	/*
-		1. Ensure it is a POST request
-		2. Parse request body
-		3. Extract username and pubkey
-		4. Check that user exists in database
-		5. Remove user from database
-		6. Send success response
-	*/
+func UnregisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Ensure it is a POST request
 	if r.Method != http.MethodPost {
@@ -293,7 +311,7 @@ func UnregisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	if userExists == nil || err == mongo.ErrNoDocuments {
 		fmt.Printf("User does not exist: %s\n", username)
-		http.Error(w, "Could not unregister. User does not exist", http.StatusConflict)
+		http.Error(w, "Could not unregister. User does not exist", http.StatusNotFound)
 		return
 	}
 
