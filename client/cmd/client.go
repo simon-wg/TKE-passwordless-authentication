@@ -78,15 +78,10 @@ func enableCors(next http.Handler) http.Handler {
 
 // Handles login requests from the web client
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-<<<<<<< HEAD
-	//origin := r.Header.Get("Origin")
-	//origin = replaceOriginPort(origin)
-=======
 	// Get origin from request header and replace port with 8080
 	// We use this order to be able to know what to send to auth.Login
 	origin := r.Header.Get("Origin")
 	origin = replaceOriginPort(origin)
->>>>>>> f1c36b2 (Added comments in the form of godoc everywhere (i think))
 
 	var requestBody map[string]string
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
@@ -99,31 +94,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to log in", http.StatusBadRequest)
 		return
 	}
-<<<<<<< HEAD
-
-=======
-	// Stores username in session and sets authenticated to true
-	session, _ := store.Get(r, "session-name")
-	session.Values["authenticated"] = true
-	session.Values["username"] = username
-
-	// Session length is 1 hour and can only be sent via https (works on localhost)
-	session.Options = &sessions.Options{
-		Path:     "/",
-		MaxAge:   3600,
-		HttpOnly: true,
-		Secure:   true,
-	}
-
-	err = session.Save(r, w)
-	if err != nil {
-		http.Error(w, "Failed to save session", http.StatusInternalServerError)
-		return
-	}
-
-	sessionUser := session.Values["username"]
-	fmt.Printf("Session user is: %s", sessionUser)
->>>>>>> f1c36b2 (Added comments in the form of godoc everywhere (i think))
 }
 
 // Handles register requests from the web client

@@ -103,10 +103,6 @@ func signChallenge(username string, challenge *LoginResponse) (*VerifyRequest, e
 // - An error if the request fails
 func getChallenge(appurl string, user string) (*LoginResponse, error) {
 	endpoint := "/api/login"
-<<<<<<< HEAD
-	// Get the signature and message from the endpoint
-=======
->>>>>>> f1c36b2 (Added comments in the form of godoc everywhere (i think))
 
 	c := &http.Client{}
 
