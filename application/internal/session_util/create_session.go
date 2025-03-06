@@ -16,7 +16,6 @@ func SetSession(w http.ResponseWriter, r *http.Request, username string) error {
 		return err
 	}
 
-	fmt.Println("Store.get session successful")
 	session.Values["authenticated"] = true
 	session.Values["username"] = username
 
@@ -33,6 +32,5 @@ func SetSession(w http.ResponseWriter, r *http.Request, username string) error {
 		return err
 	}
 
-	fmt.Println("Session successfully created!")
 	return nil
 }

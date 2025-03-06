@@ -1,3 +1,4 @@
+// Package starts the backend server and connects to the MongoDB database
 package main
 
 import (
@@ -9,15 +10,16 @@ import (
 	"net/http"
 )
 
+// Starts the application
 func main() {
 
+	// Connects to the MongoDB database named tkeyUserDB
 	db, err := db.ConnectMongoDB("mongodb://localhost:27017", "tkeyUserDB")
 
-	// Initialize the User Repository
+	// Initialize the UserRepository struct with the database reference
 	internal.UserRepo = util.NewUserRepo(db.Database)
 
 	if err != nil || db == nil || internal.UserRepo == nil {
-		fmt.Println("Error connecting to MongoDB")
 		return
 	}
 
@@ -35,7 +37,10 @@ func main() {
 
 func enableCors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		origin := r.Header.Get("Origin")
+		if origin == "http://localhost:8080" || origin == "http://localhost:3000" {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+		}
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
