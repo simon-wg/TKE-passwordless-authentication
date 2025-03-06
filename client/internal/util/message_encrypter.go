@@ -1,6 +1,3 @@
-// This class contains two methods:
-// -- The encrypt_message function encrypts a given message using the provided RSA public key.
-// -- The decrypt_message function decrypts a given ciphertext using the provided RSA private key.
 package util
 
 import (
@@ -9,8 +6,8 @@ import (
 	"crypto/sha256"
 )
 
-// encryptMessage encrypts a given message in form []byte using the provided RSA public key and returns an encrypted message
-// It uses RSA-OAEP with SHA-256 hashing for encryption.
+// encryptMessage encrypts a given message
+// It uses RSA-OAEP with SHA-256 hashing for encryption
 //
 // Parameters:
 // message: plaintext of message to be encrypted with type []byte
@@ -29,8 +26,8 @@ func encryptMessage(message []byte, publicKey *rsa.PublicKey) []byte {
 	return encrypted_message
 }
 
-// decryptMessage decrypts a given ciphertext in form []byte using the provided RSA private key and returns a decrypted message
-// It uses RSA-OAEP with SHA-256 hashing for decryption.
+// decryptMessage decrypts a given ciphertext
+// It uses RSA-OAEP with SHA-256 hashing for decryption
 //
 // Parameters:
 // ciphertext: encrypted message to be decrypted with type []byte

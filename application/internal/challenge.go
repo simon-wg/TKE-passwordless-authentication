@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+// Challenge represents a challenge that is generated for a user.
+// It contains a random value and an expiration time.
 type Challenge struct {
 	Value     string
 	ExpiresAt time.Time
@@ -27,16 +29,15 @@ func init() {
 	go cleanupExpiredChallenges()
 }
 
-// GenerateChallenge generates a new challenge for the given public key.
-// It creates a random byte sequence, encodes it to a hexadecimal string,
-// and stores it in the activeChallenges map with an expiration time.
+// GenerateChallenge generates a new challenge for the given public key
+// It creates a random byte sequence, encodes it to a hexadecimal string and stores it in the activeChallenges map with an expiration time
 //
 // Parameters:
-//   - pubKey: The public key for which the challenge is generated.
+//   - pubKey: The public key for which the challenge is generated
 //
 // Returns:
-//   - A string representing the generated challenge.
-//   - An error if the random byte generation fails.
+//   - A string representing the generated challenge
+//   - An error if the random byte generation fails
 func GenerateChallenge(user string) (string, error) {
 	challengesLock.Lock()
 	defer challengesLock.Unlock()
@@ -54,9 +55,8 @@ func GenerateChallenge(user string) (string, error) {
 	return challenge.Value, nil
 }
 
-// cleanupExpiredChallenges periodically removes expired challenges from the activeChallenges map.
-// It locks the challengesLock mutex to ensure thread safety while accessing the map.
-// The function runs indefinitely, sleeping for a duration specified by cleanupInterval between each cleanup cycle.
+// cleanupExpiredChallenges periodically removes expired challenges from the activeChallenges map
+// The function runs indefinitely, sleeping for a duration specified by cleanupInterval between each cleanup cycle
 func cleanupExpiredChallenges() {
 	for {
 		time.Sleep(cleanupInterval)
@@ -70,17 +70,15 @@ func cleanupExpiredChallenges() {
 	}
 }
 
-// VerifySignature verifies the signed response for a given public key.
-// It checks if there is an active challenge for the provided public key, if the challenge has not expired,
-// and if the provided signature is valid for the challenge.
+// VerifySignature verifies the signed response for a given public key
 //
 // Parameters:
-//   - username: The username as a string.
-//   - signature: The signature as a hexadecimal string.
+//   - username: The username as a string
+//   - signature: The signature as a hexadecimal string
 //
 // Returns:
-//   - bool: True if the signature is valid, false otherwise.
-//   - error: An error if the verification fails due to an invalid format, expired challenge, or no active challenge.
+//   - bool: True if the signature is valid, false otherwise
+//   - error: An error if the verification fails due to an invalid format, expired challenge, or no active challenge
 func VerifySignature(user string, signature []byte) (bool, error) {
 	challenge, exists := activeChallenges[user]
 	if !exists {
@@ -112,16 +110,17 @@ func VerifySignature(user string, signature []byte) (bool, error) {
 	return false, errors.New("invalid signature")
 }
 
-// HasActiveChallenge checks if there is an active challenge for the given user.
-// It locks the challengesLock mutex to ensure thread safety while accessing the activeChallenges map.
+// HasActiveChallenge checks if there is an active challenge for the given user
 //
 // Parameters:
-//   - user: The username to check for an active challenge.
+//   - user: The username to check for an active challenge
 //
 // Returns:
-//   - bool: True if there is an active challenge for the user, false otherwise.
+//   - bool: True if there is an active challenge for the user, false otherwise
 func HasActiveChallenge(user string) bool {
+	// Aquire the lock
 	challengesLock.Lock()
+	// Release the lock when the function returns
 	defer challengesLock.Unlock()
 
 	_, exists := activeChallenges[user]

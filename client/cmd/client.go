@@ -4,8 +4,8 @@
 package main
 
 import (
-	"chalmers/tkey-group22/internal/auth"
-	"chalmers/tkey-group22/internal/util"
+	"chalmers/tkey-group22/client/internal/auth"
+	"chalmers/tkey-group22/client/internal/util"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -31,7 +31,6 @@ func main() {
 }
 
 func startCmdClient() {
-
 	// Gets mode from user inputs and runs selected mode. Loops until program is told to exit.
 	for {
 		mode := util.SelectMode()
