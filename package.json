@@ -3,5 +3,14 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.2.0"
+  },
+  "scripts": {
+    "start:application": "cd application/cmd && go run .",
+    "start:gui": "cd application/gui && npm install && npm start",
+    "start:client": "cd client/cmd && go run .",
+    "start:all": "concurrently \"npm run start:application\" \"npm run start:gui\" \"npm run start:client\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
   }
 }
