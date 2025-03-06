@@ -10,7 +10,7 @@ const useFetchUser = (isAuthenticated) => {
 
     const fetchUser = async () => {
       try {
-        const response = await fetch("http://localhost:8080/getuser", {
+        const response = await fetch("http://localhost:8080/api/getuser", {
           method: "GET",
           credentials: "include",
         });
