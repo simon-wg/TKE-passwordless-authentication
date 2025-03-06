@@ -11,7 +11,6 @@ import (
 )
 
 func Login(appurl string, username string) error {
-	c := &http.Client{}
 
 	challengeResponse, err := getChallenge(appurl, username)
 	if err != nil {
@@ -23,11 +22,16 @@ func Login(appurl string, username string) error {
 	// 	return fmt.Errorf("signature verification failed")
 	// }
 
-	signedChallenge, err := signChallenge(appurl, username, challengeResponse)
+	signedChallenge, err := signChallenge(username, challengeResponse)
 	if err != nil {
 		return err
 	}
 
+	return VerifyUser(appurl, username, signedChallenge)
+}
+
+func VerifyUser(appurl string, username string, signedChallenge interface{}) error {
+	c := &http.Client{}
 	endpoint := "/api/verify"
 
 	body, err := json.Marshal(signedChallenge)
@@ -39,10 +43,12 @@ func Login(appurl string, username string) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	switch resp.StatusCode {
 	case http.StatusOK:
-		fmt.Printf("User '%s' has been successfully logged in!\n", username)
+		fmt.Printf("User '%s' has been successfully verified!\n", username)
+		return nil
 	case http.StatusUnauthorized:
 		return fmt.Errorf("invalid signature")
 	case http.StatusNotFound:
@@ -52,14 +58,9 @@ func Login(appurl string, username string) error {
 	default:
 		return fmt.Errorf("unexpected error: %s", resp.Status)
 	}
-	return nil
 }
 
-func VerifyUser(appurl string, username string) {
-
-}
-
-func signChallenge(appurl string, username string, challenge *LoginResponse) (*VerifyRequest, error) {
+func signChallenge(username string, challenge *LoginResponse) (*VerifyRequest, error) {
 	// Sign the challenge
 	fmt.Printf("Touch the TKey to continue...\n")
 	sig, err := tkey.Sign([]byte(challenge.Challenge))

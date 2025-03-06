@@ -12,16 +12,22 @@ import (
 
 func Unregister(appurl string, username string) error {
 
-	err := Login(appurl, username)
-
+	challengeResponse, err := getChallenge(appurl, username)
 	if err != nil {
-		return fmt.Errorf("user verification failed for %s", username)
+		return err
 	}
 
+	signedChallenge, err := signChallenge(username, challengeResponse)
 	if err != nil {
-		return fmt.Errorf("could not retrieve public key from tkey")
-
+		return err
 	}
+
+	err = VerifyUser(appurl, username, signedChallenge)
+
+	if err != nil {
+		return fmt.Errorf("could not unregister user:  %s Verification failed", username)
+	}
+
 	sendUnregisterRequest(username)
 
 	return nil
