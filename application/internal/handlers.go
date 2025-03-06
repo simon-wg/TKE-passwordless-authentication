@@ -188,7 +188,6 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "No active challenge found for the user", http.StatusNotFound)
 		return
 	}
-	print("------------------------------")
 
 	// Verify the signed response
 	valid, err := VerifySignature(requestBody.Username, requestBody.Signature)
