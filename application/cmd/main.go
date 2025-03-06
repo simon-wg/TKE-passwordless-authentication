@@ -20,7 +20,6 @@ func main() {
 	internal.UserRepo = util.NewUserRepo(db.Database)
 
 	if err != nil || db == nil || internal.UserRepo == nil {
-		fmt.Println("Error connecting to MongoDB")
 		return
 	}
 

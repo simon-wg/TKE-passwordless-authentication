@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -38,8 +37,6 @@ func ConnectMongoDB(uri, dbName string) (*MongoDB, error) {
 		return nil, err
 	}
 
-	fmt.Println("Connected to MongoDB")
-
 	// Get a reference to the database
 	database := client.Database(dbName)
 
@@ -56,5 +53,4 @@ func (db *MongoDB) Close() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Disconnected from MongoDB.")
 }

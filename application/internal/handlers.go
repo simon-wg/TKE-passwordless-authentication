@@ -53,9 +53,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if user already exists
 	userExists, err := UserRepo.GetUser(username)
 
-	fmt.Println(userExists)
-	fmt.Println(err)
-
 	if userExists != nil || err != mongo.ErrNoDocuments {
 		fmt.Printf("User already exists: %s\n", username)
 		http.Error(w, "User already exists", http.StatusConflict)
@@ -161,7 +158,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	// Ensure it is a POST request
 	if r.Method != http.MethodPost {
-		fmt.Println("Invalid request method")
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
@@ -170,13 +166,11 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	requestBody := structs.VerifyRequest{}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		fmt.Println("Invalid request body")
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
 	if err := json.Unmarshal(body, &requestBody); err != nil {
-		fmt.Println("Invalid request body")
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
@@ -185,14 +179,12 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	userExists, err := UserRepo.GetUser(requestBody.Username)
 
 	if userExists == nil || err != nil {
-		fmt.Printf("User not found: %s\n", requestBody.Username)
 		http.Error(w, "User not found", http.StatusNotFound)
 		return
 	}
 
 	// Check if publicKey has an active challenge
 	if !HasActiveChallenge(requestBody.Username) {
-		fmt.Println("No active challenge found for the user ")
 		http.Error(w, "No active challenge found for the user", http.StatusNotFound)
 		return
 	}
@@ -222,8 +214,6 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	// }
 	// w.Header().Set("Content-Type", "application/json")
 	// w.Write(responseBodyBytes)
-
-	fmt.Println("Verification successful")
 }
 
 // This handler returns the username of the current session user
