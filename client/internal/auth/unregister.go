@@ -10,6 +10,17 @@ import (
 	"net/http"
 )
 
+//
+// Unregister firstly verifies the the user. If the user is verified, it calls sendUnregisterRequest to send an HTTP POST request to unregister the user.
+//
+// Parameters:
+//   - username: The username of the user to be unregistered.
+//	 - appurl: The URL of the application.
+//
+// Returns:
+//   - nil: If the user is successfully unregistered.
+//
+
 func Unregister(appurl string, username string) error {
 
 	challengeResponse, err := getChallenge(appurl, username)
@@ -32,6 +43,18 @@ func Unregister(appurl string, username string) error {
 
 	return nil
 }
+
+// sendUnregisterRequest sends an HTTP POST request to unregister a user.
+//
+// It constructs a JSON payload with the username and sends it to the unregistration endpoint.
+// Depending on the HTTP response status code, it logs the appropriate message.
+//
+// Parameters:
+//   - username: The username of the user to be unregistered.
+//
+// Returns:
+//   - None
+//
 
 func sendUnregisterRequest(username string) {
 	const regurl = "http://localhost:8080/api/unregister"
