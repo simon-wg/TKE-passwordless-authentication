@@ -289,6 +289,14 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 // 	session_util.SetSession(w, r, username)
 // }
 
+/**
+* InitializeLoginHandler handles user login requests by forwarding them
+ * to the client and setting a session if login is successful.
+ *
+ * @param w http.ResponseWriter - Returns set-cookie if login was successful
+ * @param r *http.Request - The incoming HTTP request containing username
+*/
+
 func InitializeLoginHandler(w http.ResponseWriter, r *http.Request) {
 	targetURL := "http://localhost:6060/api/login"
 
