@@ -2,7 +2,7 @@ package util
 
 import (
 	"bufio"
-	"chalmers/tkey-group22/internal/auth"
+	"chalmers/tkey-group22/client/internal/auth"
 	"fmt"
 	"log"
 	"os"
@@ -12,11 +12,10 @@ import (
 var le = log.New(os.Stderr, "Error: ", 0)
 var appurl = "http://localhost:8080"
 
-// SelectMode prompts the user to select a mode of operation from the options:
-// 1. Register
-// 2. Login
-// 3. Exit
-// It returns the user's choice as an integer.
+// SelectMode prompts the user to select a mode of operation
+//
+// Returns:
+// - int: The selected mode of operation
 func SelectMode() int {
 	fmt.Println("\nSelect Mode:")
 	fmt.Println("1. Register")
@@ -29,8 +28,8 @@ func SelectMode() int {
 	return choice
 }
 
-// CallLogin retrieves the username and attempts to log in the user using the provided app URL.
-// If an error occurs during the login process, it prints the error.
+// CallLogin retrieves the username and attempts to log in the user using the provided app URL
+// If an error occurs during the login process, it prints the error
 func CallLogin() {
 	username := getUsername()
 	err := auth.Login(appurl, username)
@@ -39,8 +38,8 @@ func CallLogin() {
 	}
 }
 
-// CallRegister retrieves the username and attempts to register it with the authentication service.
-// If an error occurs during the registration process, it prints the error.
+// CallRegister retrieves the username and attempts to register it with the authentication service
+// If an error occurs during the registration process, it prints the error
 func CallRegister() {
 	username := getUsername()
 	err := auth.Register(appurl, username)
@@ -49,6 +48,10 @@ func CallRegister() {
 	}
 }
 
+// getUsername gets the username from the user
+//
+// Returns:
+// - string: The username entered by the user
 func getUsername() string {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Please enter username: ")

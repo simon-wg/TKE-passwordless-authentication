@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"bytes"
+	"chalmers/tkey-group22/application/internal/session_util"
 	"chalmers/tkey-group22/application/internal/structs"
 	"chalmers/tkey-group22/application/internal/util"
 	"encoding/json"
@@ -13,26 +15,15 @@ import (
 
 var UserRepo util.UserRepository
 
-// RegisterHandler handles the user registration process.
-//
-// This function performs the following steps:
-// 1. Ensures the request method is POST.
-// 2. Parses the request body to extract the registration details.
-// 3. Extracts the username and public key from the parsed request body.
-// 4. Checks if the user is already registered in the database.
-// 5. Stores the new user data if the user is not already registered.
-// 6. Sends a success response if the registration is successful.
-//
-// Parameters:
-// - w: http.ResponseWriter to write the response.
-// - r: *http.Request containing the registration request.
+// RegisterHandler handles the user registration process
+// It expects a POST request with a JSON body containing the username and public key of the user to be registered
 //
 // Possible responses:
-// - 405 Method Not Allowed: if the request method is not POST.
-// - 400 Bad Request: if the request body is invalid or cannot be parsed.
-// - 409 Conflict: if the user already exists.
-// - 500 Internal Server Error: if there is an error creating the user or sending the response.
-// - 200 OK: if the user is registered successfully.
+// - 405 Method Not Allowed: if the request method is not POST
+// - 400 Bad Request: if the request body is invalid or cannot be parsed
+// - 409 Conflict: if the user already exists
+// - 500 Internal Server Error: if there is an error creating the user or sending the response
+// - 200 OK: if the user is registered successfully
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Ensure it is a POST request
 	if r.Method != http.MethodPost {
@@ -62,9 +53,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if user already exists
 	userExists, err := UserRepo.GetUser(username)
 
-	fmt.Println(userExists)
-	fmt.Println(err)
-
 	if userExists != nil || err != mongo.ErrNoDocuments {
 		fmt.Printf("User already exists: %s\n", username)
 		http.Error(w, "User already exists", http.StatusConflict)
@@ -91,22 +79,15 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(responseBodyBytes)
 }
 
-// LoginHandler handles user login requests.
-// It ensures the request is a GET, extracts the username from the request body,
-// reads user data from a CSV file, finds the associated public key,
-// creates a challenge, and sends the challenge back in the response.
+// LoginHandler handles user login requests
+// It expects a POST request with a JSON body containing the username of the user attempting to log in
 //
-// Parameters:
-//   - w: The http.ResponseWriter to write the response to.
-//   - r: The http.Request containing the login request.
-//
-// Returns:
-//   - None
-//
-// Dependencies:
-//   - challenge.go
-//   - config.go
-//   - csvutil.go
+// Possible responses:
+// - 405 Method Not Allowed: if the request method is not POST
+// - 400 Bad Request: if the request body is invalid or cannot be parsed
+// - 404 Not Found: if the user does not exist
+// - 500 Internal Server Error: if there is an error creating the challenge or sending the response
+// - 200 OK: if the challenge is generated successfully
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Ensure it is a POST
 	if r.Method != http.MethodPost {
@@ -161,33 +142,22 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	// Send success response
 	w.Write(res)
 }
 
-// VerifyHandler handles the verification of a user's signature.
-// It expects a POST request with a JSON body containing "username" and "signature" fields.
-// The handler performs the following steps:
-// Request Body:
+// VerifyHandler handles the verification of a user's signature
+// It expects a POST request with a JSON body containing "username" and "signature" fields
 //
-//	{
-//	  "username": "exampleUser",
-//	  "signature": "hexEncodedSignature"
-//	}
-//
-// Response Body (on success):
-//
-//	{
-//	  "message": "Verification successful",
-//	  "userData": {
-//	    "exampleUser": "publicKeyString"
-//	  }
-//	}
+// Possible responses:
+// - 405 Method Not Allowed: if the request method is not POST
+// - 400 Bad Request: if the request body is invalid or cannot be parsed
+// - 404 Not Found: if the user does not exist
+// - 401 Unauthorized: if the signature is invalid
+// - 200 OK: if the signature is valid
 func VerifyHandler(w http.ResponseWriter, r *http.Request) {
-
 	// Ensure it is a POST request
 	if r.Method != http.MethodPost {
-		fmt.Println("Invalid request method")
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
@@ -196,13 +166,11 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	requestBody := structs.VerifyRequest{}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		fmt.Println("Invalid request body")
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
 	if err := json.Unmarshal(body, &requestBody); err != nil {
-		fmt.Println("Invalid request body")
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
@@ -211,24 +179,21 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	userExists, err := UserRepo.GetUser(requestBody.Username)
 
 	if userExists == nil || err != nil {
-		fmt.Printf("User not found: %s\n", requestBody.Username)
 		http.Error(w, "User not found", http.StatusNotFound)
 		return
 	}
 
 	// Check if publicKey has an active challenge
 	if !HasActiveChallenge(requestBody.Username) {
-		fmt.Println("No active challenge found for the user ")
 		http.Error(w, "No active challenge found for the user", http.StatusNotFound)
 		return
 	}
-	print("------------------------------")
 
 	// Verify the signed response
 	valid, err := VerifySignature(requestBody.Username, requestBody.Signature)
 	if !valid {
 		fmt.Println(err)
-		http.Error(w, "Invalid signature", http.StatusUnauthorized)
+		http.Error(w, "Invalid signature!!!", http.StatusUnauthorized)
 		return
 	}
 
@@ -248,6 +213,72 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	// }
 	// w.Header().Set("Content-Type", "application/json")
 	// w.Write(responseBodyBytes)
+}
 
-	fmt.Println("Verification successful")
+// This handler returns the username of the current session user
+func GetUserHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := session_util.Store.Get(r, "session-name")
+	username, ok := session.Values["username"].(string)
+
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	response := map[string]string{"message": "Access granted", "user": username}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// This handler calls SetSession, which creates a session with the user
+// func SetSessionHandler(w http.ResponseWriter, r *http.Request){
+// 	var requestBody map[string]string
+// 	apiKey := r.Header.Get("X-API-Key")
+
+// 	if apiKey != "secret-API-key" {
+// 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+// 		return
+// 	}
+// 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+// 		http.Error(w, "Invalid request body", http.StatusBadRequest)
+// 		return
+// 	}
+// 	username := requestBody["username"]
+// 	session_util.SetSession(w, r, username)
+// }
+
+func InitializeLoginHandler(w http.ResponseWriter, r *http.Request) {
+	targetURL := "http://localhost:6060/api/login"
+
+	// Read and parse JSON body
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Failed to read request body", http.StatusInternalServerError)
+		return
+	}
+	defer r.Body.Close()
+
+	var data map[string]string
+	if err := json.Unmarshal(body, &data); err != nil || data["username"] == "" {
+		http.Error(w, "Invalid JSON or missing username", http.StatusBadRequest)
+		return
+	}
+
+	// Forward request to backend
+	resp, err := http.Post(targetURL, "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		http.Error(w, "Failed to reach backend", http.StatusBadGateway)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Run SetSession if backend login is successful
+	if resp.StatusCode == http.StatusOK {
+		if err := session_util.SetSession(w, r, data["username"]); err != nil {
+			http.Error(w, "Failed to set session", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	w.WriteHeader(resp.StatusCode)
+	io.Copy(w, resp.Body) // Forward response body to client
 }
