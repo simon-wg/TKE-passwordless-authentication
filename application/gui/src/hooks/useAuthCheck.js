@@ -11,7 +11,7 @@ const useAuthCheck = () => {
     const verifySession = async () => {
       try {
         const response = await fetch(
-          "http://localhost:8080/api/verify_session",
+          "http://localhost:8080/api/verify-session",
           {
             method: "GET",
             credentials: "include",
