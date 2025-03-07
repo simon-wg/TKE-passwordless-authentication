@@ -181,6 +181,12 @@ func (repo *UserRepo) AddPublicKey(userName string, newPubKey ed25519.PublicKey)
 
 	encodedPubKey := base64.StdEncoding.EncodeToString(newPubKey)
 
+	for _, key := range user.PublicKeys {
+		if key == encodedPubKey {
+			return nil, errors.New("public key already exists for the user")
+		}
+	}
+
 	user.PublicKeys = append(user.PublicKeys, encodedPubKey)
 
 	result, err := repo.UpdateUser(userName, *user)

@@ -326,6 +326,8 @@ func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err.Error() == "user already has the maximum number of public keys" {
 			http.Error(w, err.Error(), http.StatusConflict)
+		} else if err.Error() == "public key already exists for the user" {
+			http.Error(w, err.Error(), http.StatusConflict)
 		} else {
 			http.Error(w, "Unable to add public key", http.StatusInternalServerError)
 		}

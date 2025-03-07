@@ -145,6 +145,11 @@ func TestAddPublicKey(t *testing.T) {
 	assert.Equal(t, base64.StdEncoding.EncodeToString(initialPubkey), user.PublicKeys[0])
 	assert.Equal(t, base64.StdEncoding.EncodeToString(newPubkey), user.PublicKeys[1])
 
+	// Try to add the same public key again
+	_, err = userRepo.AddPublicKey(username, newPubkey)
+	assert.Error(t, err)
+	assert.Equal(t, "public key already exists for the user", err.Error())
+
 	// Add more public keys until the maximum limit is reached
 	for i := 2; i < util.MaxPublicKeys; i++ {
 		pubkey := ed25519.PublicKey([]byte("pubkey" + strconv.Itoa(i)))
