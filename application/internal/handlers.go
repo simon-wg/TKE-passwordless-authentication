@@ -282,3 +282,63 @@ func InitializeLoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(resp.StatusCode)
 	io.Copy(w, resp.Body) // Forward response body to client
 }
+
+// AddPublicKeyHandler handles the addition of a new public key for a user
+// It expects a POST request with a JSON body containing the username and the new public key
+//
+// Possible responses:
+// - 405 Method Not Allowed: if the request method is not POST
+// - 400 Bad Request: if the request body is invalid or cannot be parsed
+// - 404 Not Found: if the user does not exist
+// - 409 Conflict: if the user already has the maximum number of public keys
+// - 500 Internal Server Error: if there is an error adding the public key or sending the response
+// - 200 OK: if the public key is added successfully
+func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	requestBody := structs.AddPublicKeyRequest{}
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := json.Unmarshal(body, &requestBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	username := requestBody.Username
+	newPubKey := requestBody.Pubkey
+
+	fmt.Printf("Received request to add public key for user: %s\n", username)
+
+	userExists, err := UserRepo.GetUser(username)
+	if userExists == nil || err != nil {
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	_, err = UserRepo.AddPublicKey(username, newPubKey)
+	if err != nil {
+		if err.Error() == "user already has the maximum number of public keys" {
+			http.Error(w, err.Error(), http.StatusConflict)
+		} else {
+			http.Error(w, "Unable to add public key", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	responseBody := map[string]string{"message": "Public key added successfully"}
+	responseBodyBytes, err := json.Marshal(responseBody)
+	if err != nil {
+		fmt.Printf("Unable to marshal response for user: %s\n", username)
+		http.Error(w, "Unable to send response", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseBodyBytes)
+}

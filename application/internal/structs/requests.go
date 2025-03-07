@@ -29,3 +29,10 @@ type RegisterRequest struct {
 	Username string `json:"username"`
 	Pubkey   []byte `json:"pubkey"`
 }
+
+// AddPublicKeyRequest represents a request to add a new public key for a user
+// It contains the username of the user and the new public key to be added
+type AddPublicKeyRequest struct {
+	Username string `json:"username"`
+	Pubkey   []byte `json:"pubkey"`
+}
