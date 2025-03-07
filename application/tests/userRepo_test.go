@@ -29,7 +29,7 @@ func setup() {
 }
 
 func teardown() {
-	//testDB.Drop(context.Background())
+	testDB.Drop(context.Background())
 }
 
 func TestCreateUser(t *testing.T) {
