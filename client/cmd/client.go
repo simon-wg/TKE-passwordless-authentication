@@ -58,6 +58,7 @@ func startCmdClient() {
 func startWebClient() {
 	http.Handle("/api/register", enableCors(http.HandlerFunc(registerHandler)))
 	http.Handle("/api/login", enableCors(http.HandlerFunc(loginHandler)))
+	http.Handle("/api/add-public-key", enableCors(http.HandlerFunc(addPublicKeyHandler)))
 	fmt.Println("Client running on http://localhost:6060")
 	http.ListenAndServe(":6060", nil)
 }
@@ -117,6 +118,38 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Failed to register", http.StatusBadRequest)
 	}
+}
+
+// Handles add public key requests from the web client
+// It expects a POST request with a JSON body containing the username
+// The handler retrieves the new public key from the TKey and sends a request to the backend to add the new public key
+//
+// Possible responses:
+// - 400 Bad Request: if the request body is invalid or cannot be parsed
+// - 500 Internal Server Error: if there is an error adding the public key
+// - 200 OK: if the public key is added successfully
+func addPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
+	// Get origin from request header and replace port with 8080
+	// We use this order to be able to know what to send to auth.AddPublicKey
+	origin := r.Header.Get("Origin")
+	origin = replaceOriginPort(origin)
+
+	var requestBody map[string]string
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	username := requestBody["username"]
+	sessionCookie := r.Header.Get("Cookie")
+	err := auth.AddPublicKey("http://localhost:8080", username, sessionCookie)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Public key added successfully"))
 }
 
 // TODO: Auto-detect which port application is running on
