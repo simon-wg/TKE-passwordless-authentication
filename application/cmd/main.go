@@ -30,6 +30,7 @@ func main() {
 	http.Handle("/api/verify-session", enableCors(http.HandlerFunc(session_util.CheckAuthHandler)))
 	http.Handle("/api/getuser", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.GetUserHandler))))
 	http.Handle("/api/add-public-key", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.AddPublicKeyHandler))))
+	http.Handle("/api/remove-public-key", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.RemovePublicKeyHandler))))
 
 	fmt.Println("Mock application running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)

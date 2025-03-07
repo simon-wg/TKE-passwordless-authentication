@@ -27,6 +27,7 @@ type UserRepository interface {
 	UpdateUser(userName string, updatedUser User) (*mongo.UpdateResult, error)
 	DeleteUser(userName string) (*mongo.DeleteResult, error)
 	AddPublicKey(userName string, newPubKey ed25519.PublicKey) (*mongo.UpdateResult, error)
+	RemovePublicKey(userName string, pubKeyToRemove ed25519.PublicKey) (*mongo.UpdateResult, error)
 }
 
 // UserRepo holds the database reference

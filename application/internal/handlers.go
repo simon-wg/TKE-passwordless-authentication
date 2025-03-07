@@ -342,3 +342,65 @@ func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(responseBodyBytes)
 }
+
+// RemovePublicKeyHandler handles the removal of a public key for a user
+// It expects a POST request with a JSON body containing the username and the public key to be removed
+//
+// Possible responses:
+// - 405 Method Not Allowed: if the request method is not POST
+// - 400 Bad Request: if the request body is invalid or cannot be parsed
+// - 404 Not Found: if the user does not exist or the public key is not found
+// - 409 Conflict: if the user has only one public key
+// - 500 Internal Server Error: if there is an error removing the public key or sending the response
+// - 200 OK: if the public key is removed successfully
+func RemovePublicKeyHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	requestBody := structs.RemovePublicKeyRequest{}
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := json.Unmarshal(body, &requestBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	username := requestBody.Username
+	pubKeyToRemove := requestBody.Pubkey
+
+	fmt.Printf("Received request to remove public key for user: %s\n", username)
+
+	userExists, err := UserRepo.GetUser(username)
+	if userExists == nil || err != nil {
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	_, err = UserRepo.RemovePublicKey(username, pubKeyToRemove)
+	if err != nil {
+		if err.Error() == "user must have at least two public keys to remove one" {
+			http.Error(w, err.Error(), http.StatusConflict)
+		} else if err.Error() == "specified public key to be removed is not found" {
+			http.Error(w, err.Error(), http.StatusNotFound)
+		} else {
+			http.Error(w, "Unable to remove public key", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	responseBody := map[string]string{"message": "Public key removed successfully"}
+	responseBodyBytes, err := json.Marshal(responseBody)
+	if err != nil {
+		fmt.Printf("Unable to marshal response for user: %s\n", username)
+		http.Error(w, "Unable to send response", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseBodyBytes)
+}
