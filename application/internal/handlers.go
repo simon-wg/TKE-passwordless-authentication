@@ -314,6 +314,11 @@ func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 	username := requestBody.Username
 	newPubKey := requestBody.Pubkey
 
+	if len(newPubKey) == 0 {
+		http.Error(w, "Public key cannot be empty", http.StatusBadRequest)
+		return
+	}
+
 	fmt.Printf("Received request to add public key for user: %s\n", username)
 
 	userExists, err := UserRepo.GetUser(username)
