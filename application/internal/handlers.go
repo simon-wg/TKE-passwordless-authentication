@@ -14,6 +14,7 @@ import (
 )
 
 var UserRepo util.UserRepository
+var PasswordRepo util.PasswordRepository
 
 // RegisterHandler handles the user registration process
 // It expects a POST request with a JSON body containing the username and public key of the user to be registered
@@ -281,4 +282,48 @@ func InitializeLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(resp.StatusCode)
 	io.Copy(w, resp.Body) // Forward response body to client
+}
+
+func SavePasswordHandler(w http.ResponseWriter, r *http.Request) {
+	// Ensure it is a POST request
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	requestBody := structs.SavePasswordRequest{}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := json.Unmarshal(body, &requestBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	name := requestBody.Name
+	password := requestBody.Password
+	username, err := session_util.GetSessionUsername(r)
+	if err != nil {
+		http.Error(w, "No user signed in", http.StatusUnauthorized)
+		return
+	}
+
+	result, err := PasswordRepo.CreatePassword(username, name, password)
+	if result == nil || err != nil {
+		http.Error(w, "Failed to save password", http.StatusInternalServerError)
+		return
+	}
+
+	// Send success response
+	responseBody := map[string]string{"message": "Password saved successfully"}
+	responseBodyBytes, err := json.Marshal(responseBody)
+	if err != nil {
+		http.Error(w, "Unable to send response", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseBodyBytes)
 }
