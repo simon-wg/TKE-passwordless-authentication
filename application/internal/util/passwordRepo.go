@@ -31,7 +31,7 @@ func NewPasswordRepo(db *mongo.Database) *PasswordRepo {
 }
 
 func (repo *PasswordRepo) CreatePassword(username, name, password string) (*mongo.InsertOneResult, error) {
-	collection := repo.db.Collection("companyUsers")
+	collection := repo.db.Collection("userPasswords")
 
 	user := PasswordData{
 		ID:       primitive.NewObjectID(),

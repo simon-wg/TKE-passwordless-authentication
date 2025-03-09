@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthCheck from "../../hooks/useAuthCheck";
 import useFetchUser from "../../hooks/useFetchUser";
+import PasswordApp from "../../components/PasswordApp";
 
 const LoginSuccessPage = () => {
   const isAuthenticated = useAuthCheck();
@@ -14,6 +15,7 @@ const LoginSuccessPage = () => {
   return (
     <div>
       <h1>Welcome back, {user}</h1>
+      <PasswordApp />
     </div>
   );
 };

@@ -285,7 +285,6 @@ func InitializeLoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func SavePasswordHandler(w http.ResponseWriter, r *http.Request) {
-	// Ensure it is a POST request
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
@@ -317,7 +316,6 @@ func SavePasswordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send success response
 	responseBody := map[string]string{"message": "Password saved successfully"}
 	responseBodyBytes, err := json.Marshal(responseBody)
 	if err != nil {
