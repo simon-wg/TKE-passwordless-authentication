@@ -29,3 +29,8 @@ type RegisterRequest struct {
 	Username string `json:"username"`
 	Pubkey   []byte `json:"pubkey"`
 }
+
+type SavePasswordRequest struct {
+	Name     string `bson:"name"`
+	Password string `bson:"password"`
+}

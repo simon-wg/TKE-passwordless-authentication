@@ -18,6 +18,7 @@ func main() {
 
 	// Initialize the UserRepository struct with the database reference
 	internal.UserRepo = util.NewUserRepo(db.Database)
+	internal.PasswordRepo = util.NewPasswordRepo(db.Database)
 
 	if err != nil || db == nil || internal.UserRepo == nil {
 		return
@@ -29,6 +30,7 @@ func main() {
 	http.Handle("/api/initialize-login", enableCors(http.HandlerFunc(internal.InitializeLoginHandler)))
 	http.Handle("/api/verify-session", enableCors(http.HandlerFunc(session_util.CheckAuthHandler)))
 	http.Handle("/api/getuser", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.GetUserHandler))))
+	http.Handle("/api/save-password", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.SavePasswordHandler))))
 
 	fmt.Println("Mock application running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
