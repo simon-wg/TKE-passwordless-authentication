@@ -1,13 +1,11 @@
 package tkey
 
 import (
-	"bufio"
 	"crypto"
 	"crypto/ed25519"
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/tillitis/tkeyclient"
 )
@@ -17,6 +15,11 @@ const progname = "tkey-device-signer"
 var le = log.New(os.Stderr, "Error: ", 0)
 var existingSigner *Signer
 
+// GetTkeyPubKey retrieves the public key from the TKey signer
+//
+// Returns:
+//   - ed25519.PublicKey: The public key retrieved from the TKey signer
+//   - error: An error if any step fails, otherwise nil
 func GetTkeyPubKey() (ed25519.PublicKey, error) {
 	signer, err := getSigner()
 
@@ -39,11 +42,20 @@ func GetTkeyPubKey() (ed25519.PublicKey, error) {
 
 	pubkey := ed25519.PublicKey(pub)
 
+	// TODO: Remove this later. This is just for testing purposes.
 	signer.printAuthorizedKey()
 
 	return pubkey, nil
 }
 
+// Sign signs the given message using a signer obtained from getSigner
+//
+// Parameters:
+//   - msg: The message to be signed
+//
+// Returns:
+//   - []byte: The generated signature
+//   - error: An error if the signing process fails
 func Sign(msg []byte) ([]byte, error) {
 
 	signer, err := getSigner()
@@ -68,6 +80,11 @@ func Sign(msg []byte) ([]byte, error) {
 	return sig, nil
 }
 
+// getSigner is a singleton function that returns a Signer instance
+//
+// Returns:
+//   - *Signer: A pointer to the initialized Signer instance
+//   - error: An error if the signer could not be initialized or the serial port could not be detected
 func getSigner() (*Signer, error) {
 	if existingSigner != nil && existingSigner.connect() && existingSigner.isWantedApp() {
 		// The signer app is already loaded, return the existing signer
@@ -85,21 +102,8 @@ func getSigner() (*Signer, error) {
 		os.Exit(0)
 	}
 
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Do you want to enter a manual User Supplied Secret (USS) or provide a USS file? (m/f/n): ")
-	response, _ := reader.ReadString('\n')
-	response = strings.TrimSpace(strings.ToLower(response))
-
-	enterUSS := false
+	enterUSS := true
 	fileUSS := ""
-
-	if response == "m" {
-		enterUSS = true
-	} else if response == "f" {
-		fmt.Print("Please provide the path to the USS file: ")
-		fileUSS, _ = reader.ReadString('\n')
-		fileUSS = strings.TrimSpace(fileUSS)
-	}
 
 	signer := NewSigner(devPath, serialSpeed, enterUSS, fileUSS, "", exit)
 	existingSigner = signer

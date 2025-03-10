@@ -2,16 +2,27 @@ package auth
 
 import (
 	"bytes"
-	. "chalmers/tkey-group22/internal/structs"
-	"chalmers/tkey-group22/internal/tkey"
+	. "chalmers/tkey-group22/client/internal/structs"
+	"chalmers/tkey-group22/client/internal/tkey"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 )
 
+// Sends a request to the server to login a user
+// This requires that the app has the /api/login and /api/verify endpoints
+// It returns an error if the login process fails
+//
+// Parameters:
+// - appurl: The URL of the application server
+// - username: The username of the user to login
+//
+// Returns:
+// - An error if the login process fails
 func Login(appurl string, username string) error {
 
+	// Fetches the generated challenge from the server
 	challengeResponse, err := getChallenge(appurl, username)
 	if err != nil {
 		return err
@@ -22,6 +33,7 @@ func Login(appurl string, username string) error {
 	// 	return fmt.Errorf("signature verification failed")
 	// }
 
+	// Signs the challenge
 	signedChallenge, err := signChallenge(username, challengeResponse)
 	if err != nil {
 		return err
@@ -32,6 +44,7 @@ func Login(appurl string, username string) error {
 
 func VerifyUser(appurl string, username string, signedChallenge interface{}) error {
 	c := &http.Client{}
+	// TODO: Make more customizable
 	endpoint := "/api/verify"
 
 	body, err := json.Marshal(signedChallenge)
@@ -39,6 +52,7 @@ func VerifyUser(appurl string, username string, signedChallenge interface{}) err
 		return err
 	}
 
+	// Sends the signed challenge to the server in the format of a VerifyRequest
 	resp, err := c.Post(appurl+endpoint, "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		return err
@@ -60,8 +74,17 @@ func VerifyUser(appurl string, username string, signedChallenge interface{}) err
 	}
 }
 
+// Sign the challenge
+// An internal function that signs the challenge using the tkey
+//
+// Parameters:
+// - username: The username of the user to sign the challenge for
+// - challenge: The challenge to sign
+//
+// Returns:
+// - A VerifyRequest struct containing the username and signature
+// - An error if the signing process fails
 func signChallenge(username string, challenge *LoginResponse) (*VerifyRequest, error) {
-	// Sign the challenge
 	fmt.Printf("Touch the TKey to continue...\n")
 	sig, err := tkey.Sign([]byte(challenge.Challenge))
 	if err != nil {
@@ -74,10 +97,17 @@ func signChallenge(username string, challenge *LoginResponse) (*VerifyRequest, e
 	}, nil
 }
 
+// An internal function that fetches the challenge from the server
+//
+// Parameters:
+// - appurl: The URL of the application server
+// - user: The username of the user to fetch the challenge for
+//
+// Returns:
+// - A LoginResponse struct containing the challenge and signature
+// - An error if the request fails
 func getChallenge(appurl string, user string) (*LoginResponse, error) {
 	endpoint := "/api/login"
-
-	// Get the signature and message from the endpoint
 
 	c := &http.Client{}
 
@@ -86,6 +116,7 @@ func getChallenge(appurl string, user string) (*LoginResponse, error) {
 		return nil, err
 	}
 
+	// Get the signature and message from the endpoint
 	resp, err := c.Post(appurl+endpoint, "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
@@ -109,6 +140,7 @@ func getChallenge(appurl string, user string) (*LoginResponse, error) {
 		return nil, fmt.Errorf("error reading response body")
 	}
 
+	// Decode the response body into a LoginResponse struct
 	var res *LoginResponse
 	err = json.Unmarshal(respBody, &res)
 
