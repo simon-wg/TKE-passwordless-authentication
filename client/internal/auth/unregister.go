@@ -2,7 +2,7 @@ package auth
 
 import (
 	"bytes"
-	"chalmers/tkey-group22/internal/structs"
+	"chalmers/tkey-group22/client/internal/structs"
 
 	"encoding/json"
 	"fmt"
