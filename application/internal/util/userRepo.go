@@ -59,7 +59,6 @@ func (repo *UserRepo) CreateUser(userName string, pubkey ed25519.PublicKey) (*mo
 
 	// Encodes public key to base64 to allow storing in MongoDB
 	encodedPubKey := base64.StdEncoding.EncodeToString(pubkey)
-	println(pubkey)
 	user := User{
 		ID:        primitive.NewObjectID(),
 		Username:  userName,
