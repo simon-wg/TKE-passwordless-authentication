@@ -8,13 +8,20 @@ import (
 	"chalmers/tkey-group22/application/internal/util"
 	"fmt"
 	"net/http"
+	"os"
+
+	"github.com/joho/godotenv"
 )
 
 // Starts the application
 func main() {
+	err := godotenv.Load("../.env")
+	if err != nil {
+		fmt.Println("Error loading .env file")
+	}
 
-	// Connects to the MongoDB database named tkeyUserDB
-	db, err := db.ConnectMongoDB("mongodb://localhost:27017", "tkeyUserDB")
+	// Connects to the MongoDB dat.env.exampleabase named tkeyUserDB
+	db, err := db.ConnectMongoDB(os.Getenv("MONGO_URI"), "tkeyUserDB")
 
 	// Initialize the UserRepository struct with the database reference
 	internal.UserRepo = util.NewUserRepo(db.Database)
@@ -26,7 +33,6 @@ func main() {
 	http.HandleFunc("/api/register", internal.RegisterHandler)
 	http.HandleFunc("/api/login", internal.LoginHandler)
 	http.HandleFunc("/api/verify", internal.VerifyHandler)
-	http.Handle("/api/initialize-login", enableCors(http.HandlerFunc(internal.InitializeLoginHandler)))
 	http.Handle("/api/verify-session", enableCors(http.HandlerFunc(session_util.CheckAuthHandler)))
 	http.Handle("/api/getuser", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.GetUserHandler))))
 
@@ -38,7 +44,7 @@ func main() {
 func enableCors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
-		if origin == "http://localhost:8080" || origin == "http://localhost:3000" {
+		if origin == os.Getenv("BACKEND_URL") || origin == os.Getenv("FRONTEND_URL") {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 		}
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")

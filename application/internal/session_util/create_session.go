@@ -24,10 +24,10 @@ func SetSession(w http.ResponseWriter, r *http.Request, username string) error {
 		MaxAge:   3600,
 		HttpOnly: true,
 		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
 	}
 
-	err = session.Save(r, w)
-	if err != nil {
+	if err := session.Save(r, w); err != nil {
 		fmt.Println("Error saving session:", err)
 		return err
 	}
