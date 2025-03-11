@@ -114,7 +114,32 @@ func TestUpdateUser(t *testing.T) {
 	user, err = repo.GetUser(newUser.Username)
 	assert.NotNil(t, user)
 	assert.NoError(t, err)
+	assert.Equal(t, newUser.Username, user.Username)
+	assert.Equal(t, newUser.PublicKey, user.PublicKey)
 
-	//assert.Equal(t, newUser.Username, user.Username)
+}
+
+func TestGetUser(t *testing.T) {
+
+	_, repo := setupTestDB(t)
+
+	// Database should return null if requesting non existing user
+	user, err := repo.GetUser("DONOTEXIST")
+	assert.Error(t, err)
+	assert.Nil(t, user)
+
+	// Generate a new key pair
+	pubkey, _, err := ed25519.GenerateKey(nil)
+	assert.NoError(t, err)
+
+	// Create a new user
+	result, err := repo.CreateUser(testUser, pubkey)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+
+	// GetUser should return correct user
+	user, err = repo.GetUser(testUser)
+	assert.NoError(t, err)
+	assert.NotNil(t, user)
 
 }

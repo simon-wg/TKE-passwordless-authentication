@@ -115,6 +115,9 @@ func (repo *UserRepo) GetUser(userName string) (*User, error) {
 func (repo *UserRepo) UpdateUser(userName string, updatedUser User) (*mongo.UpdateResult, error) {
 	collection := repo.db.Collection("users")
 
+	// Encodes new pubkey for storing in database
+	updatedUser.PublicKey = base64.StdEncoding.EncodeToString([]byte(updatedUser.PublicKey))
+
 	filter := bson.M{"username": userName}
 	updatedData := bson.M{
 		"$set": bson.M{
