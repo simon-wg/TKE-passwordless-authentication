@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"bytes"
 	"chalmers/tkey-group22/application/internal/session_util"
 	"chalmers/tkey-group22/application/internal/structs"
 	"chalmers/tkey-group22/application/internal/util"
@@ -211,6 +210,11 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := session_util.SetSession(w, r, requestBody.Username); err != nil {
+		http.Error(w, "Failed to set session", http.StatusInternalServerError)
+		return
+	}
+
 	// Send success response
 	w.Write([]byte(nil))
 
@@ -259,43 +263,6 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 // 	username := requestBody["username"]
 // 	session_util.SetSession(w, r, username)
 // }
-
-func InitializeLoginHandler(w http.ResponseWriter, r *http.Request) {
-	targetURL := "http://localhost:6060/api/login"
-
-	// Read and parse JSON body
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Failed to read request body", http.StatusInternalServerError)
-		return
-	}
-	defer r.Body.Close()
-
-	var data map[string]string
-	if err := json.Unmarshal(body, &data); err != nil || data["username"] == "" {
-		http.Error(w, "Invalid JSON or missing username", http.StatusBadRequest)
-		return
-	}
-
-	// Forward request to backend
-	resp, err := http.Post(targetURL, "application/json", bytes.NewBuffer(body))
-	if err != nil {
-		http.Error(w, "Failed to reach backend", http.StatusBadGateway)
-		return
-	}
-	defer resp.Body.Close()
-
-	// Run SetSession if backend login is successful
-	if resp.StatusCode == http.StatusOK {
-		if err := session_util.SetSession(w, r, data["username"]); err != nil {
-			http.Error(w, "Failed to set session", http.StatusInternalServerError)
-			return
-		}
-	}
-
-	w.WriteHeader(resp.StatusCode)
-	io.Copy(w, resp.Body) // Forward response body to client
-}
 
 // GetPublicKeyLabelsHandler handles the retrieval of public key labels for a user
 // It expects a POST request with a JSON body containing the username

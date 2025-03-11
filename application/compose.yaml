@@ -8,6 +8,10 @@ services:
     restart: unless-stopped
     networks:
       - default
+    environment:
+      - "MONGO_URI=mongodb://db:27017"
+      - "BACKEND_URL=backend:8080"
+      - "FRONTEND_URL=frontend:3000"
 
   frontend:
     build:
@@ -15,6 +19,16 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:80"
+    restart: unless-stopped
+    networks:
+      - default
+    environment:
+      - BACKEND_URL=backend:8080
+
+  db:
+    image: mongo:8
+    ports:
+      - "27017:27017"
     restart: unless-stopped
     networks:
       - default
