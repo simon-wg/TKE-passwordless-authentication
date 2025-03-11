@@ -325,3 +325,28 @@ func SavePasswordHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(responseBodyBytes)
 }
+
+func GetUserPasswordsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	username, err := session_util.GetSessionUsername(r)
+	if err != nil {
+		http.Error(w, "No user signed in", http.StatusUnauthorized)
+		return
+	}
+	passwords, err := PasswordRepo.GetUserPasswords(username)
+
+	// Convert passwords to JSON
+	responseBodyBytes, err := json.Marshal(passwords)
+	if err != nil {
+		http.Error(w, "Unable to marshal passwords", http.StatusInternalServerError)
+		return
+	}
+
+	// Send the JSON response
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseBodyBytes)
+}

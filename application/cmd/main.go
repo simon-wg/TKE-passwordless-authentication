@@ -31,6 +31,7 @@ func main() {
 	http.Handle("/api/verify-session", enableCors(http.HandlerFunc(session_util.CheckAuthHandler)))
 	http.Handle("/api/getuser", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.GetUserHandler))))
 	http.Handle("/api/save-password", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.SavePasswordHandler))))
+	http.Handle("/api/get-user-passwords", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.GetUserHandler))))
 
 	fmt.Println("Mock application running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)

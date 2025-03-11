@@ -18,7 +18,7 @@ type PasswordData struct {
 type PasswordRepository interface {
 	CreatePassword(username string, name string, password string) (*mongo.InsertOneResult, error)
 	GetUserPasswords(username string) ([]PasswordData, error) // Update return type to match PasswordRepo
-	UpdatePassword(username string, updatedUser PasswordData) (*mongo.UpdateResult, error)
+	UpdatePassword(username string, updatedPassword PasswordData) (*mongo.UpdateResult, error)
 	DeletePassword(username string) (*mongo.DeleteResult, error)
 }
 
@@ -60,11 +60,11 @@ func (repo *PasswordRepo) GetUserPasswords(username string) ([]PasswordData, err
 
 	var users []PasswordData
 	for cursor.Next(context.Background()) {
-		var user PasswordData
-		if err := cursor.Decode(&user); err != nil {
+		var password PasswordData
+		if err := cursor.Decode(&password); err != nil {
 			return nil, err
 		}
-		users = append(users, user)
+		users = append(users, password)
 	}
 
 	if err := cursor.Err(); err != nil {

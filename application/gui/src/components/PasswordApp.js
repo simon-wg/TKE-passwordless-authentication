@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './styles.css';
 import PasswordCard from './PasswordCard';
 import './PasswordApp.css';
+import useFetchPasswords from '../hooks/useFetchPasswords'
 
 const PasswordApp = () => {
     const passwords = [
@@ -9,6 +10,8 @@ const PasswordApp = () => {
         { name: 'Second Note', password: 'This is the body of the second note.' }
     ].map((note, index) => ({ ...note, id: index + 1 }));
     const [selectedNote, setSelectedPassword] = useState(null);
+    const userPasswords = useFetchPasswords(true);
+
 
     const handleNoteClick = (data) => {
         if (selectedNote && selectedNote.id === data.id) {
