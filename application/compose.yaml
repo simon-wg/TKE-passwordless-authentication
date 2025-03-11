@@ -11,14 +11,10 @@ services:
 
   frontend:
     build:
-      context: .
-      dockerfile: gui.Dockerfile
+      context: ./gui
+      dockerfile: Dockerfile
     ports:
       - "3000:80"
     restart: unless-stopped
     networks:
       - default
-
-networks:
-  default:
-    driver: bridge
