@@ -124,6 +124,7 @@ func (repo *UserRepo) UpdateUser(userName string, updatedUser User) (*mongo.Upda
 	}
 
 	result, err := collection.UpdateOne(context.Background(), filter, updatedData)
+
 	if err != nil {
 		return nil, err
 	}

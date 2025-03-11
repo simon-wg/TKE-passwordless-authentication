@@ -60,3 +60,61 @@ func TestCreateUser(t *testing.T) {
 	assert.Equal(t, testUser, user.Username)
 	assert.Equal(t, string(pubkey), user.PublicKey)
 }
+
+func TestDeleteUser(t *testing.T) {
+
+	_, repo := setupTestDB(t)
+
+	// Generate a new key pair
+	pubkey, _, err := ed25519.GenerateKey(nil)
+	assert.NoError(t, err)
+
+	// Create a new user
+	result, err := repo.CreateUser(testUser, pubkey)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+
+	// Remove user
+	repo.DeleteUser(testUser)
+
+	// Check that user is not in database
+	user, err := repo.GetUser(testUser)
+	assert.Error(t, err)
+	assert.Nil(t, user)
+
+}
+
+func TestUpdateUser(t *testing.T) {
+
+	_, repo := setupTestDB(t)
+
+	// Generate a new key pair
+	pubkey, _, err := ed25519.GenerateKey(nil)
+	assert.NoError(t, err)
+
+	// Create a new user
+	result, err := repo.CreateUser(testUser, pubkey)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+
+	newUser := util.User{
+		Username:  "newTestUser",
+		PublicKey: "123",
+	}
+
+	// Update user data
+	repo.UpdateUser(testUser, newUser)
+
+	// Check that the old user data is no longer in database
+	user, err := repo.GetUser(testUser)
+	assert.Nil(t, user)
+	assert.Error(t, err)
+
+	// Check that new user data is in the database
+	user, err = repo.GetUser(newUser.Username)
+	assert.NotNil(t, user)
+	assert.NoError(t, err)
+
+	//assert.Equal(t, newUser.Username, user.Username)
+
+}
