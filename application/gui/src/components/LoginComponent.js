@@ -2,6 +2,8 @@ import React, { use, useState } from "react";
 import "./styles.css";
 import config from "../config";
 import { useNavigate } from "react-router-dom";
+import LoadingCircle from "./LoadingCircle";
+
 
 const LoginComponent = () => {
   const [username, setUsername] = useState("");
@@ -40,20 +42,24 @@ const LoginComponent = () => {
   return (
     <div className="container">
       <h2>Login</h2>
-      <input
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-<button onClick={handleLogin} disabled={loading}>
-  {loading ? "Awaiting TKey Confirmation" : "Login"}
-</button>
-      {message && <p className="message">{message}</p>}
+
+      <LoadingCircle loading={loading} />
+      <form onSubmit={handleLogin}>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <button onClick={handleLogin} disabled={loading}>
+          {loading ? "Awaiting login" : "Login"}
+        </button>
+      </form>
       {success && <p className="success">{success}</p>}
       {error && <p className="error">{error}</p>}
     </div>
   );
-};
+}
+
 
 export default LoginComponent;

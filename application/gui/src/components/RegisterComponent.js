@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './styles.css';
-import config from '../config'
-
+import config from '../config';
+import LoadingCircle from './LoadingCircle';
 const RegisterComponent = () => {
   const [username, setUsername] = useState('');
   const [success, setSuccess] = useState('');
@@ -36,6 +36,8 @@ const RegisterComponent = () => {
   return (
     <div className="container">
       <h2>Register</h2>
+      <LoadingCircle loading={loading} />
+
       <form onSubmit={handleRegister}>
         <input
           type="text"
