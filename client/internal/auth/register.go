@@ -24,12 +24,14 @@ import (
 func Register(appurl string, username string) error {
 	pubkey, err := tkey.GetTkeyPubKey()
 	if err != nil {
+		fmt.Println("Failed to get Public Key")
 		return err
 	}
 
 	regurl := appurl + "/api/register"
 	err = sendRequest(regurl, pubkey, username)
 	if err != nil {
+		fmt.Println("Error sending public key")
 		return err
 	}
 
