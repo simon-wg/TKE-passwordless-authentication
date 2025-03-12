@@ -31,6 +31,7 @@ func main() {
 	http.Handle("/api/getuser", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.GetUserHandler))))
 	http.Handle("/api/add-public-key", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.AddPublicKeyHandler))))
 	http.Handle("/api/remove-public-key", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.RemovePublicKeyHandler))))
+	http.Handle("/api/get-public-key-labels", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.GetPublicKeyLabelsHandler))))
 
 	fmt.Println("Mock application running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
