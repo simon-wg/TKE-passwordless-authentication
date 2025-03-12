@@ -16,7 +16,12 @@ import (
 type User struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty"` // Unique ID set by MongoDB
 	Username   string             `bson:"username"`      // Username of the user
-	PublicKeys []string           `bson:"publicKeys"`    // Public key of the user
+	PublicKeys []PublicKey        `bson:"publicKeys"`    // Public key of the user
+}
+
+type PublicKey struct {
+	Label string `bson:"label"` // Label for the public key
+	Key   string `bson:"key"`   // Public key encoded in base64
 }
 
 // Interface for UserRepository
@@ -50,26 +55,32 @@ func NewUserRepo(db *mongo.Database) *UserRepo {
 // Max num of keys a single user can have
 const MaxPublicKeys = 5
 
-// CreateUser inserts a new user with the specified username and public key into the MongoDB collection.
+// CreateUser inserts a new user with the specified username and public key and label into the MongoDB collection.
 // The public key is encoded to base64 before storing.
 //
 // Parameters:
 //   - userName: The username of the new user.
 //   - pubkey: The ed25519 public key of the new user.
+//   - label: The label for the public key.
 //
 // Returns:
 //   - *mongo.InsertOneResult: The result of the insert operation.
 //   - error: An error if the insert operation fails.
-func (repo *UserRepo) CreateUser(userName string, pubkey ed25519.PublicKey) (*mongo.InsertOneResult, error) {
+func (repo *UserRepo) CreateUser(userName string, pubkey ed25519.PublicKey, label string) (*mongo.InsertOneResult, error) {
 	collection := repo.db.Collection("users")
 
 	// Encodes public key to base64 to allow storing in MongoDB
 	encodedPubKey := base64.StdEncoding.EncodeToString(pubkey)
 	println(pubkey)
 	user := User{
-		ID:         primitive.NewObjectID(),
-		Username:   userName,
-		PublicKeys: []string{encodedPubKey},
+		ID:       primitive.NewObjectID(),
+		Username: userName,
+		PublicKeys: []PublicKey{
+			{
+				Key:   encodedPubKey,
+				Label: label,
+			},
+		},
 	}
 
 	result, err := collection.InsertOne(context.Background(), user)
@@ -98,14 +109,6 @@ func (repo *UserRepo) GetUser(userName string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	decodedKeys, err := decodePublicKeys(user.PublicKeys)
-
-	if err != nil {
-		return nil, err
-	}
-
-	user.PublicKeys = convertDecodedKeysToStrings(decodedKeys)
 
 	return &user, nil
 }
@@ -165,11 +168,12 @@ func (repo *UserRepo) DeleteUser(userName string) (*mongo.DeleteResult, error) {
 // Parameters:
 //   - userName: The username of the user to be updated.
 //   - newPubKey: The new ed25519 public key to be added.
+//   - label: The label for the new public key.
 //
 // Returns:
 //   - *mongo.UpdateResult: The result of the update operation.
 //   - error: An error if the update operation fails.
-func (repo *UserRepo) AddPublicKey(userName string, newPubKey ed25519.PublicKey) (*mongo.UpdateResult, error) {
+func (repo *UserRepo) AddPublicKey(userName string, newPubKey ed25519.PublicKey, label string) (*mongo.UpdateResult, error) {
 	user, err := repo.GetUser(userName)
 	if err != nil {
 		return nil, err
@@ -181,13 +185,20 @@ func (repo *UserRepo) AddPublicKey(userName string, newPubKey ed25519.PublicKey)
 
 	encodedPubKey := base64.StdEncoding.EncodeToString(newPubKey)
 
-	for _, key := range user.PublicKeys {
-		if key == encodedPubKey {
+	for _, pubkey := range user.PublicKeys {
+		if pubkey.Key == encodedPubKey {
 			return nil, errors.New("public key already exists for the user")
 		}
+		if pubkey.Label == label {
+			return nil, errors.New("label already exists for the user")
+		}
+
 	}
 
-	user.PublicKeys = append(user.PublicKeys, encodedPubKey)
+	user.PublicKeys = append(user.PublicKeys, PublicKey{
+		Key:   encodedPubKey,
+		Label: label,
+	})
 
 	result, err := repo.UpdateUser(userName, *user)
 	if err != nil {
@@ -202,12 +213,12 @@ func (repo *UserRepo) AddPublicKey(userName string, newPubKey ed25519.PublicKey)
 //
 // Parameters:
 //   - userName: The username of the user to be updated.
-//   - pubKeyToRemove: The ed25519 public key to be removed.
+//   - label: The label of the public key to be removed.
 //
 // Returns:
 //   - *mongo.UpdateResult: The result of the update operation.
 //   - error: An error if the update operation fails.
-func (repo *UserRepo) RemovePublicKey(userName string, pubKeyToRemove ed25519.PublicKey) (*mongo.UpdateResult, error) {
+func (repo *UserRepo) RemovePublicKey(userName string, label string) (*mongo.UpdateResult, error) {
 	user, err := repo.GetUser(userName)
 	if err != nil {
 		return nil, err
@@ -217,11 +228,9 @@ func (repo *UserRepo) RemovePublicKey(userName string, pubKeyToRemove ed25519.Pu
 		return nil, errors.New("user must have at least two public keys to remove one")
 	}
 
-	encodedPubKey := base64.StdEncoding.EncodeToString(pubKeyToRemove)
-
 	keyFound := false
-	for i, key := range user.PublicKeys {
-		if key == encodedPubKey {
+	for i, pubkey := range user.PublicKeys {
+		if pubkey.Label == label {
 			user.PublicKeys = append(user.PublicKeys[:i], user.PublicKeys[i+1:]...)
 			keyFound = true
 			break
@@ -238,34 +247,4 @@ func (repo *UserRepo) RemovePublicKey(userName string, pubKeyToRemove ed25519.Pu
 	}
 
 	return result, nil
-}
-
-// DecudePublicKey decodes a public key from base64 format to ed25519.PublicKey
-// It returns the decoded public key and an error if the decoding fails
-//
-// Parameters:
-//   - encodedKey: The public key encoded in base64 format
-//
-// Returns:
-//   - ed25519.PublicKey: The decoded public key
-//   - error: An error if the decoding fails
-func decodePublicKeys(encodedKeys []string) ([]ed25519.PublicKey, error) {
-	var publicKeys []ed25519.PublicKey
-	for _, encodedKey := range encodedKeys {
-		data, err := base64.StdEncoding.DecodeString(encodedKey)
-		if err != nil {
-			return nil, err
-		}
-		publicKeys = append(publicKeys, ed25519.PublicKey(data))
-	}
-	return publicKeys, nil
-}
-
-// convertDecodedKeysToStrings converts a slice of ed25519.PublicKey to a slice of strings
-func convertDecodedKeysToStrings(decodedKeys []ed25519.PublicKey) []string {
-	publicKeys := make([]string, len(decodedKeys))
-	for i, key := range decodedKeys {
-		publicKeys[i] = base64.StdEncoding.EncodeToString(key)
-	}
-	return publicKeys
 }
