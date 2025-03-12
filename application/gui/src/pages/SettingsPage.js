@@ -9,6 +9,7 @@ const SettingsPage = () => {
   const [addKeyLabel, setAddKeyLabel] = useState("");
   const [removeKeyLabel, setRemoveKeyLabel] = useState("");
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
   const [keyLabels, setKeyLabels] = useState([]);
 
   const fetchKeyLabels = async () => {
@@ -29,6 +30,7 @@ const SettingsPage = () => {
       setKeyLabels(data.labels);
     } else {
       setMessage("Error fetching public key labels");
+      setMessageType("error");
     }
   };
 
@@ -39,7 +41,7 @@ const SettingsPage = () => {
   }, [user]);
 
   const handleAddKey = async () => {
-    const response = await fetch("http://localhost:6060/api/add-public-key", {
+    const response = await fetch("http://localhost:8080/api/add-public-key", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -50,17 +52,19 @@ const SettingsPage = () => {
 
     if (response.ok) {
       setMessage("Public key added successfully");
+      setMessageType("success");
       setAddKeyLabel("");
       // Refresh the key labels
       fetchKeyLabels();
     } else {
       setMessage("Error adding public key");
+      setMessageType("error");
     }
   };
 
   const handleRemoveKey = async () => {
     const response = await fetch(
-      "http://localhost:6060/api/remove-public-key",
+      "http://localhost:8080/api/remove-public-key",
       {
         method: "POST",
         headers: {
@@ -73,11 +77,13 @@ const SettingsPage = () => {
 
     if (response.ok) {
       setMessage("Public key removed successfully");
+      setMessageType("success");
       setRemoveKeyLabel("");
       // Refresh the key labels
       fetchKeyLabels();
     } else {
       setMessage("Error removing public key");
+      setMessageType("error");
     }
   };
 
@@ -116,7 +122,7 @@ const SettingsPage = () => {
         />
         <button onClick={handleRemoveKey}>Remove Public Key</button>
       </div>
-      {message && <p>{message}</p>}
+      {message && <p className={messageType}>{message}</p>}
     </div>
   );
 };
