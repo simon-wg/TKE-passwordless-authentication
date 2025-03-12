@@ -52,6 +52,11 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Label cannot be empty", http.StatusBadRequest)
 	}
 
+	if username == "" {
+		http.Error(w, "Username cannot be empty", http.StatusBadRequest)
+		return
+	}
+
 	fmt.Printf("Received registration request for user: %s\n", username)
 
 	// Check if user already exists
@@ -121,6 +126,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// If the username field has a val, put it in a variable
 	username := requestBody.Username
+
+	if username == "" {
+		http.Error(w, "Username cannot be empty", http.StatusBadRequest)
+		return
+	}
 
 	fmt.Printf("Received login request for user: %s\n", username)
 
@@ -323,6 +333,11 @@ func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Label cannot be empty", http.StatusBadRequest)
 	}
 
+	if username == "" {
+		http.Error(w, "Username cannot be empty", http.StatusBadRequest)
+		return
+	}
+
 	if len(newPubKey) == 0 {
 		http.Error(w, "Public key cannot be empty", http.StatusBadRequest)
 		return
@@ -394,6 +409,11 @@ func RemovePublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 
 	if label == "" {
 		http.Error(w, "Label cannot be empty", http.StatusBadRequest)
+	}
+
+	if username == "" {
+		http.Error(w, "Username cannot be empty", http.StatusBadRequest)
+		return
 	}
 
 	fmt.Printf("Received request to remove public key for user: %s\n", username)
