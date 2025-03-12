@@ -1,31 +1,30 @@
-import React, { useState } from 'react';
-import './styles.css';
-import config from '../config'
+import React, { useState } from "react";
+import "./styles.css";
+import config from "../config";
 
 const RegisterComponent = () => {
-  const [username, setUsername] = useState('');
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [label, setLabel] = useState("");
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
   const handleRegister = async (event) => {
     event.preventDefault();
 
-    const result = await fetch(config.clientBaseUrl + '/api/register', {
-      method: 'POST',
+    const result = await fetch(config.clientBaseUrl + "/api/register", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ username }),
-    })
+      body: JSON.stringify({ username, label }),
+    });
 
     if (result.ok) {
-      setSuccess('Success!')
-      setError('')
-    }
-
-    else {
-      setSuccess('')
-      setError('Error creating user')
+      setSuccess("Success!");
+      setError("");
+    } else {
+      setSuccess("");
+      setError("Error creating user");
     }
   };
 
@@ -38,6 +37,12 @@ const RegisterComponent = () => {
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Key Label"
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
         />
         <button type="submit">Register</button>
       </form>
