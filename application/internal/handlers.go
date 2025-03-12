@@ -44,10 +44,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Extract username and public key
 	username := requestBody.Username
 	pubkey := requestBody.Pubkey
 	label := requestBody.Label
+
+	if label == "" {
+		http.Error(w, "Label cannot be empty", http.StatusBadRequest)
+	}
 
 	fmt.Printf("Received registration request for user: %s\n", username)
 
@@ -316,6 +319,10 @@ func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 	newPubKey := requestBody.Pubkey
 	label := requestBody.Label
 
+	if label == "" {
+		http.Error(w, "Label cannot be empty", http.StatusBadRequest)
+	}
+
 	if len(newPubKey) == 0 {
 		http.Error(w, "Public key cannot be empty", http.StatusBadRequest)
 		return
@@ -384,6 +391,10 @@ func RemovePublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 
 	username := requestBody.Username
 	label := requestBody.Label
+
+	if label == "" {
+		http.Error(w, "Label cannot be empty", http.StatusBadRequest)
+	}
 
 	fmt.Printf("Received request to remove public key for user: %s\n", username)
 
