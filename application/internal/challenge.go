@@ -96,8 +96,8 @@ func VerifySignature(username string, signature []byte) (bool, error) {
 		return false, err
 	}
 
-	for _, encodedPubKey := range userData.PublicKeys {
-		pubKeyBytes, err := base64.StdEncoding.DecodeString(encodedPubKey)
+	for _, publicKey := range userData.PublicKeys {
+		pubKeyBytes, err := base64.StdEncoding.DecodeString(publicKey.Key)
 		if err != nil {
 			return false, err
 		}

@@ -16,7 +16,7 @@ import (
 var UserRepo util.UserRepository
 
 // RegisterHandler handles the user registration process
-// It expects a POST request with a JSON body containing the username and public key of the user to be registered
+// It expects a POST request with a JSON body containing the username and public key with label of the user to be registered
 //
 // Possible responses:
 // - 405 Method Not Allowed: if the request method is not POST
@@ -47,6 +47,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract username and public key
 	username := requestBody.Username
 	pubkey := requestBody.Pubkey
+	label := requestBody.Label
 
 	fmt.Printf("Received registration request for user: %s\n", username)
 
@@ -60,7 +61,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Store new user data
-	user, err := UserRepo.CreateUser(username, pubkey)
+	user, err := UserRepo.CreateUser(username, pubkey, label)
 	if err != nil || user == nil {
 		fmt.Printf("Error creating user: %v\n", err)
 		http.Error(w, "Unable to create user", http.StatusInternalServerError)
@@ -290,7 +291,7 @@ func InitializeLoginHandler(w http.ResponseWriter, r *http.Request) {
 // - 405 Method Not Allowed: if the request method is not POST
 // - 400 Bad Request: if the request body is invalid or cannot be parsed
 // - 404 Not Found: if the user does not exist
-// - 409 Conflict: if the user already has the maximum number of public keys
+// - 409 Conflict: if the user already has the maximum number of public keys or the label already exists
 // - 500 Internal Server Error: if there is an error adding the public key or sending the response
 // - 200 OK: if the public key is added successfully
 func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
@@ -313,6 +314,7 @@ func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 
 	username := requestBody.Username
 	newPubKey := requestBody.Pubkey
+	label := requestBody.Label
 
 	if len(newPubKey) == 0 {
 		http.Error(w, "Public key cannot be empty", http.StatusBadRequest)
@@ -327,11 +329,13 @@ func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = UserRepo.AddPublicKey(username, newPubKey)
+	_, err = UserRepo.AddPublicKey(username, newPubKey, label)
 	if err != nil {
 		if err.Error() == "user already has the maximum number of public keys" {
 			http.Error(w, err.Error(), http.StatusConflict)
 		} else if err.Error() == "public key already exists for the user" {
+			http.Error(w, err.Error(), http.StatusConflict)
+		} else if err.Error() == "label already exists for the user" {
 			http.Error(w, err.Error(), http.StatusConflict)
 		} else {
 			http.Error(w, "Unable to add public key", http.StatusInternalServerError)
@@ -356,7 +360,7 @@ func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 // Possible responses:
 // - 405 Method Not Allowed: if the request method is not POST
 // - 400 Bad Request: if the request body is invalid or cannot be parsed
-// - 404 Not Found: if the user does not exist or the public key is not found
+// - 404 Not Found: if the user does not exist or the label is not found
 // - 409 Conflict: if the user has only one public key
 // - 500 Internal Server Error: if there is an error removing the public key or sending the response
 // - 200 OK: if the public key is removed successfully
@@ -379,7 +383,7 @@ func RemovePublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	username := requestBody.Username
-	pubKeyToRemove := requestBody.Pubkey
+	label := requestBody.Label
 
 	fmt.Printf("Received request to remove public key for user: %s\n", username)
 
@@ -389,7 +393,7 @@ func RemovePublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = UserRepo.RemovePublicKey(username, pubKeyToRemove)
+	_, err = UserRepo.RemovePublicKey(username, label)
 	if err != nil {
 		if err.Error() == "user must have at least two public keys to remove one" {
 			http.Error(w, err.Error(), http.StatusConflict)

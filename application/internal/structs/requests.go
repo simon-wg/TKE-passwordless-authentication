@@ -28,18 +28,20 @@ type LoginResponse struct {
 type RegisterRequest struct {
 	Username string `json:"username"`
 	Pubkey   []byte `json:"pubkey"`
+	Label    string `json:"label"`
 }
 
 // AddPublicKeyRequest represents a request to add a new public key for a user
-// It contains the username of the user and the new public key to be added
+// It contains the username of the user, the new public key to be added, and the label for the public key
 type AddPublicKeyRequest struct {
 	Username string `json:"username"`
 	Pubkey   []byte `json:"pubkey"`
+	Label    string `json:"label"`
 }
 
 // RemovePublicKeyRequest represents a request to remove a public key for a user
-// It contains the username of the user and the public key to be removed
+// It contains the username of the user and the label of the public key to be removed
 type RemovePublicKeyRequest struct {
 	Username string `json:"username"`
-	Pubkey   []byte `json:"pubkey"`
+	Label    string `json:"label"`
 }

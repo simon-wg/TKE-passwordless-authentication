@@ -27,12 +27,12 @@ type PublicKey struct {
 // Interface for UserRepository
 // This interface defines the methods that a UserRepository should implement
 type UserRepository interface {
-	CreateUser(userName string, pubkey ed25519.PublicKey) (*mongo.InsertOneResult, error)
+	CreateUser(userName string, pubkey ed25519.PublicKey, label string) (*mongo.InsertOneResult, error)
 	GetUser(username string) (*User, error)
 	UpdateUser(userName string, updatedUser User) (*mongo.UpdateResult, error)
 	DeleteUser(userName string) (*mongo.DeleteResult, error)
-	AddPublicKey(userName string, newPubKey ed25519.PublicKey) (*mongo.UpdateResult, error)
-	RemovePublicKey(userName string, pubKeyToRemove ed25519.PublicKey) (*mongo.UpdateResult, error)
+	AddPublicKey(userName string, newPubKey ed25519.PublicKey, label string) (*mongo.UpdateResult, error)
+	RemovePublicKey(userName string, label string) (*mongo.UpdateResult, error)
 }
 
 // UserRepo holds the database reference
