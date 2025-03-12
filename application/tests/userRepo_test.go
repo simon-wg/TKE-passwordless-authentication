@@ -225,3 +225,30 @@ func TestRemovePublicKey(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, "user must have at least two public keys to remove one", err.Error())
 }
+
+func TestGetPublicKeyLabels(t *testing.T) {
+	setup()
+	defer teardown()
+
+	username := "testuser"
+	initialPubkey := ed25519.PublicKey([]byte("initialpublickey"))
+	initialLabel := "initial key"
+
+	// Create the user with the initial public key
+	_, err := userRepo.CreateUser(username, initialPubkey, initialLabel)
+	assert.NoError(t, err)
+
+	// Add a new public key to the existing user
+	newPubkey := ed25519.PublicKey([]byte("newpublickey"))
+	newLabel := "new key"
+	_, err = userRepo.AddPublicKey(username, newPubkey, newLabel)
+	assert.NoError(t, err)
+
+	// Retrieve the public key labels
+	labels, err := userRepo.GetPublicKeyLabels(username)
+	assert.NoError(t, err)
+	assert.NotNil(t, labels)
+	assert.Equal(t, 2, len(labels))
+	assert.Contains(t, labels, initialLabel)
+	assert.Contains(t, labels, newLabel)
+}

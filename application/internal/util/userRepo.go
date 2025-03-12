@@ -33,6 +33,7 @@ type UserRepository interface {
 	DeleteUser(userName string) (*mongo.DeleteResult, error)
 	AddPublicKey(userName string, newPubKey ed25519.PublicKey, label string) (*mongo.UpdateResult, error)
 	RemovePublicKey(userName string, label string) (*mongo.UpdateResult, error)
+	GetPublicKeyLabels(userName string) ([]string, error)
 }
 
 // UserRepo holds the database reference
@@ -160,6 +161,28 @@ func (repo *UserRepo) DeleteUser(userName string) (*mongo.DeleteResult, error) {
 	}
 
 	return result, nil
+}
+
+// GetPublicKeyLabels retrieves all the labels of the public keys associated with the given user
+//
+// Parameters:
+//   - userName: The username of the user
+//
+// Returns:
+//   - []string: A slice of labels for the user's public keys
+//   - error: An error if the retrieval fails
+func (repo *UserRepo) GetPublicKeyLabels(userName string) ([]string, error) {
+	user, err := repo.GetUser(userName)
+	if err != nil {
+		return nil, err
+	}
+
+	labels := make([]string, len(user.PublicKeys))
+	for i, pubkey := range user.PublicKeys {
+		labels[i] = pubkey.Label
+	}
+
+	return labels, nil
 }
 
 // AddPublicKey adds a new public key to the user's list of public keys.

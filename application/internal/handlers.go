@@ -297,6 +297,65 @@ func InitializeLoginHandler(w http.ResponseWriter, r *http.Request) {
 	io.Copy(w, resp.Body) // Forward response body to client
 }
 
+// GetPublicKeyLabelsHandler handles the retrieval of public key labels for a user
+// It expects a POST request with a JSON body containing the username
+//
+// Possible responses:
+// - 405 Method Not Allowed: if the request method is not POST
+// - 400 Bad Request: if the request body is invalid or cannot be parsed
+// - 404 Not Found: if the user does not exist
+// - 500 Internal Server Error: if there is an error retrieving the labels or sending the response
+// - 200 OK: if the labels are retrieved successfully
+func GetPublicKeyLabelsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	requestBody := structs.GetPublicKeyLabelsRequest{}
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := json.Unmarshal(body, &requestBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	username := requestBody.Username
+
+	if username == "" {
+		http.Error(w, "Username cannot be empty", http.StatusBadRequest)
+		return
+	}
+
+	fmt.Printf("Received request to get public key labels for user: %s\n", username)
+
+	userExists, err := UserRepo.GetUser(username)
+	if userExists == nil || err != nil {
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	labels, err := UserRepo.GetPublicKeyLabels(username)
+	if err != nil {
+		http.Error(w, "Unable to retrieve public key labels", http.StatusInternalServerError)
+		return
+	}
+
+	responseBody := map[string][]string{"labels": labels}
+	responseBodyBytes, err := json.Marshal(responseBody)
+	if err != nil {
+		fmt.Printf("Unable to marshal response for user: %s\n", username)
+		http.Error(w, "Unable to send response", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseBodyBytes)
+}
+
 // AddPublicKeyHandler handles the addition of a new public key for a user
 // It expects a POST request with a JSON body containing the username and the new public key
 //

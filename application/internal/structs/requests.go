@@ -31,6 +31,12 @@ type RegisterRequest struct {
 	Label    string `json:"label"`
 }
 
+// GetPublicKeyLabelsRequest represents a request to get public key labels for a user
+// It contains the username of the user
+type GetPublicKeyLabelsRequest struct {
+	Username string `json:"username"`
+}
+
 // AddPublicKeyRequest represents a request to add a new public key for a user
 // It contains the username of the user, the new public key to be added, and the label for the public key
 type AddPublicKeyRequest struct {
