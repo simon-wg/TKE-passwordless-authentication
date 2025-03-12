@@ -21,6 +21,7 @@ import (
 // Returns:
 // - An error if the login process fails
 func Login(appurl string, username string) error {
+	//jar, _ := cookiejar.New(nil)
 	c := &http.Client{}
 
 	// Fetches the generated challenge from the server
@@ -53,6 +54,10 @@ func Login(appurl string, username string) error {
 	if err != nil {
 		return err
 	}
+
+	defer resp.Body.Close()
+
+	//return cookie
 
 	switch resp.StatusCode {
 	case http.StatusOK:
