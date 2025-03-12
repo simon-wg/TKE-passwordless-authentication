@@ -13,22 +13,20 @@ const RegisterComponent = () => {
     event.preventDefault();
     setLoading(true);
 
-    const result = await fetch(config.clientBaseUrl + '/api/register', {
-      method: 'POST',
+    const result = await fetch(config.clientBaseUrl + "/api/register", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ username }),
-    })
+      body: JSON.stringify({ username, label }),
+    });
 
     if (result.ok) {
-      setSuccess('Success!')
-      setError('')
-    }
-
-    else {
-      setSuccess('')
-      setError('Error creating user')
+      setSuccess("Success!");
+      setError("");
+    } else {
+      setSuccess("");
+      setError("Error creating user");
     }
     setLoading(false);
   };
