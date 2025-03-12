@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/ed25519"
 	"encoding/base64"
+	"errors"
+	"regexp"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -57,6 +59,11 @@ func NewUserRepo(db *mongo.Database) *UserRepo {
 func (repo *UserRepo) CreateUser(userName string, pubkey ed25519.PublicKey) (*mongo.InsertOneResult, error) {
 	collection := repo.db.Collection("users")
 
+	// Check that the username is sanitized
+	if !isSanitized(userName) {
+		return nil, errors.New("username is not sanitized")
+	}
+
 	// Encodes public key to base64 to allow storing in MongoDB
 	encodedPubKey := base64.StdEncoding.EncodeToString(pubkey)
 	user := User{
@@ -84,6 +91,9 @@ func (repo *UserRepo) CreateUser(userName string, pubkey ed25519.PublicKey) (*mo
 //   - error: An error if the retrieval fails
 func (repo *UserRepo) GetUser(userName string) (*User, error) {
 	collection := repo.db.Collection("users")
+
+	// Sanitize the input
+	userName = SanitizeInput(userName)
 
 	filter := bson.M{"username": userName}
 	var user User
@@ -114,6 +124,10 @@ func (repo *UserRepo) GetUser(userName string) (*User, error) {
 //   - error: An error if the update operation fails
 func (repo *UserRepo) UpdateUser(userName string, updatedUser User) (*mongo.UpdateResult, error) {
 	collection := repo.db.Collection("users")
+
+	// Sanitize the input
+	userName = SanitizeInput(userName)
+	updatedUser.Username = SanitizeInput(updatedUser.Username)
 
 	// Encodes new pubkey for storing in database
 	updatedUser.PublicKey = base64.StdEncoding.EncodeToString([]byte(updatedUser.PublicKey))
@@ -147,6 +161,9 @@ func (repo *UserRepo) UpdateUser(userName string, updatedUser User) (*mongo.Upda
 func (repo *UserRepo) DeleteUser(userName string) (*mongo.DeleteResult, error) {
 	collection := repo.db.Collection("users")
 
+	// Sanitize the input
+	userName = SanitizeInput(userName)
+
 	filter := bson.M{"username": userName}
 	result, err := collection.DeleteOne(context.Background(), filter)
 	if err != nil {
@@ -171,4 +188,34 @@ func DecodePublicKey(encodedKey string) (ed25519.PublicKey, error) {
 		return nil, err
 	}
 	return ed25519.PublicKey(data), nil
+}
+
+//
+// SanitizeInput sanitizes the input by removing any unwanted characters to prevent injection attacks
+//
+// Parameters:
+//   - input: The input to sanitize
+//
+// Returns:
+//   - input: The sanitized input
+
+func SanitizeInput(input string) string {
+
+	// Remove any non-alphanumeric characters with empty string
+	input = regexp.MustCompile("[^a-zA-Z0-9]").ReplaceAllString(input, "")
+
+	return input
+}
+
+// isSanitized checks if the input is sanitized by checking if it contains any non-alphanumeric characters
+//
+// Parameters:
+//   - input: The input to check
+//
+// Returns:
+//   - bool: True if the input is sanitized, false otherwise
+
+func isSanitized(input string) bool {
+	// Check if input contains any non-alphanumeric characters
+	return !regexp.MustCompile("[^a-zA-Z0-9]").MatchString(input)
 }
