@@ -41,7 +41,7 @@ const SettingsPage = () => {
   }, [user]);
 
   const handleAddKey = async () => {
-    const response = await fetch("http://localhost:8080/api/add-public-key", {
+    const response = await fetch("http://localhost:6060/api/add-public-key", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -64,7 +64,7 @@ const SettingsPage = () => {
 
   const handleRemoveKey = async () => {
     const response = await fetch(
-      "http://localhost:8080/api/remove-public-key",
+      "http://localhost:6060/api/remove-public-key",
       {
         method: "POST",
         headers: {
