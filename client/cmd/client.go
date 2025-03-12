@@ -1,9 +1,6 @@
 // Package main starts the client application and provides the user with a choice between a command-line client and a web client.
 // The command-line client allows the user to register and log in to the application.
 // The web client allows the user to register and log in to the application through a web interface.
-// Package main starts the client application and provides the user with a choice between a command-line client and a web client.
-// The command-line client allows the user to register and log in to the application.
-// The web client allows the user to register and log in to the application through a web interface.
 package main
 
 import (

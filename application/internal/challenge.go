@@ -26,7 +26,6 @@ var (
 )
 
 // Asynchronous function that runs in the background to clean up expired challenges.
-// Asynchronous function that runs in the background to clean up expired challenges.
 func init() {
 	go cleanupExpiredChallenges()
 }
@@ -35,7 +34,7 @@ func init() {
 // It creates a random byte sequence, encodes it to a hexadecimal string and stores it in the activeChallenges map with an expiration time
 //
 // Parameters:
-//   - username: The public key for which the challenge is generated.
+//   - username: The username for which the challenge is generated.
 //
 // Returns:
 //   - A string representing the generated challenge.
