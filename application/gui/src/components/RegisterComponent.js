@@ -6,9 +6,12 @@ const RegisterComponent = () => {
   const [username, setUsername] = useState('');
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
 
   const handleRegister = async (event) => {
     event.preventDefault();
+    setLoading(true);
 
     const result = await fetch(config.clientBaseUrl + '/api/register', {
       method: 'POST',
@@ -27,6 +30,7 @@ const RegisterComponent = () => {
       setSuccess('')
       setError('Error creating user')
     }
+    setLoading(false);
   };
 
   return (
@@ -39,7 +43,9 @@ const RegisterComponent = () => {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
-        <button type="submit">Register</button>
+        <button onClick={handleRegister} disabled={loading}>
+          {loading ? "Loading..." : "Register"}
+        </button>
       </form>
       {success && <p className="success">{success}</p>}
       {error && <p className="error">{error}</p>}

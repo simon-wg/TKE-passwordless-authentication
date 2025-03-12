@@ -8,10 +8,12 @@ const LoginComponent = () => {
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async () => {
     clearMessages();
+    setLoading(true);
     // Send POST Request to localhost:8080/api/initialize-login
     const response = await fetch("http://localhost:8080/api/initialize-login", {
       method: "POST",
@@ -21,6 +23,7 @@ const LoginComponent = () => {
       credentials: "include",
       body: JSON.stringify({ username }),
     });
+    setLoading(false);
     if (response.ok) {
       navigate("/loginsuccess");
     } else {
@@ -43,7 +46,9 @@ const LoginComponent = () => {
         value={username}
         onChange={(e) => setUsername(e.target.value)}
       />
-      <button onClick={handleLogin}>Login</button>
+<button onClick={handleLogin} disabled={loading}>
+  {loading ? "Awaiting TKey Confirmation" : "Login"}
+</button>
       {message && <p className="message">{message}</p>}
       {success && <p className="success">{success}</p>}
       {error && <p className="error">{error}</p>}
