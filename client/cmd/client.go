@@ -89,11 +89,15 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	username := requestBody["username"]
-	err := auth.Login(origin, username)
+	err, cookie := auth.Login(origin, username)
 	if err != nil {
 		http.Error(w, "Failed to log in", http.StatusBadRequest)
 		return
 	}
+
+	//Takes the cookie returned from Login() and writes it to the response
+	http.SetCookie(w, &cookie)
+	w.Write([]byte("Login successful and cookie sent"))
 }
 
 // Handles register requests from the web client
