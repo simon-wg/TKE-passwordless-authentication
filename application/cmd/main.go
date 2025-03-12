@@ -46,10 +46,6 @@ func main() {
 
 func enableCors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		origin := r.Header.Get("Origin")
-		if origin == os.Getenv("BACKEND_URL") || origin == os.Getenv("FRONTEND_URL") {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-		}
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")

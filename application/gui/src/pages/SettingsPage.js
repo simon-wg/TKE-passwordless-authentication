@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import useAuthCheck from "../hooks/useAuthCheck";
 import useFetchUser from "../hooks/useFetchUser";
+import config from "../config";
 import "../components/styles.css";
 
 const SettingsPage = () => {
@@ -14,7 +15,7 @@ const SettingsPage = () => {
 
   const fetchKeyLabels = async () => {
     const response = await fetch(
-      "http://localhost:8080/api/get-public-key-labels",
+      config.backendBaseUrl + "/api/get-public-key-labels",
       {
         method: "POST",
         headers: {
@@ -41,14 +42,17 @@ const SettingsPage = () => {
   }, [user]);
 
   const handleAddKey = async () => {
-    const response = await fetch("http://localhost:6060/api/add-public-key", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ username: user, label: addKeyLabel }),
-    });
+    const response = await fetch(
+      config.clientBaseUrl + "/api/add-public-key",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ username: user, label: addKeyLabel }),
+      }
+    );
 
     if (response.ok) {
       setMessage("Public key added successfully");
@@ -64,7 +68,7 @@ const SettingsPage = () => {
 
   const handleRemoveKey = async () => {
     const response = await fetch(
-      "http://localhost:6060/api/remove-public-key",
+      config.clientBaseUrl + "/api/remove-public-key",
       {
         method: "POST",
         headers: {

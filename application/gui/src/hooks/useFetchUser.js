@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import config from "../config";
 
 // If the user is authenticated this hook will return the username of the
 // current session user. Does this by calling the application backend.
@@ -10,7 +11,7 @@ const useFetchUser = (isAuthenticated) => {
 
     const fetchUser = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/getuser", {
+        const response = await fetch(config.backendBaseUrl + "/api/getuser", {
           method: "GET",
           credentials: "include",
         });

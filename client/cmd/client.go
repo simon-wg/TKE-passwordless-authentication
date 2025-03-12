@@ -121,7 +121,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 
 	username := requestBody["username"]
 	label := requestBody["label"]
-	err := auth.Register("http://localhost:8080", username, label)
+	err := auth.Register(origin, username, label)
 	if err != nil {
 		http.Error(w, "Failed to register", http.StatusBadRequest)
 		return
@@ -152,7 +152,7 @@ func addPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 	username := requestBody["username"]
 	label := requestBody["label"]
 	sessionCookie := r.Header.Get("Cookie")
-	err := auth.AddPublicKey("http://localhost:8080", username, label, sessionCookie)
+	err := auth.AddPublicKey(origin, username, label, sessionCookie)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -184,7 +184,7 @@ func removePublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 	username := requestBody["username"]
 	label := requestBody["label"]
 	sessionCookie := r.Header.Get("Cookie")
-	err := auth.RemovePublicKey("http://localhost:8080", username, label, sessionCookie)
+	err := auth.RemovePublicKey(origin, username, label, sessionCookie)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

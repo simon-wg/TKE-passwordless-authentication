@@ -11,7 +11,6 @@ services:
     environment:
       - "MONGO_URI=mongodb://db:27017"
       - "BACKEND_URL=backend:8080"
-      - "FRONTEND_URL=frontend:3000"
 
   frontend:
     build:
@@ -23,7 +22,8 @@ services:
     networks:
       - default
     environment:
-      - BACKEND_URL=backend:8080
+      - "REACT_APP_BACKEND_URL=backend:8080"
+      - "REACT_APP_CLIENT_URL=http://localhost:6060"
 
   db:
     image: mongo:8
