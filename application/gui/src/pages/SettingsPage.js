@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import useAuthCheck from "../hooks/useAuthCheck";
 import useFetchUser from "../hooks/useFetchUser";
 import "../components/styles.css";
@@ -9,6 +9,34 @@ const SettingsPage = () => {
   const [addKeyLabel, setAddKeyLabel] = useState("");
   const [removeKeyLabel, setRemoveKeyLabel] = useState("");
   const [message, setMessage] = useState("");
+  const [keyLabels, setKeyLabels] = useState([]);
+
+  useEffect(() => {
+    const fetchKeyLabels = async () => {
+      const response = await fetch(
+        "http://localhost:8080/api/get-public-key-labels",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ username: user }),
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setKeyLabels(data.labels);
+      } else {
+        setMessage("Error fetching public key labels");
+      }
+    };
+
+    if (user) {
+      fetchKeyLabels();
+    }
+  }, [user]);
 
   const handleAddKey = async () => {
     const response = await fetch("http://localhost:6060/api/add-public-key", {
@@ -22,6 +50,10 @@ const SettingsPage = () => {
 
     if (response.ok) {
       setMessage("Public key added successfully");
+      setAddKeyLabel("");
+      // Refresh the key labels
+      const data = await response.json();
+      setKeyLabels(data.labels);
     } else {
       setMessage("Error adding public key");
     }
@@ -42,6 +74,10 @@ const SettingsPage = () => {
 
     if (response.ok) {
       setMessage("Public key removed successfully");
+      setRemoveKeyLabel("");
+      // Refresh the key labels
+      const data = await response.json();
+      setKeyLabels(data.labels);
     } else {
       setMessage("Error removing public key");
     }
@@ -54,6 +90,14 @@ const SettingsPage = () => {
   return (
     <div className="container">
       <h1>Settings</h1>
+      <div>
+        <h2>Public Key Labels</h2>
+        <ul>
+          {keyLabels.map((label, index) => (
+            <li key={index}>{label}</li>
+          ))}
+        </ul>
+      </div>
       <div>
         <h2>Add Public Key</h2>
         <input
