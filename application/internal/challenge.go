@@ -33,11 +33,11 @@ func init() {
 // It creates a random byte sequence, encodes it to a hexadecimal string and stores it in the activeChallenges map with an expiration time
 //
 // Parameters:
-//   - pubKey: The public key for which the challenge is generated
+//   - user: The user for which the challenge is generated
 //
 // Returns:
-//   - A string representing the generated challenge
-//   - An error if the random byte generation fails
+//   - string: A string representing the generated challenge
+//   - error: An error if the random byte generation fails
 func GenerateChallenge(user string) (string, error) {
 	challengesLock.Lock()
 	defer challengesLock.Unlock()
