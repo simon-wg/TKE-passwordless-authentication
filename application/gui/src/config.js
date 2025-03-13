@@ -1,5 +1,6 @@
 const config = {
-    clientBaseUrl: 'http://localhost:6060'
+    clientBaseUrl: process.env.REACT_APP_CLIENT_URL,
+    backendBaseUrl: process.env.REACT_APP_BACKEND_URL,
   };
   
 export default config;

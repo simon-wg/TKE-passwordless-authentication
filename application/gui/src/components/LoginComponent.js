@@ -1,4 +1,4 @@
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import "./styles.css";
 import config from "../config";
 import { useNavigate } from "react-router-dom";
@@ -13,7 +13,8 @@ const LoginComponent = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleLogin = async (event) => {
+    event.preventDefault();
     clearMessages();
     setLoading(true);
     // Send POST Request to localhost:8080/api/initialize-login
