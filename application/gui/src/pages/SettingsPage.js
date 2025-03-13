@@ -5,7 +5,6 @@ import config from "../config";
 import "../components/styles.css";
 
 const SettingsPage = () => {
-  console.log("SettingsPage");
   const isAuthenticated = useAuthCheck();
   const user = useFetchUser(isAuthenticated);
   const [addKeyLabel, setAddKeyLabel] = useState("");

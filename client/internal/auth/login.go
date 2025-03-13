@@ -20,9 +20,9 @@ import (
 // - username: The username of the user to login
 //
 // Returns:
-// - An error if the login process fails
 // - A cookie pointer
-func Login(appurl string, username string) (error, http.Cookie) {
+// - An error if the login process fails
+func Login(appurl string, username string) (*http.Cookie, error) {
 
 	//Creates a cookie jar to send the cookie across functions programmatically
 	jar, _ := cookiejar.New(nil)
@@ -31,8 +31,7 @@ func Login(appurl string, username string) (error, http.Cookie) {
 	// Fetches the generated challenge from the server
 	challengeResponse, err := getChallenge(appurl, username)
 	if err != nil {
-		fmt.Println("Challenge Error")
-		return err, http.Cookie{}
+		return nil, err
 	}
 
 	var cookie http.Cookie
@@ -45,7 +44,7 @@ func Login(appurl string, username string) (error, http.Cookie) {
 	// Signs the challenge
 	signedChallenge, err := signChallenge(username, challengeResponse)
 	if err != nil {
-		return err, http.Cookie{}
+		return nil, err
 	}
 
 	// TODO: Make more customizable
@@ -53,13 +52,13 @@ func Login(appurl string, username string) (error, http.Cookie) {
 
 	body, err := json.Marshal(signedChallenge)
 	if err != nil {
-		return err, http.Cookie{}
+		return nil, err
 	}
 
 	// Sends the signed challenge to the server in the format of a VerifyRequest
 	resp, err := c.Post(appurl+endpoint, "application/json", bytes.NewBuffer(body))
 	if err != nil {
-		return err, http.Cookie{}
+		return nil, err
 	}
 
 	defer resp.Body.Close()
@@ -69,23 +68,23 @@ func Login(appurl string, username string) (error, http.Cookie) {
 	if len(cookies) > 0 {
 		cookie = *cookies[0]
 	} else {
-		return fmt.Errorf("No cookies received"), http.Cookie{}
+		return nil, fmt.Errorf("No cookies received")
 	}
 
 	switch resp.StatusCode {
 	case http.StatusOK:
 		fmt.Printf("User '%s' has been successfully logged in!\n", username)
 	case http.StatusUnauthorized:
-		return fmt.Errorf("invalid signature"), http.Cookie{}
+		return nil, fmt.Errorf("invalid signature")
 	case http.StatusNotFound:
-		return fmt.Errorf("no active challenge found for the user"), http.Cookie{}
+		return nil, fmt.Errorf("no active challenge found for the user")
 	case http.StatusInternalServerError:
-		return fmt.Errorf("unable to read user data"), http.Cookie{}
+		return nil, fmt.Errorf("unable to read user data")
 	default:
-		return fmt.Errorf("unexpected error: %s", resp.Status), http.Cookie{}
+		return nil, fmt.Errorf("unexpected error: %s", resp.Status)
 	}
 
-	return nil, cookie
+	return &cookie, nil
 }
 
 // An internal function that signs the challenge using the tkey
