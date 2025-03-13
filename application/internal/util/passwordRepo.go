@@ -26,12 +26,14 @@ type PasswordRepo struct {
 	db *mongo.Database
 }
 
+const repoName = "userPasswords"
+
 func NewPasswordRepo(db *mongo.Database) *PasswordRepo {
 	return &PasswordRepo{db: db}
 }
 
 func (repo *PasswordRepo) CreatePassword(username, name, password string) (*mongo.InsertOneResult, error) {
-	collection := repo.db.Collection("userPasswords")
+	collection := repo.db.Collection(repoName)
 
 	user := PasswordData{
 		ID:       primitive.NewObjectID(),
@@ -49,7 +51,7 @@ func (repo *PasswordRepo) CreatePassword(username, name, password string) (*mong
 }
 
 func (repo *PasswordRepo) GetUserPasswords(username string) ([]PasswordData, error) {
-	collection := repo.db.Collection("companyUsers")
+	collection := repo.db.Collection(repoName)
 
 	filter := bson.M{"username": username}
 	cursor, err := collection.Find(context.Background(), filter)
@@ -75,7 +77,7 @@ func (repo *PasswordRepo) GetUserPasswords(username string) ([]PasswordData, err
 }
 
 func (repo *PasswordRepo) UpdatePassword(username string, updatedUser PasswordData) (*mongo.UpdateResult, error) {
-	collection := repo.db.Collection("companyUsers")
+	collection := repo.db.Collection(repoName)
 
 	filter := bson.M{"username": username}
 	updatedData := bson.M{
@@ -95,7 +97,7 @@ func (repo *PasswordRepo) UpdatePassword(username string, updatedUser PasswordDa
 }
 
 func (repo *PasswordRepo) DeletePassword(username string) (*mongo.DeleteResult, error) {
-	collection := repo.db.Collection("companyUsers")
+	collection := repo.db.Collection(repoName)
 
 	filter := bson.M{"username": username}
 	result, err := collection.DeleteOne(context.Background(), filter)

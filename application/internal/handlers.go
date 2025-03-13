@@ -327,7 +327,7 @@ func SavePasswordHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetUserPasswordsHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+	if r.Method != http.MethodGet {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
@@ -337,7 +337,7 @@ func GetUserPasswordsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "No user signed in", http.StatusUnauthorized)
 		return
 	}
-	passwords, err := PasswordRepo.GetUserPasswords(username)
+	passwords, _ := PasswordRepo.GetUserPasswords(username)
 
 	// Convert passwords to JSON
 	responseBodyBytes, err := json.Marshal(passwords)

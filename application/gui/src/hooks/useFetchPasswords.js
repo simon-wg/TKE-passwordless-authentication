@@ -1,27 +1,32 @@
 import { useEffect, useState } from "react";
 
-const useFetchPasswords = (isAuthenticated) =>  {
-    useEffect(() => {
-        if (!isAuthenticated) return;
+const useFetchPasswords = (isAuthenticated) => {
+  const [passwords, setPasswords] = useState([]);
 
-        const fetchPasswords = async () => {
-            try {
-                const response = await fetch("http://localhost:8080/api/get-user-passwords", {
-                  method: "GET",
-                  credentials: "include",
-                });
-        
-                if (response.ok) {
-                  const data = await response.json();
-                  console.log("passwords: " + data)
-                  
-                }
-              } catch (error) {
-                console.log("Error fetching user", error);
-              }
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const fetchPasswords = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/api/get-user-passwords", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log(JSON.stringify(data))
+          setPasswords(data);
         }
-        fetchPasswords()
-    }, [isAuthenticated])
-}
+      } catch (error) {
+        console.log("Error fetching passwords", error);
+      }
+    };
 
-export default useFetchPasswords
+    fetchPasswords();
+  }, [isAuthenticated]);
+
+  return passwords;
+};
+
+export default useFetchPasswords;
