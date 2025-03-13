@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import config from "../config";
 
 // This hook returns a bool whether or not the current session is authenticated
 // or not.
@@ -11,7 +12,7 @@ const useAuthCheck = () => {
     const verifySession = async () => {
       try {
         const response = await fetch(
-          "http://localhost:8080/api/verify-session",
+          "/api/verify-session",
           {
             method: "GET",
             credentials: "include",
