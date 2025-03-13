@@ -33,7 +33,7 @@ func Unregister(appurl string, username string) error {
 		return err
 	}
 
-	err = VerifyUser(appurl, username, signedChallenge)
+	_, err = VerifyUser(appurl, username, signedChallenge)
 
 	if err != nil {
 		return fmt.Errorf("could not unregister user:  %s Verification failed", username)
