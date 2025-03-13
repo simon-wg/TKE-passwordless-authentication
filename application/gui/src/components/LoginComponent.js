@@ -1,4 +1,4 @@
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import "./styles.css";
 import config from "../config";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +10,8 @@ const LoginComponent = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleLogin = async (event) => {
+    event.preventDefault();
     clearMessages();
     // Send POST Request to localhost:8080/api/initialize-login
     const response = await fetch("http://localhost:8080/api/initialize-login", {
@@ -28,7 +29,7 @@ const LoginComponent = () => {
     }
   };
 
-  const clearMessages = async () => {
+  const clearMessages = () => {
     setMessage("");
     setSuccess("");
     setError("");
@@ -37,13 +38,15 @@ const LoginComponent = () => {
   return (
     <div className="container">
       <h2>Login</h2>
-      <input
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <button onClick={handleLogin}>Login</button>
+      <form onSubmit={handleLogin}>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <button type="submit">Login</button>
+      </form>
       {message && <p className="message">{message}</p>}
       {success && <p className="success">{success}</p>}
       {error && <p className="error">{error}</p>}
