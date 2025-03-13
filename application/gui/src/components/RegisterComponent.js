@@ -4,6 +4,7 @@ import config from '../config';
 import LoadingCircle from './LoadingCircle';
 const RegisterComponent = () => {
   const [username, setUsername] = useState('');
+  const [label, setLabel] = useState("");
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,6 +43,12 @@ const RegisterComponent = () => {
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Key Label"
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
         />
         <button onClick={handleRegister} disabled={loading}>
           {loading ? "Loading..." : "Register"}
