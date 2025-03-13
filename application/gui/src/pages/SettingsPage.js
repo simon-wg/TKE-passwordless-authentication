@@ -5,6 +5,7 @@ import config from "../config";
 import "../components/styles.css";
 
 const SettingsPage = () => {
+  console.log("SettingsPage");
   const isAuthenticated = useAuthCheck();
   const user = useFetchUser(isAuthenticated);
   const [addKeyLabel, setAddKeyLabel] = useState("");
@@ -15,7 +16,7 @@ const SettingsPage = () => {
 
   const fetchKeyLabels = async () => {
     const response = await fetch(
-      config.backendBaseUrl + "/api/get-public-key-labels",
+      "/api/get-public-key-labels",
       {
         method: "POST",
         headers: {

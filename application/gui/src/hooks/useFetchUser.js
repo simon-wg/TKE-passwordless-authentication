@@ -11,7 +11,7 @@ const useFetchUser = (isAuthenticated) => {
 
     const fetchUser = async () => {
       try {
-        const response = await fetch(config.backendBaseUrl + "/api/getuser", {
+        const response = await fetch("/api/getuser", {
           method: "GET",
           credentials: "include",
         });
@@ -21,7 +21,7 @@ const useFetchUser = (isAuthenticated) => {
           setUser(data.user);
         }
       } catch (error) {
-        console.log("Error fetching user", error);
+        console.log("Error fetching user");
       }
     };
 

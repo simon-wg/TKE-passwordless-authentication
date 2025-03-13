@@ -7,6 +7,7 @@ import './components/styles.css';
 
 const App = () => {
   const [page, setPage] = useState('register');
+  console.log(process.env);
 
   return (
     <div>

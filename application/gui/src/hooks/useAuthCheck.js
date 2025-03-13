@@ -12,7 +12,7 @@ const useAuthCheck = () => {
     const verifySession = async () => {
       try {
         const response = await fetch(
-          config.backendBaseUrl + "/api/verify-session",
+          "/api/verify-session",
           {
             method: "GET",
             credentials: "include",
