@@ -29,7 +29,7 @@ const LoginComponent = () => {
     }
   };
 
-  const clearMessages = () => {
+  const clearMessages = async () => {
     setMessage("");
     setSuccess("");
     setError("");
