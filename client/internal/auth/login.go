@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/cookiejar"
 )
 
 // Sends a request to the server to login a user
@@ -19,13 +20,14 @@ import (
 // - username: The username of the user to login
 //
 // Returns:
+// - A cookie pointer
 // - An error if the login process fails
-func Login(appurl string, username string) error {
+func Login(appurl string, username string) (*http.Cookie, error) {
 
 	// Fetches the generated challenge from the server
 	challengeResponse, err := getChallenge(appurl, username)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// TODO: Implement signature verification
@@ -36,42 +38,59 @@ func Login(appurl string, username string) error {
 	// Signs the challenge
 	signedChallenge, err := signChallenge(username, challengeResponse)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	return VerifyUser(appurl, username, signedChallenge)
 }
 
-func VerifyUser(appurl string, username string, signedChallenge interface{}) error {
-	c := &http.Client{}
+func VerifyUser(appurl string, username string, signedChallenge interface{}) (*http.Cookie, error) {
+
+	//Creates a cookie jar to send the cookie across functions programmatically
+	jar, _ := cookiejar.New(nil)
+	c := &http.Client{Jar: jar}
+
+	var cookie http.Cookie
+
 	// TODO: Make more customizable
 	endpoint := "/api/verify"
 
 	body, err := json.Marshal(signedChallenge)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Sends the signed challenge to the server in the format of a VerifyRequest
 	resp, err := c.Post(appurl+endpoint, "application/json", bytes.NewBuffer(body))
 	if err != nil {
-		return err
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	//Takes the (first) cookie from the response
+	cookies := resp.Cookies()
+	if len(cookies) > 0 {
+		cookie = *cookies[0]
+	} else {
+		return nil, fmt.Errorf("No cookies received")
 	}
 	defer resp.Body.Close()
 
 	switch resp.StatusCode {
 	case http.StatusOK:
 		fmt.Printf("User '%s' has been successfully verified!\n", username)
-		return nil
 	case http.StatusUnauthorized:
-		return fmt.Errorf("invalid signature")
+		return nil, fmt.Errorf("invalid signature")
 	case http.StatusNotFound:
-		return fmt.Errorf("no active challenge found for the user")
+		return nil, fmt.Errorf("no active challenge found for the user")
 	case http.StatusInternalServerError:
-		return fmt.Errorf("unable to read user data")
+		return nil, fmt.Errorf("unable to read user data")
 	default:
-		return fmt.Errorf("unexpected error: %s", resp.Status)
+		return nil, fmt.Errorf("unexpected error: %s", resp.Status)
 	}
+
+	return &cookie, nil
 }
 
 // Sign the challenge
