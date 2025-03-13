@@ -17,8 +17,8 @@ const LoginComponent = () => {
     event.preventDefault();
     clearMessages();
     setLoading(true);
-    // Send POST Request to localhost:8080/api/initialize-login
-    const response = await fetch("http://localhost:8080/api/initialize-login", {
+    // Send POST Request to client /api/login endpoint
+      const response = await fetch(config.clientBaseUrl + "/api/login", {      
       method: "POST",
       headers: {
         "Content-Type": "application/json",
