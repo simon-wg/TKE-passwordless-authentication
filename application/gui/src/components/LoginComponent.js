@@ -18,7 +18,7 @@ const LoginComponent = () => {
     clearMessages();
     setLoading(true);
     // Send POST Request to client /api/login endpoint
-      const response = await fetch(config.clientBaseUrl + "/api/login", {      
+    const response = await fetch(config.clientBaseUrl + "/api/login", {      
       method: "POST",
       headers: {
         "Content-Type": "application/json",
