@@ -6,10 +6,10 @@ import LoadingCircle from "./LoadingCircle";
 
 
 const LoginComponent = () => {
-  const [username, setUsername] = useState("");
-  const [message, setMessage] = useState("");
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
+  const [username, setUsername] = useState('');
+  const [message, setMessage] = useState('');
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
