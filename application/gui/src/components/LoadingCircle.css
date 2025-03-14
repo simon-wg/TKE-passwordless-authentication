@@ -1,0 +1,55 @@
+.image-container {
+  margin-bottom: 20px;
+  display: inline-block;
+  border-radius: 50%;
+  padding: 4px;
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border: 4px solid black;
+  transition: border 0.3s ease;
+}
+
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.spinner {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  width: 108px;
+  height: 108px;
+  animation: spin 1.5s linear infinite;
+  display: none;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Removes static border when loading */
+.image-container.loading {
+  border-color: transparent;
+}
+
+/* Show the spinner when loading */
+.image-container.loading .spinner {
+  display: block;  /* Show the spinner */
+}
+
+/* Hide the spinner when not loading */
+.image-container:not(.loading) .spinner {
+  display: none;
+}
