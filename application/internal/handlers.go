@@ -502,6 +502,14 @@ func RemovePublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 
 func UnregisterHandler(w http.ResponseWriter, r *http.Request) {
 
+	session, _ := session_util.Store.Get(r, "session-name")
+	username, ok := session.Values["username"].(string)
+
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	// Ensure it is a POST request
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
@@ -522,7 +530,7 @@ func UnregisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Extract username and public key
-	username := requestBody.Username
+	username = requestBody.Username
 
 	fmt.Printf("Received unregistration request for user: %s\n", username)
 

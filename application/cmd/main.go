@@ -33,7 +33,7 @@ func main() {
 	http.HandleFunc("/api/register", internal.RegisterHandler)
 	http.HandleFunc("/api/login", internal.LoginHandler)
 	http.HandleFunc("/api/verify", internal.VerifyHandler)
-	http.HandleFunc("/api/unregister", internal.UnregisterHandler)
+	http.Handle("/api/unregister", session_util.SessionMiddleware(http.HandlerFunc(internal.UnregisterHandler)))
 	http.Handle("/api/verify-session", http.HandlerFunc(session_util.CheckAuthHandler))
 	http.Handle("/api/getuser", session_util.SessionMiddleware(http.HandlerFunc(internal.GetUserHandler)))
 	http.Handle("/api/add-public-key", session_util.SessionMiddleware(http.HandlerFunc(internal.AddPublicKeyHandler)))
