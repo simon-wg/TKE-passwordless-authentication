@@ -21,7 +21,6 @@ const LoginComponent = () => {
     const response = await fetch(config.clientBaseUrl + "/api/login", {      
       method: "POST",
       headers: {
-        "Allow-Control-Allow-Origin": "localhost:6060",
         "Content-Type": "application/json",
       },
       credentials: "include",
