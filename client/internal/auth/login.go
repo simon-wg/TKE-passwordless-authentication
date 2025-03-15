@@ -24,11 +24,17 @@ import (
 // - An error if the login process fails
 func Login(appurl string, username string) (*http.Cookie, error) {
 
+	//Creates a cookie jar to send the cookie across functions programmatically
+	jar, _ := cookiejar.New(nil)
+	c := &http.Client{Jar: jar}
+
 	// Fetches the generated challenge from the server
 	challengeResponse, err := getChallenge(appurl, username)
 	if err != nil {
 		return nil, err
 	}
+
+	var cookie http.Cookie
 
 	// TODO: Implement signature verification
 	// if !verifySignature(challengeResponse) {
@@ -40,17 +46,6 @@ func Login(appurl string, username string) (*http.Cookie, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	return VerifyUser(appurl, username, signedChallenge)
-}
-
-func VerifyUser(appurl string, username string, signedChallenge interface{}) (*http.Cookie, error) {
-
-	//Creates a cookie jar to send the cookie across functions programmatically
-	jar, _ := cookiejar.New(nil)
-	c := &http.Client{Jar: jar}
-
-	var cookie http.Cookie
 
 	// TODO: Make more customizable
 	endpoint := "/api/verify"
@@ -75,11 +70,10 @@ func VerifyUser(appurl string, username string, signedChallenge interface{}) (*h
 	} else {
 		return nil, fmt.Errorf("No cookies received")
 	}
-	defer resp.Body.Close()
 
 	switch resp.StatusCode {
 	case http.StatusOK:
-		fmt.Printf("User '%s' has been successfully verified!\n", username)
+		fmt.Printf("User '%s' has been successfully logged in!\n", username)
 	case http.StatusUnauthorized:
 		return nil, fmt.Errorf("invalid signature")
 	case http.StatusNotFound:
@@ -93,7 +87,6 @@ func VerifyUser(appurl string, username string, signedChallenge interface{}) (*h
 	return &cookie, nil
 }
 
-// Sign the challenge
 // An internal function that signs the challenge using the tkey
 //
 // Parameters:

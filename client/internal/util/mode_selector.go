@@ -20,11 +20,10 @@ func SelectMode() int {
 	fmt.Println("\nSelect Mode:")
 	fmt.Println("1. Register")
 	fmt.Println("2. Login")
-	fmt.Println("3. Unregister")
-	fmt.Println("4. Exit")
+	fmt.Println("3. Exit")
 
 	var choice int
-	fmt.Print("Enter choice (1/2/3/4): ")
+	fmt.Print("Enter choice (1/2/3): ")
 	fmt.Scanln(&choice)
 	return choice
 }
@@ -47,15 +46,6 @@ func CallRegister() {
 	username := getUsername()
 	label := getLabel()
 	err := auth.Register(appurl, username, label)
-	if err != nil {
-		le.Println(err)
-	}
-}
-
-// Call Unregister retrieves the username and attempts to unregister it with the authentication service
-func CallUnregister() {
-	username := getUsername()
-	err := auth.Unregister(appurl, username)
 	if err != nil {
 		le.Println(err)
 	}
