@@ -5,6 +5,7 @@ package main
 
 import (
 	"chalmers/tkey-group22/client/internal/auth"
+	. "chalmers/tkey-group22/client/internal/structs"
 	"chalmers/tkey-group22/client/internal/util"
 	"encoding/json"
 	"flag"
@@ -88,15 +89,22 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	username := requestBody["username"]
-	cookie, err := auth.Login(origin, username)
+	user, signedChallenge, err := auth.GetAndSign(origin, username)
 	if err != nil {
 		http.Error(w, "Failed to log in", http.StatusBadRequest)
 		return
 	}
+	response := GetAndSignResponse{
+		User:            user,
+		SignedChallenge: signedChallenge,
+	}
 
-	//Takes the cookie returned from Login() and writes it to the response
-	http.SetCookie(w, cookie)
-	w.Write([]byte("Login successful and cookie sent"))
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // Handles register requests from the web client

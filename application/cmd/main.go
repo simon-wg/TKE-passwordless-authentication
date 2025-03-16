@@ -13,6 +13,23 @@ import (
 	"github.com/joho/godotenv"
 )
 
+func enableCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000") // Allow frontend
+		w.Header().Set("Access-Control-Allow-Methods", "POST,OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Credentials", "true") // Needed for cookies/sessions
+
+		// Handle preflight OPTIONS request
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 // Starts the application
 func main() {
 	err := godotenv.Load("../.env")
@@ -31,13 +48,13 @@ func main() {
 	}
 
 	http.HandleFunc("/api/register", internal.RegisterHandler)
-	http.HandleFunc("/api/login", internal.LoginHandler)
-	http.HandleFunc("/api/verify", internal.VerifyHandler)
+	http.Handle("/api/login", enableCORS(http.HandlerFunc(internal.LoginHandler)))
+	http.Handle("/api/verify", enableCORS(http.HandlerFunc(internal.VerifyHandler)))
 	http.Handle("/api/verify-session", http.HandlerFunc(session_util.CheckAuthHandler))
-	http.Handle("/api/getuser", session_util.SessionMiddleware(http.HandlerFunc(internal.GetUserHandler)))
-	http.Handle("/api/add-public-key", session_util.SessionMiddleware(http.HandlerFunc(internal.AddPublicKeyHandler)))
-	http.Handle("/api/remove-public-key", session_util.SessionMiddleware(http.HandlerFunc(internal.RemovePublicKeyHandler)))
-	http.Handle("/api/get-public-key-labels", session_util.SessionMiddleware(http.HandlerFunc(internal.GetPublicKeyLabelsHandler)))
+	http.Handle("/api/getuser", http.HandlerFunc(internal.GetUserHandler))
+	http.Handle("/api/add-public-key", (http.HandlerFunc(internal.AddPublicKeyHandler)))
+	http.Handle("/api/remove-public-key", http.HandlerFunc(internal.RemovePublicKeyHandler))
+	http.Handle("/api/get-public-key-labels", http.HandlerFunc(internal.GetPublicKeyLabelsHandler))
 
 	fmt.Println("Mock application running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)

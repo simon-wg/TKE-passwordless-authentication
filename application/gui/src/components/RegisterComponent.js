@@ -1,20 +1,19 @@
-import React, { useState } from 'react';
-import './styles.css';
-import config from '../config';
-import LoadingCircle from './LoadingCircle';
+import React, { useState } from "react";
+import "./styles.css";
+import config from "../config";
+import LoadingCircle from "./LoadingCircle";
 const RegisterComponent = () => {
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState("");
   const [label, setLabel] = useState("");
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
 
   const handleRegister = async (event) => {
     event.preventDefault();
     setLoading(true);
 
-    const result = await fetch(config.clientBaseUrl + "/api/register", {
+    const result = await fetch("http://localhost:6060/api/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
