@@ -4,10 +4,9 @@ import useAuthCheck from "../../hooks/useAuthCheck";
 import useFetchUser from "../../hooks/useFetchUser";
 
 const LoginSuccessPage = () => {
-  const isAuthenticated = useAuthCheck();
-  const user = useFetchUser(isAuthenticated);
+  const user = useFetchUser();
 
-  if (!isAuthenticated) {
+  if (!user) {
     return <div>Loading...</div>;
   }
 

@@ -16,7 +16,6 @@ func SetSession(w http.ResponseWriter, r *http.Request, username string) error {
 		return err
 	}
 
-	session.Values["authenticated"] = true
 	session.Values["username"] = username
 
 	session.Options = &sessions.Options{
