@@ -5,11 +5,11 @@ import useUpdatePassword from '../hooks/useUpdatePassword';
 import useDeletePassword from '../hooks/useDeletePassword';
 import './PasswordCard.css';
 
-const PasswordCard = ({ id: initialId, name: initialName, body: initialBody, isNewPassword = false, onUpdate, onDelete }) => {
+const PasswordCard = ({ id: initialId, name: initialName, body: initialBody, isUnsaved : unsavedInitial = false, onUpdate, onDelete }) => {
   const [id, setId] = useState(initialId);
   const [name, setName] = useState(initialName);
   const [body, setBody] = useState(initialBody);
-  const [isNew, setIsNew] = useState(isNewPassword);
+  const [isUnsaved, setIsNew] = useState(unsavedInitial);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState(''); 
   const [saveClicked, setSaveClicked] = useState(false);
@@ -25,14 +25,14 @@ const PasswordCard = ({ id: initialId, name: initialName, body: initialBody, isN
 
   useEffect(() => {
     if (!saveClicked) return;
-    if (isNew) {
+    if (isUnsaved) {
       savePassword(name, body, isAuthenticated, 'save-password');
       setIsNew(false);
     } else {
       updatePassword(id, name, body, isAuthenticated, 'update-password');
     }
     setSaveClicked(false);
-  }, [saveClicked, savePassword, updatePassword, isNew, name, body, isAuthenticated, id]);
+  }, [saveClicked, savePassword, updatePassword, isUnsaved, name, body, isAuthenticated, id]);
 
   useEffect(() => {
     if (saveResult !== null && saveResult !== prevSaveResult.current) {
@@ -75,7 +75,7 @@ const PasswordCard = ({ id: initialId, name: initialName, body: initialBody, isN
       }
       prevDeleteResult.current = deleteResult;
     }
-  }, [deleteResult, onDelete, id]);
+  }, [deleteResult, onDelete]);
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -91,8 +91,13 @@ const PasswordCard = ({ id: initialId, name: initialName, body: initialBody, isN
   };
 
   const handleDeleteClick = (event) => {
-    event.preventDefault();
-    deletePassword(id);
+    if (isUnsaved) {
+      onDelete(id);
+    }
+    else {
+      event.preventDefault();
+      deletePassword(id);
+    }
   };
 
   return (
