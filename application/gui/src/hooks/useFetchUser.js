@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import config from "../config";
 
 /**
  * Custom hook to fetch the current user data from the server.
@@ -10,7 +11,7 @@ import { useEffect, useState } from "react";
  * @returns {Object|null} The user data if available, otherwise null.
  */
 const useFetchUser = () => {
-  const [user, setUser] = useState(undefined);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -24,14 +25,13 @@ const useFetchUser = () => {
           const data = await response.json();
           setUser(data.user);
         }
-        setUser(null);
       } catch (error) {
-        setUser(null);
+        console.log("Error fetching user");
       }
     };
 
     fetchUser();
-  }, [user]);
+  }, []);
 
   return user;
 };

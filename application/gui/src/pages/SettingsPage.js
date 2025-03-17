@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import useFetchUser from "../hooks/useFetchUser";
 import config from "../config";
 import "../components/styles.css";
-import { useNavigate } from "react-router-dom";
 
 const SettingsPage = () => {
   const user = useFetchUser();
@@ -11,8 +10,6 @@ const SettingsPage = () => {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
   const [keyLabels, setKeyLabels] = useState([]);
-
-  const navigate = useNavigate();
 
   const fetchKeyLabels = async () => {
     const response = await fetch("/api/get-public-key-labels", {
@@ -86,13 +83,6 @@ const SettingsPage = () => {
     }
   };
 
-  if (user === undefined) {
-    return <div>Loading</div>;
-  }
-
-  if (!user) {
-    navigate("/");
-  }
   return (
     <div className="container">
       <h1>Settings</h1>
