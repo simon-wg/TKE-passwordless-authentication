@@ -159,7 +159,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
-// VerifyHandler handles the verification of a user's signature
+// VerifyHandler handles the verification of a user's signature. If the signiture is valid it
+// will set add the user to the session storage and return a cookie in the response.
 // It expects a POST request with a JSON body containing "username" and "signature" fields
 //
 // Possible responses:
@@ -246,23 +247,6 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
-
-// This handler calls SetSession, which creates a session with the user
-// func SetSessionHandler(w http.ResponseWriter, r *http.Request){
-// 	var requestBody map[string]string
-// 	apiKey := r.Header.Get("X-API-Key")
-
-// 	if apiKey != "secret-API-key" {
-// 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-// 		return
-// 	}
-// 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-// 		http.Error(w, "Invalid request body", http.StatusBadRequest)
-// 		return
-// 	}
-// 	username := requestBody["username"]
-// 	session_util.SetSession(w, r, username)
-// }
 
 // GetPublicKeyLabelsHandler handles the retrieval of public key labels for a user
 // It expects a POST request with a JSON body containing the username

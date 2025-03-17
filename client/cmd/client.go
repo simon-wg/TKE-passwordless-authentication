@@ -77,7 +77,9 @@ func enableCors(next http.Handler) http.Handler {
 	})
 }
 
-// Handles login requests from the web client
+// Gets a username to attempt to sign in on. Will return a signed challenge. It expects a POST
+// request with a JSON body containing a username.
+
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	// Get origin from request header and replace port with 8080
 	// We use this order to be able to know what to send to auth.Login

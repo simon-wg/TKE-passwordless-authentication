@@ -10,16 +10,17 @@ import (
 	"net/http"
 )
 
-// Sends a request to the server to login a user
-// This requires that the app has the /api/login and /api/verify endpoints
-// It returns an error if the login process fails
+// Programatically returns a signed challenge. Expects an appurl to request the
+// challenge from and a username to associate with that challenge.
+// It returns an error if unable to get challenge or sign the challenge.
 //
 // Parameters:
 // - appurl: The URL of the application server
 // - username: The username of the user to login
 //
 // Returns:
-// - A cookie pointer
+// - A signed challenge
+// - An username
 // - An error if the login process fails
 func GetAndSign(appurl string, username string) (string, []byte, error) {
 

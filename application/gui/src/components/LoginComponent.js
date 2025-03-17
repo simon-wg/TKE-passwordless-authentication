@@ -12,11 +12,21 @@ const LoginComponent = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  /**
+   * Handles the process of getting a signed challenge from the server.
+   *
+   * This function sends a POST request to the /api/login endpoint with the username
+   * to get a signed challenge. If the request is successful, it calls the
+   * verifySignedChallenge function with the username and the signed challenge.
+   *
+   * @param {Event} event - The event object from the form submission.
+   * @throws {Error} - Throws an error if the HTTP request fails.
+   */
+
   const handleGetSignedChallenge = async (event) => {
     event.preventDefault();
     clearMessages();
     setLoading(true);
-    // Send POST Request to client /api/login endpoint
     try {
       const response = await fetch(config.clientBaseUrl + "/api/login", {
         method: "POST",
@@ -30,7 +40,7 @@ const LoginComponent = () => {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      const data = await response.json(); // Parse JSON response
+      const data = await response.json();
       verifySignedChallenge(username, data.signed_challenge);
     } catch (error) {
       setError("Error fetching signed challenge");
@@ -38,6 +48,13 @@ const LoginComponent = () => {
     }
   };
 
+  /**
+   * Verifies the signed challenge for the given username.
+   *
+   * @param {string} username - The username of the user.
+   * @param {string} signedChallenge - The signed challenge to verify.
+   * @throws {Error} - Throws an error if the HTTP request fails.
+   */
   async function verifySignedChallenge(username, signedChallenge) {
     try {
       const response = await fetch("/api/verify", {
