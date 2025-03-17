@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
  * @returns {Object|null} The user data if available, otherwise null.
  */
 const useFetchUser = () => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(undefined);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -24,13 +24,14 @@ const useFetchUser = () => {
           const data = await response.json();
           setUser(data.user);
         }
+        setUser(null);
       } catch (error) {
-        console.log("Error fetching user");
+        setUser(null);
       }
     };
 
     fetchUser();
-  }, []);
+  }, [user]);
 
   return user;
 };

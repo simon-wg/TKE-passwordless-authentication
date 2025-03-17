@@ -6,6 +6,10 @@ const LoginSuccessPage = () => {
   const user = useFetchUser();
   const navigate = useNavigate();
 
+  if (user === undefined) {
+    return <div>Loading</div>;
+  }
+
   if (!user) {
     navigate("/");
   }

@@ -86,10 +86,13 @@ const SettingsPage = () => {
     }
   };
 
+  if (user === undefined) {
+    return <div>Loading</div>;
+  }
+
   if (!user) {
     navigate("/");
   }
-
   return (
     <div className="container">
       <h1>Settings</h1>
