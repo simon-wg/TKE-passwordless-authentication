@@ -458,7 +458,7 @@ func RemovePublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // UnregisterHandler handles user unregistration requests.
-// It ensures the request is a POST, extracts the username from the request body,
+// It checks that that request it authorized. Then it ensures the request is a POST, extracts the username from the session.
 // checks that the user exists in the database, deletes the user from the database if they exist,
 // and then sends a success response.
 //
@@ -472,12 +472,6 @@ func RemovePublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 // Dependencies:
 //   - UserRepo.go
 //
-// Expected JSON format in request body:
-//
-//	{
-//	  "username": "username"
-//	}
-//
 // JSON format in response body:
 //
 //	{
@@ -485,11 +479,10 @@ func RemovePublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 //	}
 
 func UnregisterHandler(w http.ResponseWriter, r *http.Request) {
-
 	session, _ := session_util.Store.Get(r, "session-name")
 	username, ok := session.Values["username"].(string)
 
-	if !ok {
+	if !ok || username == "" {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -500,49 +493,25 @@ func UnregisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse request body
-	requestBody := structs.RegisterRequest{}
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
+	fmt.Printf("Received unregistration request from user: %s\n", username)
 
-	if err := json.Unmarshal(body, &requestBody); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	// Extract username and public key
-	username = requestBody.Username
-
-	fmt.Printf("Received unregistration request for user: %s\n", username)
-
-	// Check that the user exists in database
+	// Check that the user exists in the database
 	userExists, err := UserRepo.GetUser(username)
-
 	if userExists == nil || err == mongo.ErrNoDocuments {
 		fmt.Printf("User does not exist: %s\n", username)
 		http.Error(w, "Could not unregister. User does not exist", http.StatusNotFound)
 		return
 	}
 
-	// Delete user from database
+	// Delete user from the database
 	user, err := UserRepo.DeleteUser(username)
 	if err != nil || user == nil {
 		fmt.Printf("Error deleting user: %v\n", err)
-		http.Error(w, "Unable to deleting user", http.StatusInternalServerError)
+		http.Error(w, "Unable to delete user", http.StatusInternalServerError)
 		return
 	}
 
 	// Send success response
-	responseBody := map[string]string{"message": "User unregistered successfully"}
-	responseBodyBytes, err := json.Marshal(responseBody)
-	if err != nil {
-		fmt.Printf("Unable to marshal response for user: %s\n", username)
-		http.Error(w, "Unable to send response", http.StatusInternalServerError)
-		return
-	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(responseBodyBytes)
+	json.NewEncoder(w).Encode(map[string]string{"message": "User unregistered successfully"})
 }
