@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useNavigate } from "react";
+import React, { useState, useEffect } from "react";
 import useFetchUser from "../hooks/useFetchUser";
 import config from "../config";
 import "../components/styles.css";
+import { useNavigate } from "react-router-dom";
 
 const SettingsPage = () => {
   const user = useFetchUser();
