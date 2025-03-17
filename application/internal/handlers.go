@@ -236,6 +236,7 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 
 // This handler returns the username of the current session user
 func GetUserHandler(w http.ResponseWriter, r *http.Request) {
+
 	session, _ := session_util.Store.Get(r, "session-name")
 	username, ok := session.Values["username"].(string)
 
@@ -243,7 +244,15 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	response := map[string]string{"message": "Access granted", "user": username}
+
+	signedusername, err := util.SignMessage([]byte(username))
+
+	if err != nil {
+		fmt.Println("Error signing username", err)
+		return
+	}
+
+	response := map[string]string{"user": username, "verification": string(signedusername)}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
