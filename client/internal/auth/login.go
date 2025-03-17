@@ -10,23 +10,25 @@ import (
 	"net/http"
 )
 
-// Sends a request to the server to login a user
-// This requires that the app has the /api/login and /api/verify endpoints
-// It returns an error if the login process fails
+// Programatically returns a signed challenge. Expects an appurl to request the
+// challenge from and a username to associate with that challenge.
+// It returns an error if unable to get challenge or sign the challenge.
 //
 // Parameters:
 // - appurl: The URL of the application server
 // - username: The username of the user to login
 //
 // Returns:
+// - A signed challenge
+// - An username
 // - An error if the login process fails
-func Login(appurl string, username string) error {
-	c := &http.Client{}
+func GetAndSign(appurl string, username string) (string, []byte, error) {
 
 	// Fetches the generated challenge from the server
 	challengeResponse, err := getChallenge(appurl, username)
 	if err != nil {
-		return err
+		fmt.Println("Error getting challenge")
+		return "", nil, err
 	}
 
 	// TODO: Implement signature verification
@@ -35,39 +37,12 @@ func Login(appurl string, username string) error {
 	// }
 
 	// Signs the challenge
-	signedChallenge, err := signChallenge(username, challengeResponse)
+	user, signedChallenge, err := signChallenge(username, challengeResponse)
 	if err != nil {
-		return err
+		return "", nil, err
 	}
+	return user, signedChallenge, nil
 
-	// TODO: Make more customizable
-	endpoint := "/api/verify"
-
-	body, err := json.Marshal(signedChallenge)
-	if err != nil {
-		return err
-	}
-
-	// Sends the signed challenge to the server in the format of a VerifyRequest
-	resp, err := c.Post(appurl+endpoint, "application/json", bytes.NewBuffer(body))
-	if err != nil {
-		return err
-	}
-
-	switch resp.StatusCode {
-	case http.StatusOK:
-		fmt.Printf("User '%s' has been successfully logged in!\n", username)
-	case http.StatusUnauthorized:
-		return fmt.Errorf("invalid signature")
-	case http.StatusNotFound:
-		return fmt.Errorf("no active challenge found for the user")
-	case http.StatusInternalServerError:
-		return fmt.Errorf("unable to read user data")
-	default:
-		return fmt.Errorf("unexpected error: %s", resp.Status)
-	}
-
-	return nil
 }
 
 // An internal function that signs the challenge using the tkey
@@ -79,17 +54,15 @@ func Login(appurl string, username string) error {
 // Returns:
 // - A VerifyRequest struct containing the username and signature
 // - An error if the signing process fails
-func signChallenge(username string, challenge *LoginResponse) (*VerifyRequest, error) {
+func signChallenge(username string, challenge *LoginResponse) (string, []byte, error) {
 	fmt.Printf("Touch the TKey to continue...\n")
 	sig, err := tkey.Sign([]byte(challenge.Challenge))
 	if err != nil {
-		return nil, err
+		fmt.Println("Error Signing Challenge")
+		return "", nil, err
 	}
 
-	return &VerifyRequest{
-		Username:  username,
-		Signature: sig,
-	}, nil
+	return username, sig, nil
 }
 
 // An internal function that fetches the challenge from the server
