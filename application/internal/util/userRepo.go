@@ -138,9 +138,6 @@ func (repo *UserRepo) UpdateUser(userName string, updatedUser User) (*mongo.Upda
 	userName = SanitizeInput(userName)
 	updatedUser.Username = SanitizeInput(updatedUser.Username)
 
-	// Encodes new pubkey for storing in database
-	updatedUser.PublicKey = base64.StdEncoding.EncodeToString([]byte(updatedUser.PublicKey))
-
 	filter := bson.M{"username": userName}
 	updatedData := bson.M{
 		"$set": bson.M{
@@ -150,7 +147,6 @@ func (repo *UserRepo) UpdateUser(userName string, updatedUser User) (*mongo.Upda
 	}
 
 	result, err := collection.UpdateOne(context.Background(), filter, updatedData)
-
 	if err != nil {
 		return nil, err
 	}
