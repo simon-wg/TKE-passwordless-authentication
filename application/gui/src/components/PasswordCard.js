@@ -1,37 +1,81 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import useAuthCheck from "../hooks/useAuthCheck";
 import useSavePassword from '../hooks/useSavePassword';
+import useUpdatePassword from '../hooks/useUpdatePassword';
+import useDeletePassword from '../hooks/useDeletePassword';
 import './PasswordCard.css';
 
-const PasswordCard = ({ name: initialName, body: initialBody, isNew }) => {
+const PasswordCard = ({ id: initialId, name: initialName, body: initialBody, isNewPassword = false, onUpdate, onDelete }) => {
+  const [id, setId] = useState(initialId);
   const [name, setName] = useState(initialName);
   const [body, setBody] = useState(initialBody);
+  const [isNew, setIsNew] = useState(isNewPassword);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState(''); 
   const [saveClicked, setSaveClicked] = useState(false);
 
   const isAuthenticated = useAuthCheck();
-  const endpoint = 'save-password';
-  const [result, savePassword] = useSavePassword();
+  const [saveResult, savePassword] = useSavePassword();
+  const [updateResult, updatePassword] = useUpdatePassword();
+  const [deleteResult, deletePassword] = useDeletePassword();
+
+  const prevSaveResult = useRef(null);
+  const prevUpdateResult = useRef(null);
+  const prevDeleteResult = useRef(null);
 
   useEffect(() => {
-    if (saveClicked) {
-      savePassword(name, body, isAuthenticated, endpoint);
-      setSaveClicked(false);
+    if (!saveClicked) return;
+    if (isNew) {
+      savePassword(name, body, isAuthenticated, 'save-password');
+      setIsNew(false);
+    } else {
+      updatePassword(id, name, body, isAuthenticated, 'update-password');
     }
-  }, [saveClicked, name, body, isAuthenticated, endpoint, savePassword]);
+    setSaveClicked(false);
+  }, [saveClicked, savePassword, updatePassword, isNew, name, body, isAuthenticated, id]);
 
   useEffect(() => {
-    if (result !== null) {
-      if (result === false) {
-        setMessage('Failed to save password');
+    if (saveResult !== null && saveResult !== prevSaveResult.current) {
+      if (saveResult === false) {
+        setMessage('Failed to create password');
         setMessageType('error');
       } else {
-        setMessage('Password saved successfully');
+        setMessage('Password created successfully');
         setMessageType('success');
+        setId(saveResult.id);
+        if (onUpdate) onUpdate({ ID: saveResult.id, Name: name, Password: body });
       }
+      prevSaveResult.current = saveResult;
     }
-  }, [result]);
+  }, [saveResult, onUpdate, name, body]);
+
+  useEffect(() => {
+    if (updateResult !== null && updateResult !== prevUpdateResult.current) {
+      if (updateResult === false) {
+        setMessage('Failed to update password');
+        setMessageType('error');
+      } else {
+        setMessage('Password updated successfully');
+        setMessageType('success');
+        if (onUpdate) onUpdate({ ID: id, Name: name, Password: body });
+      }
+      prevUpdateResult.current = updateResult;
+    }
+  }, [updateResult, onUpdate, id, name, body]);
+
+  useEffect(() => {
+    if (deleteResult !== null && deleteResult !== prevDeleteResult.current) {
+      if (deleteResult === false) {
+        setMessage('Failed to delete password');
+        setMessageType('error');
+      } else {
+        setMessage('Password deleted successfully');
+        setMessageType('success');
+        if (onDelete) onDelete(id);
+      }
+      prevDeleteResult.current = deleteResult;
+    }
+  }, [deleteResult, onDelete, id]);
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -44,6 +88,11 @@ const PasswordCard = ({ name: initialName, body: initialBody, isNew }) => {
   const handleSaveClick = (event) => {
     event.preventDefault();
     setSaveClicked(true);
+  };
+
+  const handleDeleteClick = (event) => {
+    event.preventDefault();
+    deletePassword(id);
   };
 
   return (
@@ -59,7 +108,10 @@ const PasswordCard = ({ name: initialName, body: initialBody, isNew }) => {
         onChange={handleBodyChange}
         placeholder="Body"
       />
-      <button onClick={handleSaveClick}>Save</button>
+      <div className="button-group">
+        <button onClick={handleSaveClick}>Save</button>
+        <button className="delete" onClick={handleDeleteClick}>Delete</button>
+      </div>
       {message && <p className={messageType}>{message}</p>}
     </div>
   );

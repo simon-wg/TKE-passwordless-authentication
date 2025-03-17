@@ -17,9 +17,10 @@ type PasswordData struct {
 
 type PasswordRepository interface {
 	CreatePassword(username string, name string, password string) (*mongo.InsertOneResult, error)
-	GetUserPasswords(username string) ([]PasswordData, error) // Update return type to match PasswordRepo
-	UpdatePassword(username string, updatedPassword PasswordData) (*mongo.UpdateResult, error)
-	DeletePassword(username string) (*mongo.DeleteResult, error)
+	GetUserPasswords(username string) ([]PasswordData, error)
+	GetPassword(id string) (PasswordData, error)
+	UpdatePassword(id string, username string, name string, password string) (*mongo.UpdateResult, error)
+	DeletePassword(id string) (*mongo.DeleteResult, error)
 }
 
 type PasswordRepo struct {
@@ -76,15 +77,38 @@ func (repo *PasswordRepo) GetUserPasswords(username string) ([]PasswordData, err
 	return users, nil
 }
 
-func (repo *PasswordRepo) UpdatePassword(username string, updatedUser PasswordData) (*mongo.UpdateResult, error) {
+func (repo *PasswordRepo) GetPassword(id string) (PasswordData, error) {
 	collection := repo.db.Collection(repoName)
 
-	filter := bson.M{"username": username}
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return PasswordData{}, err
+	}
+
+	filter := bson.M{"_id": objectID}
+	var password PasswordData
+	err = collection.FindOne(context.Background(), filter).Decode(&password)
+	if err != nil {
+		return PasswordData{}, err
+	}
+
+	return password, nil
+}
+
+func (repo *PasswordRepo) UpdatePassword(id string, username string, name string, password string) (*mongo.UpdateResult, error) {
+	collection := repo.db.Collection(repoName)
+
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.M{"_id": objectID}
 	updatedData := bson.M{
 		"$set": bson.M{
 			"username": username,
-			"name":     updatedUser.Name,
-			"password": updatedUser.Password,
+			"name":     name,
+			"password": password,
 		},
 	}
 
@@ -96,10 +120,15 @@ func (repo *PasswordRepo) UpdatePassword(username string, updatedUser PasswordDa
 	return result, nil
 }
 
-func (repo *PasswordRepo) DeletePassword(username string) (*mongo.DeleteResult, error) {
+func (repo *PasswordRepo) DeletePassword(id string) (*mongo.DeleteResult, error) {
 	collection := repo.db.Collection(repoName)
 
-	filter := bson.M{"username": username}
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.M{"_id": objectID}
 	result, err := collection.DeleteOne(context.Background(), filter)
 	if err != nil {
 		return nil, err

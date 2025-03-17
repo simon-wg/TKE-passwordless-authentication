@@ -31,6 +31,16 @@ type RegisterRequest struct {
 }
 
 type SavePasswordRequest struct {
-	Name     string `bson:"name"`
-	Password string `bson:"password"`
+	Name     string `json:"name"`
+	Password string `json:"password"`
+}
+
+type UpdatePasswordRequest struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Password string `json:"password"`
+}
+
+type DeletePasswordRequest struct {
+	ID string `json:"id"`
 }

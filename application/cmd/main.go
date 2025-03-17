@@ -30,8 +30,10 @@ func main() {
 	http.Handle("/api/initialize-login", enableCors(http.HandlerFunc(internal.InitializeLoginHandler)))
 	http.Handle("/api/verify-session", enableCors(http.HandlerFunc(session_util.CheckAuthHandler)))
 	http.Handle("/api/getuser", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.GetUserHandler))))
-	http.Handle("/api/save-password", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.SavePasswordHandler))))
+	http.Handle("/api/save-password", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.CreatePasswordHandler))))
 	http.Handle("/api/get-user-passwords", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.GetUserPasswordsHandler))))
+	http.Handle("/api/update-password", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.UpdatePasswordHandler))))
+	http.Handle("/api/delete-password", enableCors(session_util.SessionMiddleware(http.HandlerFunc(internal.DeletePasswordHandler))))
 
 	fmt.Println("Mock application running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
@@ -44,7 +46,7 @@ func enableCors(next http.Handler) http.Handler {
 		if origin == "http://localhost:8080" || origin == "http://localhost:3000" {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 		}
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		if r.Method == http.MethodOptions {

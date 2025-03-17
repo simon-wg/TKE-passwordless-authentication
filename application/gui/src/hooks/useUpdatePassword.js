@@ -1,27 +1,26 @@
 import { useState } from 'react';
 
-const useSavePassword = () => {
+const useUpdatePassword = () => {
   const [result, setResult] = useState(null);
 
-  const savePassword = async (name, password, isAuthenticated, endpoint) => {
+  const updatePassword = async (id, name, password, isAuthenticated) => {
     if (!isAuthenticated) {
       setResult(false);
       return;
     }
 
     try {
-      const response = await fetch('http://localhost:8080/api/' + endpoint, {
+      const response = await fetch('http://localhost:8080/api/update-password', {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, password }),
+        body: JSON.stringify({ id, name, password }),
       });
 
       if (response.ok) {
-        const data = await response.json();
-        setResult(data);
+        setResult(true);
       } else {
         setResult(false);
       }
@@ -31,7 +30,7 @@ const useSavePassword = () => {
     }
   };
 
-  return [result, savePassword];
+  return [result, updatePassword];
 };
 
-export default useSavePassword;
+export default useUpdatePassword;

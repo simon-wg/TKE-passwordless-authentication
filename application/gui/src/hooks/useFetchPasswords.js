@@ -15,7 +15,6 @@ const useFetchPasswords = (isAuthenticated) => {
 
         if (response.ok) {
           const data = await response.json();
-          console.log(JSON.stringify(data))
           setPasswords(data);
         }
       } catch (error) {

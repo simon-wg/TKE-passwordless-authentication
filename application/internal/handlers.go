@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -284,7 +285,32 @@ func InitializeLoginHandler(w http.ResponseWriter, r *http.Request) {
 	io.Copy(w, resp.Body) // Forward response body to client
 }
 
-func SavePasswordHandler(w http.ResponseWriter, r *http.Request) {
+func GetUserPasswordsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	username, err := session_util.GetSessionUsername(r)
+	if err != nil {
+		http.Error(w, "No user signed in", http.StatusUnauthorized)
+		return
+	}
+	passwords, _ := PasswordRepo.GetUserPasswords(username)
+
+	// Convert passwords to JSON
+	responseBodyBytes, err := json.Marshal(passwords)
+	if err != nil {
+		http.Error(w, "Unable to marshal passwords", http.StatusInternalServerError)
+		return
+	}
+
+	// Send the JSON response
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseBodyBytes)
+}
+
+func CreatePasswordHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
@@ -316,7 +342,10 @@ func SavePasswordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responseBody := map[string]string{"message": "Password saved successfully"}
+	responseBody := map[string]interface{}{
+		"message": "Password saved successfully",
+		"id":      result.InsertedID.(primitive.ObjectID).Hex(),
+	}
 	responseBodyBytes, err := json.Marshal(responseBody)
 	if err != nil {
 		http.Error(w, "Unable to send response", http.StatusInternalServerError)
@@ -326,9 +355,65 @@ func SavePasswordHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(responseBodyBytes)
 }
 
-func GetUserPasswordsHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
+func UpdatePasswordHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	requestBody := structs.UpdatePasswordRequest{}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := json.Unmarshal(body, &requestBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	username, _ := session_util.GetSessionUsername(r)
+	currentEntry, err := PasswordRepo.GetPassword(requestBody.ID)
+	if err != nil {
+		http.Error(w, "Error retrieving entry", http.StatusInternalServerError)
+	}
+
+	if username != currentEntry.Username {
+		http.Error(w, "User not owner of entry", http.StatusUnauthorized)
+		return
+	}
+
+	result, err := PasswordRepo.UpdatePassword(requestBody.ID, username, requestBody.Name, requestBody.Password)
+	if result == nil || err != nil {
+		http.Error(w, "Failed to update password", http.StatusInternalServerError)
+		return
+	}
+
+	responseBody := map[string]string{"message": "Password updated successfully"}
+	responseBodyBytes, _ := json.Marshal(responseBody)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseBodyBytes)
+}
+
+func DeletePasswordHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	requestBody := structs.DeletePasswordRequest{}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := json.Unmarshal(body, &requestBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
@@ -337,16 +422,27 @@ func GetUserPasswordsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "No user signed in", http.StatusUnauthorized)
 		return
 	}
-	passwords, _ := PasswordRepo.GetUserPasswords(username)
 
-	// Convert passwords to JSON
-	responseBodyBytes, err := json.Marshal(passwords)
+	currentEntry, err := PasswordRepo.GetPassword(requestBody.ID)
 	if err != nil {
-		http.Error(w, "Unable to marshal passwords", http.StatusInternalServerError)
+		http.Error(w, "Error retrieving entry", http.StatusInternalServerError)
 		return
 	}
 
-	// Send the JSON response
+	if username != currentEntry.Username {
+		http.Error(w, "User not owner of entry", http.StatusUnauthorized)
+		return
+	}
+
+	result, err := PasswordRepo.DeletePassword(requestBody.ID)
+	if result == nil || err != nil {
+		http.Error(w, "Failed to delete password", http.StatusInternalServerError)
+		return
+	}
+
+	responseBody := map[string]string{"message": "Password deleted successfully"}
+	responseBodyBytes, _ := json.Marshal(responseBody)
+
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(responseBodyBytes)
 }
