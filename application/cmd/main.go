@@ -33,6 +33,7 @@ func main() {
 	http.Handle("/api/login", http.HandlerFunc(internal.LoginHandler))
 	http.Handle("/api/verify", http.HandlerFunc(internal.VerifyHandler))
 	http.Handle("/api/getuser", http.HandlerFunc(internal.GetUserHandler))
+	http.Handle("/api/unregister", http.HandlerFunc(internal.UnregisterHandler))
 	http.Handle("/api/add-public-key", (http.HandlerFunc(internal.AddPublicKeyHandler)))
 	http.Handle("/api/remove-public-key", http.HandlerFunc(internal.RemovePublicKeyHandler))
 	http.Handle("/api/get-public-key-labels", http.HandlerFunc(internal.GetPublicKeyLabelsHandler))

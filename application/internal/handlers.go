@@ -456,3 +456,62 @@ func RemovePublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(responseBodyBytes)
 }
+
+// UnregisterHandler handles user unregistration requests.
+// It checks that that request it authorized. Then it ensures the request is a POST, extracts the username from the session.
+// checks that the user exists in the database, deletes the user from the database if they exist,
+// and then sends a success response.
+//
+// Parameters:
+//   - w: The http.ResponseWriter to write the response to.
+//   - r: The http.Request containing the unregistration request.
+//
+// Returns:
+//   - None
+//
+// Dependencies:
+//   - UserRepo.go
+//
+// JSON format in response body:
+//
+//	{
+//	  "message": "User unregistered successfully"
+//	}
+
+func UnregisterHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := session_util.Store.Get(r, "session-name")
+	username, ok := session.Values["username"].(string)
+
+	if !ok || username == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Ensure it is a POST request
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	fmt.Printf("Received unregistration request from user: %s\n", username)
+
+	// Check that the user exists in the database
+	userExists, err := UserRepo.GetUser(username)
+	if userExists == nil || err == mongo.ErrNoDocuments {
+		fmt.Printf("User does not exist: %s\n", username)
+		http.Error(w, "Could not unregister. User does not exist", http.StatusNotFound)
+		return
+	}
+
+	// Delete user from the database
+	user, err := UserRepo.DeleteUser(username)
+	if err != nil || user == nil {
+		fmt.Printf("Error deleting user: %v\n", err)
+		http.Error(w, "Unable to delete user", http.StatusInternalServerError)
+		return
+	}
+
+	// Send success response
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "User unregistered successfully"})
+}
