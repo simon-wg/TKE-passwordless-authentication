@@ -1,30 +1,27 @@
-import React, { useState, useEffect } from "react";
-import useAuthCheck from "../hooks/useAuthCheck";
+import React, { useState, useEffect, useNavigate } from "react";
 import useFetchUser from "../hooks/useFetchUser";
 import config from "../config";
 import "../components/styles.css";
 
 const SettingsPage = () => {
-  const isAuthenticated = useAuthCheck();
-  const user = useFetchUser(isAuthenticated);
+  const user = useFetchUser();
   const [addKeyLabel, setAddKeyLabel] = useState("");
   const [removeKeyLabel, setRemoveKeyLabel] = useState("");
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
   const [keyLabels, setKeyLabels] = useState([]);
 
+  const navigate = useNavigate();
+
   const fetchKeyLabels = async () => {
-    const response = await fetch(
-      "/api/get-public-key-labels",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ username: user }),
-      }
-    );
+    const response = await fetch("/api/get-public-key-labels", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ username: user }),
+    });
 
     if (response.ok) {
       const data = await response.json();
@@ -42,17 +39,14 @@ const SettingsPage = () => {
   }, [user]);
 
   const handleAddKey = async () => {
-    const response = await fetch(
-      config.clientBaseUrl + "/api/add-public-key",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ username: user, label: addKeyLabel }),
-      }
-    );
+    const response = await fetch(config.clientBaseUrl + "/api/add-public-key", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ username: user, label: addKeyLabel }),
+    });
 
     if (response.ok) {
       setMessage("Public key added successfully");
@@ -91,8 +85,8 @@ const SettingsPage = () => {
     }
   };
 
-  if (!isAuthenticated) {
-    return <div>Loading...</div>;
+  if (!user) {
+    navigate("/");
   }
 
   return (

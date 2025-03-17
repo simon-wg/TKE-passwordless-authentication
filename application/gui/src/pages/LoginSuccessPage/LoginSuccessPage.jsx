@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useAuthCheck from "../../hooks/useAuthCheck";
 import useFetchUser from "../../hooks/useFetchUser";
 
 const LoginSuccessPage = () => {
   const user = useFetchUser();
+  const navigate = useNavigate();
 
   if (!user) {
-    return <div>Loading...</div>;
+    navigate("/");
   }
 
   return (

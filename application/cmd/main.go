@@ -4,7 +4,6 @@ package main
 import (
 	"chalmers/tkey-group22/application/data/db"
 	"chalmers/tkey-group22/application/internal"
-	"chalmers/tkey-group22/application/internal/session_util"
 	"chalmers/tkey-group22/application/internal/util"
 	"fmt"
 	"net/http"
@@ -12,23 +11,6 @@ import (
 
 	"github.com/joho/godotenv"
 )
-
-func enableCORS(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000") // Allow frontend
-		w.Header().Set("Access-Control-Allow-Methods", "POST,OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		w.Header().Set("Access-Control-Allow-Credentials", "true") // Needed for cookies/sessions
-
-		// Handle preflight OPTIONS request
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
 
 // Starts the application
 func main() {
@@ -48,9 +30,8 @@ func main() {
 	}
 
 	http.HandleFunc("/api/register", internal.RegisterHandler)
-	http.Handle("/api/login", enableCORS(http.HandlerFunc(internal.LoginHandler)))
-	http.Handle("/api/verify", enableCORS(http.HandlerFunc(internal.VerifyHandler)))
-	http.Handle("/api/verify-session", http.HandlerFunc(session_util.CheckAuthHandler))
+	http.Handle("/api/login", http.HandlerFunc(internal.LoginHandler))
+	http.Handle("/api/verify", http.HandlerFunc(internal.VerifyHandler))
 	http.Handle("/api/getuser", http.HandlerFunc(internal.GetUserHandler))
 	http.Handle("/api/add-public-key", (http.HandlerFunc(internal.AddPublicKeyHandler)))
 	http.Handle("/api/remove-public-key", http.HandlerFunc(internal.RemovePublicKeyHandler))

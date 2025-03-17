@@ -18,7 +18,7 @@ const LoginComponent = () => {
     setLoading(true);
     // Send POST Request to client /api/login endpoint
     try {
-      const response = await fetch("http://localhost:6060/api/login", {
+      const response = await fetch(config.clientBaseUrl + "/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -13,7 +13,7 @@ const RegisterComponent = () => {
     event.preventDefault();
     setLoading(true);
 
-    const result = await fetch("http://localhost:6060/api/register", {
+    const result = await fetch(config.clientBaseUrl + "/api/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
