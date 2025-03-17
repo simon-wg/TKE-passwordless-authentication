@@ -4,7 +4,6 @@ package main
 import (
 	"chalmers/tkey-group22/application/data/db"
 	"chalmers/tkey-group22/application/internal"
-	"chalmers/tkey-group22/application/internal/session_util"
 	"chalmers/tkey-group22/application/internal/util"
 	"fmt"
 	"net/http"
@@ -31,13 +30,12 @@ func main() {
 	}
 
 	http.HandleFunc("/api/register", internal.RegisterHandler)
-	http.HandleFunc("/api/login", internal.LoginHandler)
-	http.HandleFunc("/api/verify", internal.VerifyHandler)
-	http.Handle("/api/verify-session", http.HandlerFunc(session_util.CheckAuthHandler))
-	http.Handle("/api/getuser", session_util.SessionMiddleware(http.HandlerFunc(internal.GetUserHandler)))
-	http.Handle("/api/add-public-key", session_util.SessionMiddleware(http.HandlerFunc(internal.AddPublicKeyHandler)))
-	http.Handle("/api/remove-public-key", session_util.SessionMiddleware(http.HandlerFunc(internal.RemovePublicKeyHandler)))
-	http.Handle("/api/get-public-key-labels", session_util.SessionMiddleware(http.HandlerFunc(internal.GetPublicKeyLabelsHandler)))
+	http.Handle("/api/login", http.HandlerFunc(internal.LoginHandler))
+	http.Handle("/api/verify", http.HandlerFunc(internal.VerifyHandler))
+	http.Handle("/api/getuser", http.HandlerFunc(internal.GetUserHandler))
+	http.Handle("/api/add-public-key", (http.HandlerFunc(internal.AddPublicKeyHandler)))
+	http.Handle("/api/remove-public-key", http.HandlerFunc(internal.RemovePublicKeyHandler))
+	http.Handle("/api/get-public-key-labels", http.HandlerFunc(internal.GetPublicKeyLabelsHandler))
 
 	fmt.Println("Mock application running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)

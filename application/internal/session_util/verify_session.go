@@ -4,26 +4,25 @@ import (
 	"net/http"
 )
 
-// CheckAuthHandler checks if the user is logged in
-func CheckAuthHandler(w http.ResponseWriter, r *http.Request) {
-	session, _ := Store.Get(r, "session-name")
-	if auth, ok := session.Values["authenticated"].(bool); !ok || !auth {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-}
-
-// This protects routes from being accessed if the user is not logged in
+// SessionMiddleware is a middleware function that checks for the existence of a session
+// and verifies if the "username" key is present in the session values. If the "username"
+// key is not found, it responds with an "Unauthorized" error and a 401 status code.
+// If the "username" key is found, it calls the next handler in the chain.
+//
+// Parameters:
+// - next: The next http.Handler to be called if the session is valid.
+//
+// Returns:
+// - http.Handler: A handler that wraps the provided handler with session validation logic.
 func SessionMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, _ := Store.Get(r, "session-name")
-		auth, ok := session.Values["authenticated"].(bool)
+		_, ok := session.Values["username"]
 
-		if !ok || !auth {
+		if !ok {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-		next.ServeHTTP(w, r) // Call the next handler
+		next.ServeHTTP(w, r)
 	})
 }

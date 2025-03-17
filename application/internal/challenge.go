@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 )
@@ -83,6 +84,7 @@ func cleanupExpiredChallenges() {
 func VerifySignature(username string, signature []byte) (bool, error) {
 	challenge, exists := activeChallenges[username]
 	if !exists {
+		fmt.Println(activeChallenges)
 		return false, errors.New("no active challenge found for given user")
 	}
 
