@@ -13,11 +13,7 @@ const NotesApp = () => {
   const [tempNotes, setTempNotes] = useState([]);
 
   useEffect(() => {
-    // Only update if fetchedNotes is different
-    if (JSON.stringify(notes) !== JSON.stringify(fetchedNotes)) {
-      console.log("Fetch notes");
       setNotes(fetchedNotes);
-    }
   }, [fetchedNotes]);
 
   const handleNoteClick = (data) => {

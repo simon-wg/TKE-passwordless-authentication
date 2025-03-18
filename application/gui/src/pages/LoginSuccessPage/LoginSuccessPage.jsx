@@ -8,7 +8,6 @@ const LoginSuccessPage = () => {
 
   return (
     <div>
-      {/* <h1>Welcome back, {user}</h1> */}
       <NotesApp />
     </div>
   );

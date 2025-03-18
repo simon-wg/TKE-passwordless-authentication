@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 const useFetchNotes = () => {
-  const [notes, setNotes] = useState([]);
+  const [result, setResult] = useState([]);
 
     const fetchNotes = async () => {
       try {
@@ -12,9 +12,9 @@ const useFetchNotes = () => {
 
         if (response.ok) {
           console.log("Fetched from backend");
-          const data = await response.json();
-          const result = data != null ? data : []
-          setNotes(result);
+          let data = await response.json();
+          data = data != null ? data : []
+          setResult(result);
         }
       } catch (error) {
         console.log("Error fetching notes", error);
@@ -23,7 +23,7 @@ const useFetchNotes = () => {
 
     fetchNotes();
 
-  return notes;
+  return result;
 };
 
 export default useFetchNotes;

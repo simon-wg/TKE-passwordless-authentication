@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import useSaveNote from '../hooks/useSaveNote';
-import useUpdateNote from '../hooks/useUpdatePassword';
+import useUpdateNote from '../hooks/useUpdateNote';
 import useDeleteNote from '../hooks/useDeleteNote';
 import './NoteCard.css';
 
