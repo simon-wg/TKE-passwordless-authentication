@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import useSaveNote from '../hooks/useSaveNote';
+import useCreateNote from '../hooks/useSaveNote';
 import useUpdateNote from '../hooks/useUpdateNote';
 import useDeleteNote from '../hooks/useDeleteNote';
 import './NoteCard.css';
 
-const NoteCard = ({ id: initialId, name: initialName, body: initialBody, isUnsaved : unsavedInitial = false, onUpdate, onDelete }) => {
+const NoteCard = ({ id: initialId, name: initialName, body: initialBody, isUnsaved: unsavedInitial = false, onUpdate, onDelete }) => {
   const [id, setId] = useState(initialId);
   const [name, setName] = useState(initialName);
   const [body, setBody] = useState(initialBody);
   const [isUnsaved, setIsNew] = useState(unsavedInitial);
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState(''); 
+  const [messageType, setMessageType] = useState('');
   const [saveClicked, setSaveClicked] = useState(false);
 
-  const [saveResult, saveNote] = useSaveNote();
+  const [saveResult, saveNote] = useCreateNote();
   const [updateResult, updateNote] = useUpdateNote();
   const [deleteResult, deleteNote] = useDeleteNote();
 
@@ -41,11 +41,15 @@ const NoteCard = ({ id: initialId, name: initialName, body: initialBody, isUnsav
         setMessage('Note created successfully');
         setMessageType('success');
         setId(saveResult.id);
-        if (onUpdate) onUpdate({ ID: saveResult.id, Name: name, Password: body });
+        if (onUpdate) onUpdate({ ID: saveResult.id, Name: name, Note: body });
       }
       prevSaveResult.current = saveResult;
     }
-  }, [saveResult, onUpdate, name, body]);
+  }, [saveResult, onUpdate]);
+
+  useEffect(() => {
+    console.log(message);
+  }, [message])
 
   useEffect(() => {
     if (updateResult !== null && updateResult !== prevUpdateResult.current) {
@@ -55,7 +59,7 @@ const NoteCard = ({ id: initialId, name: initialName, body: initialBody, isUnsav
       } else {
         setMessage('Note updated successfully');
         setMessageType('success');
-        if (onUpdate) onUpdate({ ID: id, Name: name, Password: body });
+        if (onUpdate) onUpdate({ ID: id, Name: name, Note: body });
       }
       prevUpdateResult.current = updateResult;
     }
@@ -73,7 +77,7 @@ const NoteCard = ({ id: initialId, name: initialName, body: initialBody, isUnsav
       }
       prevDeleteResult.current = deleteResult;
     }
-  }, [deleteResult, onDelete]);
+  }, [deleteResult, onDelete, id]);
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -89,13 +93,8 @@ const NoteCard = ({ id: initialId, name: initialName, body: initialBody, isUnsav
   };
 
   const handleDeleteClick = (event) => {
-    if (isUnsaved) {
-      onDelete(id);
-    }
-    else {
-      event.preventDefault();
-      deleteNote(id);
-    }
+    event.preventDefault();
+    onDelete(id);
   };
 
   return (

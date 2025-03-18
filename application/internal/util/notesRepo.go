@@ -11,36 +11,36 @@ import (
 type NoteData struct {
 	ID       primitive.ObjectID `bson:"_id,omitempty"` // Unique ID set by MongoDB
 	Username string             `bson:"username"`      // Username of the user
-	Name     string             `bson:"name"`          // Name of company/website for password
-	Password string             `bson:"password"`      // Password
+	Name     string             `bson:"name"`          // Name of company/website for note
+	Note     string             `bson:"note"`          // Note as a string
 }
 
 type NotesRepository interface {
-	CreatePassword(username string, name string, password string) (*mongo.InsertOneResult, error)
-	GetUserPasswords(username string) ([]NoteData, error)
-	GetPassword(id string) (NoteData, error)
-	UpdatePassword(id string, username string, name string, password string) (*mongo.UpdateResult, error)
-	DeletePassword(id string) (*mongo.DeleteResult, error)
+	CreateNote(username string, name string, note string) (*mongo.InsertOneResult, error)
+	GetNotes(username string) ([]NoteData, error)
+	GetNote(id string) (NoteData, error)
+	UpdateNote(id string, username string, name string, note string) (*mongo.UpdateResult, error)
+	DeleteNote(id string) (*mongo.DeleteResult, error)
 }
 
-type PasswordRepo struct {
+type NotesRepo struct {
 	db *mongo.Database
 }
 
-const repoName = "userPasswords"
+const repoName = "user_notes"
 
-func NewPasswordRepo(db *mongo.Database) *PasswordRepo {
-	return &PasswordRepo{db: db}
+func NewNotesRepo(db *mongo.Database) *NotesRepo {
+	return &NotesRepo{db: db}
 }
 
-func (repo *PasswordRepo) CreatePassword(username, name, password string) (*mongo.InsertOneResult, error) {
+func (repo *NotesRepo) CreateNote(username, name, note string) (*mongo.InsertOneResult, error) {
 	collection := repo.db.Collection(repoName)
 
 	user := NoteData{
 		ID:       primitive.NewObjectID(),
 		Username: username,
 		Name:     name,
-		Password: password,
+		Note:     note,
 	}
 
 	result, err := collection.InsertOne(context.Background(), user)
@@ -51,7 +51,7 @@ func (repo *PasswordRepo) CreatePassword(username, name, password string) (*mong
 	return result, nil
 }
 
-func (repo *PasswordRepo) GetUserPasswords(username string) ([]NoteData, error) {
+func (repo *NotesRepo) GetNotes(username string) ([]NoteData, error) {
 	collection := repo.db.Collection(repoName)
 
 	filter := bson.M{"username": username}
@@ -63,11 +63,11 @@ func (repo *PasswordRepo) GetUserPasswords(username string) ([]NoteData, error) 
 
 	var users []NoteData
 	for cursor.Next(context.Background()) {
-		var password NoteData
-		if err := cursor.Decode(&password); err != nil {
+		var note NoteData
+		if err := cursor.Decode(&note); err != nil {
 			return nil, err
 		}
-		users = append(users, password)
+		users = append(users, note)
 	}
 
 	if err := cursor.Err(); err != nil {
@@ -77,7 +77,7 @@ func (repo *PasswordRepo) GetUserPasswords(username string) ([]NoteData, error) 
 	return users, nil
 }
 
-func (repo *PasswordRepo) GetPassword(id string) (NoteData, error) {
+func (repo *NotesRepo) GetNote(id string) (NoteData, error) {
 	collection := repo.db.Collection(repoName)
 
 	objectID, err := primitive.ObjectIDFromHex(id)
@@ -86,16 +86,16 @@ func (repo *PasswordRepo) GetPassword(id string) (NoteData, error) {
 	}
 
 	filter := bson.M{"_id": objectID}
-	var password NoteData
-	err = collection.FindOne(context.Background(), filter).Decode(&password)
+	var note NoteData
+	err = collection.FindOne(context.Background(), filter).Decode(&note)
 	if err != nil {
 		return NoteData{}, err
 	}
 
-	return password, nil
+	return note, nil
 }
 
-func (repo *PasswordRepo) UpdatePassword(id string, username string, name string, password string) (*mongo.UpdateResult, error) {
+func (repo *NotesRepo) UpdateNote(id string, username string, name string, note string) (*mongo.UpdateResult, error) {
 	collection := repo.db.Collection(repoName)
 
 	objectID, err := primitive.ObjectIDFromHex(id)
@@ -108,7 +108,7 @@ func (repo *PasswordRepo) UpdatePassword(id string, username string, name string
 		"$set": bson.M{
 			"username": username,
 			"name":     name,
-			"password": password,
+			"note":     note,
 		},
 	}
 
@@ -120,7 +120,7 @@ func (repo *PasswordRepo) UpdatePassword(id string, username string, name string
 	return result, nil
 }
 
-func (repo *PasswordRepo) DeletePassword(id string) (*mongo.DeleteResult, error) {
+func (repo *NotesRepo) DeleteNote(id string) (*mongo.DeleteResult, error) {
 	collection := repo.db.Collection(repoName)
 
 	objectID, err := primitive.ObjectIDFromHex(id)

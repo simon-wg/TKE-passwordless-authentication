@@ -14,7 +14,7 @@ import (
 )
 
 var UserRepo util.UserRepository
-var PasswordRepo util.NotesRepository
+var NotesRepo util.NotesRepository
 
 // RegisterHandler handles the user registration process
 // It expects a POST request with a JSON body containing the username and public key with label of the user to be registered
@@ -518,7 +518,7 @@ func UnregisterHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "User unregistered successfully"})
 }
 
-func GetUserPasswordsHandler(w http.ResponseWriter, r *http.Request) {
+func GetNotesndler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
@@ -529,12 +529,12 @@ func GetUserPasswordsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "No user signed in", http.StatusUnauthorized)
 		return
 	}
-	passwords, _ := PasswordRepo.GetUserPasswords(username)
+	notes, _ := NotesRepo.GetNotes(username)
 
-	// Convert passwords to JSON
-	responseBodyBytes, err := json.Marshal(passwords)
+	// Convert notes to JSON
+	responseBodyBytes, err := json.Marshal(notes)
 	if err != nil {
-		http.Error(w, "Unable to marshal passwords", http.StatusInternalServerError)
+		http.Error(w, "Unable to marshal notes", http.StatusInternalServerError)
 		return
 	}
 
@@ -543,13 +543,13 @@ func GetUserPasswordsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(responseBodyBytes)
 }
 
-func CreatePasswordHandler(w http.ResponseWriter, r *http.Request) {
+func CreateNoteHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	requestBody := structs.SavePasswordRequest{}
+	requestBody := structs.SaveNoteRequest{}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -562,21 +562,21 @@ func CreatePasswordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	name := requestBody.Name
-	password := requestBody.Password
+	note := requestBody.Note
 	username, err := session_util.GetSessionUsername(r)
 	if err != nil {
 		http.Error(w, "No user signed in", http.StatusUnauthorized)
 		return
 	}
 
-	result, err := PasswordRepo.CreatePassword(username, name, password)
+	result, err := NotesRepo.CreateNote(username, name, note)
 	if result == nil || err != nil {
-		http.Error(w, "Failed to save password", http.StatusInternalServerError)
+		http.Error(w, "Failed to save notes", http.StatusInternalServerError)
 		return
 	}
 
 	responseBody := map[string]interface{}{
-		"message": "Password saved successfully",
+		"message": "Notes saved successfully",
 		"id":      result.InsertedID.(primitive.ObjectID).Hex(),
 	}
 	responseBodyBytes, err := json.Marshal(responseBody)
@@ -588,13 +588,13 @@ func CreatePasswordHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(responseBodyBytes)
 }
 
-func UpdatePasswordHandler(w http.ResponseWriter, r *http.Request) {
+func UpdateNoteHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	requestBody := structs.UpdatePasswordRequest{}
+	requestBody := structs.UpdateNotesRequest{}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -608,7 +608,7 @@ func UpdatePasswordHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	username, _ := session_util.GetSessionUsername(r)
-	currentEntry, err := PasswordRepo.GetPassword(requestBody.ID)
+	currentEntry, err := NotesRepo.GetNote(requestBody.ID)
 	if err != nil {
 		http.Error(w, "Error retrieving entry", http.StatusInternalServerError)
 	}
@@ -618,26 +618,26 @@ func UpdatePasswordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := PasswordRepo.UpdatePassword(requestBody.ID, username, requestBody.Name, requestBody.Password)
+	result, err := NotesRepo.UpdateNote(requestBody.ID, username, requestBody.Name, requestBody.Note)
 	if result == nil || err != nil {
-		http.Error(w, "Failed to update password", http.StatusInternalServerError)
+		http.Error(w, "Failed to update note", http.StatusInternalServerError)
 		return
 	}
 
-	responseBody := map[string]string{"message": "Password updated successfully"}
+	responseBody := map[string]string{"message": "Note updated successfully"}
 	responseBodyBytes, _ := json.Marshal(responseBody)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(responseBodyBytes)
 }
 
-func DeletePasswordHandler(w http.ResponseWriter, r *http.Request) {
+func DeleteNoteHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	requestBody := structs.DeletePasswordRequest{}
+	requestBody := structs.DeleteNoteRequest{}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -656,7 +656,7 @@ func DeletePasswordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currentEntry, err := PasswordRepo.GetPassword(requestBody.ID)
+	currentEntry, err := NotesRepo.GetNote(requestBody.ID)
 	if err != nil {
 		http.Error(w, "Error retrieving entry", http.StatusInternalServerError)
 		return
@@ -667,13 +667,13 @@ func DeletePasswordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := PasswordRepo.DeletePassword(requestBody.ID)
+	result, err := NotesRepo.DeleteNote(requestBody.ID)
 	if result == nil || err != nil {
-		http.Error(w, "Failed to delete password", http.StatusInternalServerError)
+		http.Error(w, "Failed to delete note", http.StatusInternalServerError)
 		return
 	}
 
-	responseBody := map[string]string{"message": "Password deleted successfully"}
+	responseBody := map[string]string{"message": "Note deleted successfully"}
 	responseBodyBytes, _ := json.Marshal(responseBody)
 
 	w.Header().Set("Content-Type", "application/json")

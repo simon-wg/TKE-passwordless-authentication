@@ -52,17 +52,17 @@ type RemovePublicKeyRequest struct {
 	Label    string `json:"label"`
 }
 
-type SavePasswordRequest struct {
-	Name     string `json:"name"`
-	Password string `json:"password"`
+type SaveNoteRequest struct {
+	Name string `json:"name"`
+	Note string `json:"note"`
 }
 
-type UpdatePasswordRequest struct {
-	ID       string `json:"id"`
-	Name     string `json:"name"`
-	Password string `json:"password"`
+type UpdateNotesRequest struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	Note string `json:"note"`
 }
 
-type DeletePasswordRequest struct {
+type DeleteNoteRequest struct {
 	ID string `json:"id"`
 }

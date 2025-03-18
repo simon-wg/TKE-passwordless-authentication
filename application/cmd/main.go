@@ -25,7 +25,7 @@ func main() {
 
 	// Initialize the UserRepository struct with the database reference
 	internal.UserRepo = util.NewUserRepo(db.Database)
-	internal.PasswordRepo = util.NewPasswordRepo(db.Database)
+	internal.NotesRepo = util.NewNotesRepo(db.Database)
 
 	if err != nil || db == nil || internal.UserRepo == nil {
 		return
@@ -39,10 +39,10 @@ func main() {
 	http.Handle("/api/add-public-key", (http.HandlerFunc(internal.AddPublicKeyHandler)))
 	http.Handle("/api/remove-public-key", http.HandlerFunc(internal.RemovePublicKeyHandler))
 	http.Handle("/api/get-public-key-labels", http.HandlerFunc(internal.GetPublicKeyLabelsHandler))
-	http.Handle("/api/save-note", session_util.SessionMiddleware(http.HandlerFunc(internal.CreatePasswordHandler)))
-	http.Handle("/api/get-user-note", session_util.SessionMiddleware(http.HandlerFunc(internal.GetUserPasswordsHandler)))
-	http.Handle("/api/update-note", session_util.SessionMiddleware(http.HandlerFunc(internal.UpdatePasswordHandler)))
-	http.Handle("/api/delete-note", session_util.SessionMiddleware(http.HandlerFunc(internal.DeletePasswordHandler)))
+	http.Handle("/api/create-note", session_util.SessionMiddleware(http.HandlerFunc(internal.CreateNoteHandler)))
+	http.Handle("/api/get-user-note", session_util.SessionMiddleware(http.HandlerFunc(internal.GetNotesndler)))
+	http.Handle("/api/update-note", session_util.SessionMiddleware(http.HandlerFunc(internal.UpdateNoteHandler)))
+	http.Handle("/api/delete-note", session_util.SessionMiddleware(http.HandlerFunc(internal.DeleteNoteHandler)))
 
 	fmt.Println("Mock application running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)

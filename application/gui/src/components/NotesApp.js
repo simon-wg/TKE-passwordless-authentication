@@ -27,7 +27,7 @@ const NotesApp = () => {
     const newNote = {
       ID: `temp-${Date.now()}`, // Temporary ID for unsaved notes
       Name: '',
-      Password: '',
+      Note: '',
       isUnsaved: true,
     };
     console.log(newNote);
@@ -86,10 +86,10 @@ const NotesApp = () => {
       <div className="note-details">
         {selectedNote && (
           <NoteCard
-            key={selectedNote.ID}
+            key={selectedNote.isUnsaved ? selectedNote.tempId : selectedNote.ID}
             id={selectedNote.ID}
             name={selectedNote.Name}
-            body={selectedNote.Password}
+            body={selectedNote.Note}
             isUnsaved={selectedNote.isUnsaved || false}
             onUpdate={handleUpdate}
             onDelete={handleDelete}

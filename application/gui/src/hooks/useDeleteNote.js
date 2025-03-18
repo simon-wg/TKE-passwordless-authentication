@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 const useDeleteNote = () => {
-  const [result, setResult] = useState(null);
+  const [deleteResult, setDeleteResult] = useState(null);
 
   const deleteNote = async (id) => {
     try {
@@ -16,17 +16,17 @@ const useDeleteNote = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setResult(data);
+        setDeleteResult(data);
       } else {
-        setResult(false);
+        setDeleteResult(false);
       }
     } catch (error) {
       console.log('Error deleting note', error);
-      setResult(false);
+      setDeleteResult(false);
     }
   };
 
-  return [result, deleteNote];
+  return [deleteResult, deleteNote];
 };
 
 export default useDeleteNote;

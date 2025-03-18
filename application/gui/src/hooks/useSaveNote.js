@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
-const useSaveNote = () => {
-  const [result, setResult] = useState(null);
+const useCreateNote = () => {
+  const [saveResult, setSagveResult] = useState(null);
 
-  const saveNote = async (name, note, endpoint) => {
+  const createNote = async (name, note) => {
     try {
       const response = await fetch('/api/create-note', {
         method: 'POST',
@@ -11,22 +11,22 @@ const useSaveNote = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, password: note }),
+        body: JSON.stringify({ name, note }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        setResult(data);
+        setSagveResult(data);
       } else {
-        setResult(false);
+        setSagveResult(false);
       }
     } catch (error) {
-      console.log('Error saving note', error);
-      setResult(false);
+      console.log('Error creating note', error);
+      setSagveResult(false);
     }
   };
 
-  return [result, saveNote];
+  return [saveResult, createNote];
 };
 
-export default useSaveNote;
+export default useCreateNote;
