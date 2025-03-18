@@ -43,7 +43,7 @@ const SettingsPage = () => {
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({ username: user, label: addKeyLabel }),
+      body: JSON.stringify({ label: addKeyLabel }),
     });
 
     if (response.ok) {
@@ -67,7 +67,7 @@ const SettingsPage = () => {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ username: user, label: removeKeyLabel }),
+        body: JSON.stringify({ label: removeKeyLabel }),
       }
     );
 
