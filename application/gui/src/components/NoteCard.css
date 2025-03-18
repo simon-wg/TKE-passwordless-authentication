@@ -1,4 +1,4 @@
-.password-card {
+.note-card {
     background-color: #fff;
     padding: 20px;
     border: 1px solid #ddd;
@@ -6,22 +6,22 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
   
-  .password-card input,
-  .password-card textarea {
+.note-card input,
+.note-card textarea {
     width: 100%;
     padding: 10px;
     margin-bottom: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
     box-sizing: border-box;
-  }
-  
-  .password-card .button-group {
+}
+
+.note-card .button-group {
     display: flex;
     gap: 10px;
-  }
-  
-  .password-card button {
+}
+
+.note-card button {
     padding: 10px 20px;
     background-color: #007bff;
     color: white;
@@ -29,32 +29,32 @@
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s;
-  }
-  
-  .password-card button:hover {
+}
+
+.note-card button:hover {
     background-color: #0056b3;
-  }
-  
-  .password-card button.delete {
+}
+
+.note-card button.delete {
     background-color: #f44336;
-  }
-  
-  .password-card button.delete:hover {
-    background-color: #e53935;
-  }
-  
-  .password-card p {
+}
+
+.note-card button.delete:hover {
+   background-color: #e53935;
+}
+
+.note-card p {
     margin-top: 10px;
     padding: 10px;
     border-radius: 4px;
-  }
-  
-  .password-card p.success {
+}
+
+.note-card p.success {
     background-color: #dff0d8;
     color: #3c763d;
-  }
-  
-  .password-card p.error {
+}
+
+.note-card p.error {
     background-color: #f2dede;
     color: #a94442;
-  }
+}

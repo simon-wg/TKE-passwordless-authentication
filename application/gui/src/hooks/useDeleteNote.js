@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import useAuthCheck from './useAuthCheck';
 
-const useDeletePassword = () => {
+const useDeleteNote = () => {
   const [result, setResult] = useState(null);
   const isAuthenticated = useAuthCheck();
 
-  const deletePassword = async (id) => {
+  const deleteNote = async (id) => {
     if (!isAuthenticated) return;
 
     try {
@@ -25,12 +25,12 @@ const useDeletePassword = () => {
         setResult(false);
       }
     } catch (error) {
-      console.log('Error deleting password', error);
+      console.log('Error deleting note', error);
       setResult(false);
     }
   };
 
-  return [result, deletePassword];
+  return [result, deleteNote];
 };
 
-export default useDeletePassword;
+export default useDeleteNote;

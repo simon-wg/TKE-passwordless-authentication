@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
-const useUpdatePassword = () => {
+const useUpdateNote = () => {
   const [result, setResult] = useState(null);
 
-  const updatePassword = async (id, name, password, isAuthenticated) => {
+  const updateNote = async (id, name, note, isAuthenticated) => {
     if (!isAuthenticated) {
       setResult(false);
       return;
@@ -16,7 +16,7 @@ const useUpdatePassword = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id, name, password }),
+        body: JSON.stringify({ id, name, note: note }),
       });
 
       if (response.ok) {
@@ -30,7 +30,7 @@ const useUpdatePassword = () => {
     }
   };
 
-  return [result, updatePassword];
+  return [result, updateNote];
 };
 
-export default useUpdatePassword;
+export default useUpdateNote;

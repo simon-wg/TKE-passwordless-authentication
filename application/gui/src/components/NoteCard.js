@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import useAuthCheck from "../hooks/useAuthCheck";
-import useSavePassword from '../hooks/useSavePassword';
-import useUpdatePassword from '../hooks/useUpdatePassword';
-import useDeletePassword from '../hooks/useDeletePassword';
-import './PasswordCard.css';
+import useSaveNote from '../hooks/useSaveNote';
+import useUpdateNote from '../hooks/useUpdatePassword';
+import useDeleteNote from '../hooks/useDeleteNote';
+import './NoteCard.css';
 
-const PasswordCard = ({ id: initialId, name: initialName, body: initialBody, isUnsaved : unsavedInitial = false, onUpdate, onDelete }) => {
+const NoteCard = ({ id: initialId, name: initialName, body: initialBody, isUnsaved : unsavedInitial = false, onUpdate, onDelete }) => {
   const [id, setId] = useState(initialId);
   const [name, setName] = useState(initialName);
   const [body, setBody] = useState(initialBody);
@@ -15,9 +15,9 @@ const PasswordCard = ({ id: initialId, name: initialName, body: initialBody, isU
   const [saveClicked, setSaveClicked] = useState(false);
 
   const isAuthenticated = useAuthCheck();
-  const [saveResult, savePassword] = useSavePassword();
-  const [updateResult, updatePassword] = useUpdatePassword();
-  const [deleteResult, deletePassword] = useDeletePassword();
+  const [saveResult, saveNote] = useSaveNote();
+  const [updateResult, updateNote] = useUpdateNote();
+  const [deleteResult, deleteNote] = useDeleteNote();
 
   const prevSaveResult = useRef(null);
   const prevUpdateResult = useRef(null);
@@ -26,24 +26,24 @@ const PasswordCard = ({ id: initialId, name: initialName, body: initialBody, isU
   useEffect(() => {
     if (!saveClicked) return;
     if (isUnsaved) {
-      savePassword(name, body, isAuthenticated, 'save-password');
+      saveNote(name, body, isAuthenticated, 'save-password');
       setIsNew(false);
     } else {
-      updatePassword(id, name, body, isAuthenticated, 'update-password');
+      updateNote(id, name, body, isAuthenticated, 'update-password');
     }
     setSaveClicked(false);
-  }, [saveClicked, savePassword, updatePassword, isUnsaved, name, body, isAuthenticated, id]);
+  }, [saveClicked, saveNote, updateNote, isUnsaved, name, body, isAuthenticated, id]);
 
   useEffect(() => {
     if (saveResult !== null && saveResult !== prevSaveResult.current) {
       if (saveResult === false) {
-        setMessage('Failed to create password');
+        setMessage('Failed to create note');
         setMessageType('error');
       } else {
-        setMessage('Password created successfully');
+        setMessage('Note created successfully');
         setMessageType('success');
         setId(saveResult.id);
-        if (onUpdate) onUpdate({ ID: saveResult.id, Name: name, Password: body });
+        if (onUpdate) onUpdate({ ID: saveResult.id, Name: name, Note: body });
       }
       prevSaveResult.current = saveResult;
     }
@@ -52,12 +52,12 @@ const PasswordCard = ({ id: initialId, name: initialName, body: initialBody, isU
   useEffect(() => {
     if (updateResult !== null && updateResult !== prevUpdateResult.current) {
       if (updateResult === false) {
-        setMessage('Failed to update password');
+        setMessage('Failed to update note');
         setMessageType('error');
       } else {
-        setMessage('Password updated successfully');
+        setMessage('Note updated successfully');
         setMessageType('success');
-        if (onUpdate) onUpdate({ ID: id, Name: name, Password: body });
+        if (onUpdate) onUpdate({ ID: id, Name: name, Note: body });
       }
       prevUpdateResult.current = updateResult;
     }
@@ -66,10 +66,10 @@ const PasswordCard = ({ id: initialId, name: initialName, body: initialBody, isU
   useEffect(() => {
     if (deleteResult !== null && deleteResult !== prevDeleteResult.current) {
       if (deleteResult === false) {
-        setMessage('Failed to delete password');
+        setMessage('Failed to delete note');
         setMessageType('error');
       } else {
-        setMessage('Password deleted successfully');
+        setMessage('Note deleted successfully');
         setMessageType('success');
         if (onDelete) onDelete(id);
       }
@@ -96,12 +96,12 @@ const PasswordCard = ({ id: initialId, name: initialName, body: initialBody, isU
     }
     else {
       event.preventDefault();
-      deletePassword(id);
+      deleteNote(id);
     }
   };
 
   return (
-    <div className="password-card">
+    <div className="note-card">
       <input
         type="text"
         value={name}
@@ -111,7 +111,7 @@ const PasswordCard = ({ id: initialId, name: initialName, body: initialBody, isU
       <textarea
         value={body}
         onChange={handleBodyChange}
-        placeholder="Body"
+        placeholder="Note"
       />
       <div className="button-group">
         <button onClick={handleSaveClick}>Save</button>
@@ -122,4 +122,4 @@ const PasswordCard = ({ id: initialId, name: initialName, body: initialBody, isU
   );
 };
 
-export default PasswordCard;
+export default NoteCard;

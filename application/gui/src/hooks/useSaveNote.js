@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
-const useSavePassword = () => {
+const useSaveNote = () => {
   const [result, setResult] = useState(null);
 
-  const savePassword = async (name, password, isAuthenticated, endpoint) => {
+  const saveNote = async (name, note, isAuthenticated, endpoint) => {
     if (!isAuthenticated) {
       setResult(false);
       return;
@@ -16,7 +16,7 @@ const useSavePassword = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, password }),
+        body: JSON.stringify({ name, password: note }),
       });
 
       if (response.ok) {
@@ -26,12 +26,12 @@ const useSavePassword = () => {
         setResult(false);
       }
     } catch (error) {
-      console.log('Error saving password', error);
+      console.log('Error saving note', error);
       setResult(false);
     }
   };
 
-  return [result, savePassword];
+  return [result, saveNote];
 };
 
-export default useSavePassword;
+export default useSaveNote;
