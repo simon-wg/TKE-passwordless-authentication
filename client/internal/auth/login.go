@@ -106,8 +106,6 @@ func getChallenge(appurl string, user string) (*LoginResponse, string, error) {
 		return nil, "", err
 	}
 
-	println(respBodyStr)
-
 	switch resp.StatusCode {
 	case http.StatusOK:
 		// Continue processing
