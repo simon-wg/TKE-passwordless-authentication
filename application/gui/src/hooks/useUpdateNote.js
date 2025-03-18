@@ -1,5 +1,24 @@
 import { useState } from 'react';
 
+/**
+ * Custom hook to update a note.
+ *
+ * @returns {[boolean|null, Function]} - Returns an array with the result of the update operation and the updateNote function.
+ *
+ * @example
+ * const [result, updateNote] = useUpdateNote();
+ * 
+ * // To update a note
+ * updateNote(id, name, note);
+ *
+ * @function
+ * @name useUpdateNote
+ *
+ * @async
+ * @param {string} id - The ID of the note to update.
+ * @param {string} name - The name of the note.
+ * @param {string} note - The content of the note.
+ */
 const useUpdateNote = () => {
   const [result, setResult] = useState(null);
 

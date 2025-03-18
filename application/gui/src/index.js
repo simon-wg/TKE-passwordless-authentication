@@ -4,7 +4,6 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import LoginSuccessPage from "./pages/LoginSuccessPage/LoginSuccessPage.jsx";
 import SettingsPage from "./pages/SettingsPage.js";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -13,7 +12,6 @@ root.render(
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />} />
-        <Route path="/loginsuccess" element={<LoginSuccessPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </BrowserRouter>

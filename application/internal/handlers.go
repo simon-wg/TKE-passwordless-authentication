@@ -518,7 +518,22 @@ func UnregisterHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "User unregistered successfully"})
 }
 
-func GetNotesndler(w http.ResponseWriter, r *http.Request) {
+// GetNotesHandler handles HTTP GET requests to retrieve notes for a signed-in user.
+// It checks if the request method is GET, retrieves the username from the session,
+// fetches the notes for the user from the NotesRepo, converts the notes to JSON,
+// and sends the JSON response back to the client.
+//
+// If the request method is not GET, it responds with "Invalid request method" and
+// a 405 Method Not Allowed status code.
+//
+// If there is no user signed in, it responds with "No user signed in" and a 401
+// Unauthorized status code.
+//
+// If there is an error marshalling the notes to JSON, it responds with "Unable to
+// marshal notes" and a 500 Internal Server Error status code.
+//
+// The response content type is set to "application/json".
+func GetNotesHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
@@ -543,6 +558,27 @@ func GetNotesndler(w http.ResponseWriter, r *http.Request) {
 	w.Write(responseBodyBytes)
 }
 
+// CreateNoteHandler handles the creation of a new note.
+// It expects a POST request with a JSON body containing the note details.
+// The request body should be in the format:
+//
+//	{
+//	  "name": "note name",
+//	  "note": "note content"
+//	}
+//
+// The function performs the following steps:
+// 1. Validates that the request method is POST.
+// 2. Reads and unmarshals the request body into a SaveNoteRequest struct.
+// 3. Retrieves the username from the session.
+// 4. Calls the NotesRepo.CreateNote function to save the note.
+// 5. Returns a JSON response with a success message and the ID of the created note.
+//
+// If any step fails, an appropriate HTTP error response is returned.
+//
+// Parameters:
+// - w: http.ResponseWriter to write the response.
+// - r: *http.Request containing the request details.
 func CreateNoteHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
@@ -588,49 +624,37 @@ func CreateNoteHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(responseBodyBytes)
 }
 
-func UpdateNoteHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-		return
-	}
-
-	requestBody := structs.UpdateNotesRequest{}
-
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	if err := json.Unmarshal(body, &requestBody); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	username, _ := session_util.GetSessionUsername(r)
-	currentEntry, err := NotesRepo.GetNote(requestBody.ID)
-	if err != nil {
-		http.Error(w, "Error retrieving entry", http.StatusInternalServerError)
-	}
-
-	if username != currentEntry.Username {
-		http.Error(w, "User not owner of entry", http.StatusUnauthorized)
-		return
-	}
-
-	result, err := NotesRepo.UpdateNote(requestBody.ID, username, requestBody.Name, requestBody.Note)
-	if result == nil || err != nil {
-		http.Error(w, "Failed to update note", http.StatusInternalServerError)
-		return
-	}
-
-	responseBody := map[string]string{"message": "Note updated successfully"}
-	responseBodyBytes, _ := json.Marshal(responseBody)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(responseBodyBytes)
-}
-
+// UpdateNoteHandler handles the HTTP request for updating a note.
+// It expects a POST request with a JSON body containing the note details to be updated.
+// The request body should match the structs.UpdateNotesRequest structure.
+// The function performs the following steps:
+// First, it validates the request method to ensure it is a POST request.
+// Then, it reads and unmarshals the request body into a structs.UpdateNotesRequest object.
+// Next, it retrieves the username from the session.
+// After that, it fetches the note details.
+// It checks if the current user is the owner of the note.
+// If the user is the owner, it deletes the note from the repository.
+// Finally, it returns a success message in JSON format if the note is deleted successfully.
+//
+// If any of the steps fail, an appropriate HTTP error response is returned.
+//
+// Request Body:
+//
+//	{
+//	  "ID": "note_id"
+//	}
+//
+// Response Body:
+//
+//	{
+//	  "message": "Note deleted successfully"
+//	}
+//
+// Possible HTTP Status Codes:
+// - 405 Method Not Allowed: If the request method is not DELETE.
+// - 400 Bad Request: If the request body is invalid or cannot be read.
+// - 401 Unauthorized: If no user is signed in or the user is not the owner of the note.
+// - 500 Internal Server Error: If there is an error retrieving or deleting the note.
 func DeleteNoteHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)

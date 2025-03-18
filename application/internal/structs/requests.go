@@ -52,17 +52,25 @@ type RemovePublicKeyRequest struct {
 	Label    string `json:"label"`
 }
 
+// SaveNoteRequest represents a request to save a note.
+// It contains the name of the note and the note content itself.
 type SaveNoteRequest struct {
 	Name string `json:"name"`
 	Note string `json:"note"`
 }
 
+// UpdateNotesRequest represents a request to update notes.
+// ID is the unique identifier of the note to be updated.
+// Name is the name associated with the note.
+// Note is the content of the note to be updated.
 type UpdateNotesRequest struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 	Note string `json:"note"`
 }
 
+// DeleteNoteRequest represents a request to delete a note.
+// It contains the ID of the note to be deleted.
 type DeleteNoteRequest struct {
 	ID string `json:"id"`
 }
