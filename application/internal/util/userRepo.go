@@ -72,9 +72,9 @@ const MaxPublicKeys = 5
 func (repo *UserRepo) CreateUser(userName string, pubkey ed25519.PublicKey, label string) (*mongo.InsertOneResult, error) {
 	collection := repo.db.Collection("users")
 
-	// Check that the username is sanitized
+	// Check that username is sanitized
 	if !isSanitized(userName) {
-		return nil, errors.New("username is not sanitized")
+		return nil, &structs.ErrorInputNotSanitized{}
 	}
 
 	// Encodes public key to base64 to allow storing in MongoDB
@@ -139,18 +139,18 @@ func (repo *UserRepo) UpdateUser(userName string, updatedUser User) (*mongo.Upda
 
 	// Check that old username is sanitized
 	if !isSanitized(userName) {
-		return nil, errors.New("old username is not sanitized")
+		return nil, &structs.ErrorInputNotSanitized{}
 	}
 
 	// Check that new username is sanitized
 	if !isSanitized(updatedUser.Username) {
-		return nil, errors.New("new username is not sanitized")
+		return nil, &structs.ErrorInputNotSanitized{}
 	}
 
 	// Check that new keys are sanitized
 	for _, pubkey := range updatedUser.PublicKeys {
 		if !isSanitized(pubkey.Label) || !isSanitized(pubkey.Key) {
-			return nil, errors.New("at least one public key in new user is not sanitized")
+			return nil, &structs.ErrorInputNotSanitized{}
 		}
 	}
 
@@ -184,7 +184,7 @@ func (repo *UserRepo) DeleteUser(userName string) (*mongo.DeleteResult, error) {
 
 	// Check that username is sanitized
 	if !isSanitized(userName) {
-		return nil, errors.New("username is not sanitized")
+		return nil, &structs.ErrorInputNotSanitized{}
 	}
 
 	filter := bson.M{"username": userName}
@@ -208,7 +208,7 @@ func (repo *UserRepo) GetPublicKeyLabels(userName string) ([]string, error) {
 
 	// Check that username is sanitized
 	if !isSanitized(userName) {
-		return nil, errors.New("username is not sanitized")
+		return nil, &structs.ErrorInputNotSanitized{}
 	}
 
 	user, err := repo.GetUser(userName)
@@ -239,17 +239,17 @@ func (repo *UserRepo) AddPublicKey(userName string, newPubKey ed25519.PublicKey,
 
 	// Check that username is sanitized
 	if !isSanitized(userName) {
-		return nil, errors.New("username is not sanitized")
+		return nil, &structs.ErrorInputNotSanitized{}
 	}
 
 	// Check that the new public key is sanitized
 	if !isSanitized(string(newPubKey)) {
-		return nil, errors.New("new public key is not sanitized")
+		return nil, &structs.ErrorInputNotSanitized{}
 	}
 
 	// Check that label is sanitized
 	if !isSanitized(label) {
-		return nil, errors.New("label is not sanitized")
+		return nil, &structs.ErrorInputNotSanitized{}
 	}
 
 	user, err := repo.GetUser(userName)
@@ -300,12 +300,12 @@ func (repo *UserRepo) RemovePublicKey(userName string, label string) (*mongo.Upd
 
 	// Check that username is sanitized
 	if !isSanitized(userName) {
-		return nil, errors.New("username is not sanitized")
+		return nil, &structs.ErrorInputNotSanitized{}
 	}
 
 	// Check that label is sanitized
 	if !isSanitized(label) {
-		return nil, errors.New("label is not sanitized")
+		return nil, &structs.ErrorInputNotSanitized{}
 	}
 
 	user, err := repo.GetUser(userName)
