@@ -7,13 +7,12 @@ import useDeleteNote from '../hooks/useDeleteNote';
 
 const NotesApp = () => {
   const fetchedNotes = useFetchNotes();
-  const [notes, setNotes] = useState(fetchedNotes);
+  const [notes, setNotes] = useState([]);
   const [selectedNote, setSelectedNote] = useState(null);
   const [deleteResult, deleteNote] = useDeleteNote();
-  const [tempNotes, setTempNotes] = useState([]);
 
   useEffect(() => {
-      setNotes(fetchedNotes);
+    setNotes(fetchedNotes);
   }, [fetchedNotes]);
 
   const handleNoteClick = (data) => {
@@ -29,7 +28,7 @@ const NotesApp = () => {
     const newNote = {
       ID: `temp-${Date.now()}`, // Temporary ID for unsaved notes
       Name: '',
-      Note: '',
+      Password: '',
       isUnsaved: true,
     };
     console.log(newNote);
@@ -71,16 +70,6 @@ const NotesApp = () => {
     <div className="note-manager">
       <div className="note-list">
         {notes.map((noteData) => (
-          <div
-            key={noteData.ID}
-            className="note-list-item"
-            onClick={() => handleNoteClick(noteData)}
-          >
-            {noteData.Name || 'New Note'}
-          </div>
-        ))}
-
-        {tempNotes.map((noteData) => (
           <div
             key={noteData.ID}
             className="note-list-item"

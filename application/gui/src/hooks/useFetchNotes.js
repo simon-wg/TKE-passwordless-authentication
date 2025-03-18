@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 const useFetchNotes = () => {
   const [result, setResult] = useState([]);
 
+  useEffect(() => {
     const fetchNotes = async () => {
       try {
         const response = await fetch("/api/get-user-passwords", {
@@ -11,10 +12,9 @@ const useFetchNotes = () => {
         });
 
         if (response.ok) {
-          console.log("Fetched from backend");
           let data = await response.json();
-          data = data != null ? data : []
-          setResult(result);
+          data = data != null ? data : [];
+          setResult(data);
         }
       } catch (error) {
         console.log("Error fetching notes", error);
@@ -22,6 +22,7 @@ const useFetchNotes = () => {
     };
 
     fetchNotes();
+  }, []);
 
   return result;
 };
