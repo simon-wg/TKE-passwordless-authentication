@@ -61,6 +61,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if user already exists
 	userExists, err := UserRepo.GetUser(username)
 
+	// Checks for sanitization error
+	if _, ok := err.(*structs.ErrorInputNotSanitized); ok {
+		fmt.Println("Username is not sanitized")
+		http.Error(w, "Username can only contain alphanumeric characters [a-z, A-Z, 0-9]", http.StatusBadRequest)
+		return
+	}
+
 	if userExists != nil || err != mongo.ErrNoDocuments {
 		fmt.Printf("User already exists: %s\n", username)
 		http.Error(w, "User already exists", http.StatusConflict)

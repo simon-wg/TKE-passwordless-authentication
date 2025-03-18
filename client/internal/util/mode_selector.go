@@ -43,8 +43,9 @@ func CallLogin() {
 func CallRegister() {
 	username := getUsername()
 	label := getLabel()
-	err := auth.Register(appurl, username, label)
+	errMsg, err := auth.Register(appurl, username, label)
 	if err != nil {
+		le.Println(errMsg)
 		le.Println(err)
 	}
 }

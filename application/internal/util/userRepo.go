@@ -1,6 +1,7 @@
 package util
 
 import (
+	"chalmers/tkey-group22/application/internal/structs"
 	"context"
 	"crypto/ed25519"
 	"encoding/base64"
@@ -109,8 +110,10 @@ func (repo *UserRepo) CreateUser(userName string, pubkey ed25519.PublicKey, labe
 func (repo *UserRepo) GetUser(userName string) (*User, error) {
 	collection := repo.db.Collection("users")
 
-	// Sanitize the input
-	userName = SanitizeInput(userName)
+	// Check that username is sanitized
+	if !isSanitized(userName) {
+		return nil, &structs.ErrorInputNotSanitized{}
+	}
 
 	filter := bson.M{"username": userName}
 	var user User
@@ -134,9 +137,22 @@ func (repo *UserRepo) GetUser(userName string) (*User, error) {
 func (repo *UserRepo) UpdateUser(userName string, updatedUser User) (*mongo.UpdateResult, error) {
 	collection := repo.db.Collection("users")
 
-	// Sanitize the input
-	userName = SanitizeInput(userName)
-	updatedUser.Username = SanitizeInput(updatedUser.Username)
+	// Check that old username is sanitized
+	if !isSanitized(userName) {
+		return nil, errors.New("old username is not sanitized")
+	}
+
+	// Check that new username is sanitized
+	if !isSanitized(updatedUser.Username) {
+		return nil, errors.New("new username is not sanitized")
+	}
+
+	// Check that new keys are sanitized
+	for _, pubkey := range updatedUser.PublicKeys {
+		if !isSanitized(pubkey.Label) || !isSanitized(pubkey.Key) {
+			return nil, errors.New("at least one public key in new user is not sanitized")
+		}
+	}
 
 	filter := bson.M{"username": userName}
 	updatedData := bson.M{
@@ -166,8 +182,10 @@ func (repo *UserRepo) UpdateUser(userName string, updatedUser User) (*mongo.Upda
 func (repo *UserRepo) DeleteUser(userName string) (*mongo.DeleteResult, error) {
 	collection := repo.db.Collection("users")
 
-	// Sanitize the input
-	userName = SanitizeInput(userName)
+	// Check that username is sanitized
+	if !isSanitized(userName) {
+		return nil, errors.New("username is not sanitized")
+	}
 
 	filter := bson.M{"username": userName}
 	result, err := collection.DeleteOne(context.Background(), filter)
@@ -187,6 +205,12 @@ func (repo *UserRepo) DeleteUser(userName string) (*mongo.DeleteResult, error) {
 //   - []string: A slice of labels for the user's public keys
 //   - error: An error if the retrieval fails
 func (repo *UserRepo) GetPublicKeyLabels(userName string) ([]string, error) {
+
+	// Check that username is sanitized
+	if !isSanitized(userName) {
+		return nil, errors.New("username is not sanitized")
+	}
+
 	user, err := repo.GetUser(userName)
 	if err != nil {
 		return nil, err
@@ -212,6 +236,22 @@ func (repo *UserRepo) GetPublicKeyLabels(userName string) ([]string, error) {
 //   - *mongo.UpdateResult: The result of the update operation.
 //   - error: An error if the update operation fails.
 func (repo *UserRepo) AddPublicKey(userName string, newPubKey ed25519.PublicKey, label string) (*mongo.UpdateResult, error) {
+
+	// Check that username is sanitized
+	if !isSanitized(userName) {
+		return nil, errors.New("username is not sanitized")
+	}
+
+	// Check that the new public key is sanitized
+	if !isSanitized(string(newPubKey)) {
+		return nil, errors.New("new public key is not sanitized")
+	}
+
+	// Check that label is sanitized
+	if !isSanitized(label) {
+		return nil, errors.New("label is not sanitized")
+	}
+
 	user, err := repo.GetUser(userName)
 	if err != nil {
 		return nil, err
@@ -257,6 +297,17 @@ func (repo *UserRepo) AddPublicKey(userName string, newPubKey ed25519.PublicKey,
 //   - *mongo.UpdateResult: The result of the update operation.
 //   - error: An error if the update operation fails.
 func (repo *UserRepo) RemovePublicKey(userName string, label string) (*mongo.UpdateResult, error) {
+
+	// Check that username is sanitized
+	if !isSanitized(userName) {
+		return nil, errors.New("username is not sanitized")
+	}
+
+	// Check that label is sanitized
+	if !isSanitized(label) {
+		return nil, errors.New("label is not sanitized")
+	}
+
 	user, err := repo.GetUser(userName)
 	if err != nil {
 		return nil, err
@@ -285,23 +336,6 @@ func (repo *UserRepo) RemovePublicKey(userName string, label string) (*mongo.Upd
 	}
 
 	return result, nil
-}
-
-//
-// SanitizeInput sanitizes the input by removing any unwanted characters to prevent injection attacks
-//
-// Parameters:
-//   - input: The input to sanitize
-//
-// Returns:
-//   - input: The sanitized input
-
-func SanitizeInput(input string) string {
-
-	// Remove any non-alphanumeric characters with empty string
-	input = regexp.MustCompile("[^a-zA-Z0-9]").ReplaceAllString(input, "")
-
-	return input
 }
 
 // isSanitized checks if the input is sanitized by checking if it contains any non-alphanumeric characters

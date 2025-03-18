@@ -117,6 +117,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 // - 400 Bad Request: if the request body is invalid or cannot be parsed
 // - 500 Internal Server Error: if there is an error adding the public key
 // - 200 OK: if the public key is added successfully
+//
+//
+//	Error messages:
+//
+//	If an error occurs the function will return an http Error containing both the error code but also an error message retrieved from the applications response
+//	to the request. This response is later retrieved by the frontend and displayed to the user.
+
 func registerHandler(w http.ResponseWriter, r *http.Request) {
 	// Get origin from request header and replace port with 8080
 	origin := r.Header.Get("Origin")
@@ -129,9 +136,9 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 
 	username := requestBody["username"]
 	label := requestBody["label"]
-	err := auth.Register(origin, username, label)
+	errString, err := auth.Register(origin, username, label)
 	if err != nil {
-		http.Error(w, "Failed to register", http.StatusBadRequest)
+		http.Error(w, errString, http.StatusBadRequest)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
