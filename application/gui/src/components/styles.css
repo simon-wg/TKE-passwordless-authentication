@@ -107,3 +107,12 @@ button:hover {
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
 }
+
+.navbar .gear-icon {
+  position: absolute;
+  justify-self: flex-end;
+  align-self: center;
+  right: 20px;
+  color: white;
+  cursor: pointer;
+}
