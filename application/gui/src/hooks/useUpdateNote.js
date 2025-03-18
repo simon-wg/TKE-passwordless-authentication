@@ -5,7 +5,7 @@ const useUpdateNote = () => {
 
   const updateNote = async (id, name, note) => {
     try {
-      const response = await fetch('/api/update-password', {
+      const response = await fetch('/api/update-note', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -20,7 +20,7 @@ const useUpdateNote = () => {
         setResult(false);
       }
     } catch (error) {
-      console.log('Error saving password', error);
+      console.log('Error saving note', error);
       setResult(false);
     }
   };

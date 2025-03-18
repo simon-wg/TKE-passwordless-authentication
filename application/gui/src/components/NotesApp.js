@@ -24,7 +24,6 @@ const NotesApp = () => {
   };
 
   const handleAddNote = () => {
-    console.log('Add');
     const newNote = {
       ID: `temp-${Date.now()}`, // Temporary ID for unsaved notes
       Name: '',
@@ -37,7 +36,7 @@ const NotesApp = () => {
   };
 
   const handleUpdate = (updatedNote) => {
-    console.log('Handle update');
+    console.log(updatedNote);
     setNotes((prevNotes) =>
       prevNotes.map((note) =>
         note === selectedNote ? updatedNote : note
@@ -69,6 +68,7 @@ const NotesApp = () => {
   return (
     <div className="note-manager">
       <div className="note-list">
+
         {notes.map((noteData) => (
           <div
             key={noteData.ID}

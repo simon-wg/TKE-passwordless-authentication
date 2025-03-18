@@ -24,10 +24,10 @@ const NoteCard = ({ id: initialId, name: initialName, body: initialBody, isUnsav
   useEffect(() => {
     if (!saveClicked) return;
     if (isUnsaved) {
-      saveNote(name, body, 'save-password');
+      saveNote(name, body);
       setIsNew(false);
     } else {
-      updateNote(id, name, body, 'update-password');
+      updateNote(id, name, body);
     }
     setSaveClicked(false);
   }, [saveClicked, saveNote, updateNote, isUnsaved, name, body, id]);
@@ -41,7 +41,7 @@ const NoteCard = ({ id: initialId, name: initialName, body: initialBody, isUnsav
         setMessage('Note created successfully');
         setMessageType('success');
         setId(saveResult.id);
-        if (onUpdate) onUpdate({ ID: saveResult.id, Name: name, Note: body });
+        if (onUpdate) onUpdate({ ID: saveResult.id, Name: name, Password: body });
       }
       prevSaveResult.current = saveResult;
     }
@@ -55,7 +55,7 @@ const NoteCard = ({ id: initialId, name: initialName, body: initialBody, isUnsav
       } else {
         setMessage('Note updated successfully');
         setMessageType('success');
-        if (onUpdate) onUpdate({ ID: id, Name: name, Note: body });
+        if (onUpdate) onUpdate({ ID: id, Name: name, Password: body });
       }
       prevUpdateResult.current = updateResult;
     }

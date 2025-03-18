@@ -5,7 +5,7 @@ const useSaveNote = () => {
 
   const saveNote = async (name, note, endpoint) => {
     try {
-      const response = await fetch('/api/' + endpoint, {
+      const response = await fetch('/api/create-note', {
         method: 'POST',
         credentials: 'include',
         headers: {

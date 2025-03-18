@@ -6,7 +6,7 @@ const useFetchNotes = () => {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const response = await fetch("/api/get-user-passwords", {
+        const response = await fetch("/api/get-user-note", {
           method: "GET",
           credentials: "include",
         });
