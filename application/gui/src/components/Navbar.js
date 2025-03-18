@@ -1,7 +1,10 @@
 import React from 'react';
 import './styles.css';
+import useFetchUser from '../hooks/useFetchUser';
 
 const Navbar = ({ setPage, currentPage }) => {
+  const user = useFetchUser();
+
   return (
     <nav className="navbar">
       <ul>
@@ -21,6 +24,16 @@ const Navbar = ({ setPage, currentPage }) => {
             Login
           </button>
         </li>
+        {user !== null && (
+          <li>
+            <button
+              className={currentPage === 'app' ? 'active' : ''}
+              onClick={() => setPage('app')}
+            >
+              App
+            </button>
+          </li>
+        )}
       </ul>
     </nav>
   );

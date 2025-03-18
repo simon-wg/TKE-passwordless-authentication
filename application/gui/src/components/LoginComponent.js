@@ -73,7 +73,7 @@ const LoginComponent = () => {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      navigate("/loginsuccess");
+      window.location.reload();
     } catch (error) {
       console.error("Verification failed:", error);
       setError("Error verifying signed challenge!");

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 const useCreateNote = () => {
-  const [saveResult, setSagveResult] = useState(null);
+  const [result, setResult] = useState(null);
 
   const createNote = async (name, note) => {
     try {
@@ -16,17 +16,17 @@ const useCreateNote = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setSagveResult(data);
+        setResult(data);
       } else {
-        setSagveResult(false);
+        setResult(false);
       }
     } catch (error) {
       console.log('Error creating note', error);
-      setSagveResult(false);
+      setResult(false);
     }
   };
 
-  return [saveResult, createNote];
+  return [result, createNote];
 };
 
 export default useCreateNote;
