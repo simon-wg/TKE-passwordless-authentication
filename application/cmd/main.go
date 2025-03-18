@@ -40,7 +40,7 @@ func main() {
 	http.Handle("/api/remove-public-key", http.HandlerFunc(internal.RemovePublicKeyHandler))
 	http.Handle("/api/get-public-key-labels", http.HandlerFunc(internal.GetPublicKeyLabelsHandler))
 	http.Handle("/api/create-note", session_util.SessionMiddleware(http.HandlerFunc(internal.CreateNoteHandler)))
-	http.Handle("/api/get-user-note", session_util.SessionMiddleware(http.HandlerFunc(internal.GetNotesndler)))
+	http.Handle("/api/get-user-note", session_util.SessionMiddleware(http.HandlerFunc(internal.GetNotesHandler)))
 	http.Handle("/api/update-note", session_util.SessionMiddleware(http.HandlerFunc(internal.UpdateNoteHandler)))
 	http.Handle("/api/delete-note", session_util.SessionMiddleware(http.HandlerFunc(internal.DeleteNoteHandler)))
 

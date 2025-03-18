@@ -627,34 +627,71 @@ func CreateNoteHandler(w http.ResponseWriter, r *http.Request) {
 // UpdateNoteHandler handles the HTTP request for updating a note.
 // It expects a POST request with a JSON body containing the note details to be updated.
 // The request body should match the structs.UpdateNotesRequest structure.
-// The function performs the following steps:
-// First, it validates the request method to ensure it is a POST request.
-// Then, it reads and unmarshals the request body into a structs.UpdateNotesRequest object.
-// Next, it retrieves the username from the session.
-// After that, it fetches the note details.
-// It checks if the current user is the owner of the note.
-// If the user is the owner, it deletes the note from the repository.
-// Finally, it returns a success message in JSON format if the note is deleted successfully.
+// The handler performs the following steps:
+// 1. Validates the request method is POST.
+// 2. Reads and unmarshals the request body into a structs.UpdateNotesRequest object.
+// 3. Retrieves the username from the session.
+// 4. Fetches the current note entry from the repository using the provided note ID.
+// 5. Checks if the current user is the owner of the note.
+// 6. Updates the note in the repository with the new details.
+// 7. Returns a JSON response indicating the success or failure of the update operation.
+//
+// If any step fails, an appropriate HTTP error response is returned.
+func UpdateNoteHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	requestBody := structs.UpdateNotesRequest{}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := json.Unmarshal(body, &requestBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	username, _ := session_util.GetSessionUsername(r)
+	currentEntry, err := NotesRepo.GetNote(requestBody.ID)
+	if err != nil {
+		http.Error(w, "Error retrieving entry", http.StatusInternalServerError)
+	}
+
+	if username != currentEntry.Username {
+		http.Error(w, "User not owner of entry", http.StatusUnauthorized)
+		return
+	}
+
+	result, err := NotesRepo.UpdateNote(requestBody.ID, username, requestBody.Name, requestBody.Note)
+	if result == nil || err != nil {
+		http.Error(w, "Failed to update note", http.StatusInternalServerError)
+		return
+	}
+
+	responseBody := map[string]string{"message": "Note updated successfully"}
+	responseBodyBytes, _ := json.Marshal(responseBody)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseBodyBytes)
+}
+
+// DeleteNoteHandler handles the deletion of a note.
+// It expects a DELETE request with a JSON body containing the note ID to be deleted.
+// The handler performs the following steps:
+// 1. Verifies that the request method is DELETE.
+// 2. Reads and unmarshals the request body into a DeleteNoteRequest struct.
+// 3. Retrieves the username from the session.
+// 4. Fetches the note entry from the repository using the provided note ID.
+// 5. Checks if the authenticated user is the owner of the note.
+// 6. Deletes the note from the repository if the user is the owner.
+// 7. Returns a success message in JSON format if the note is deleted successfully.
 //
 // If any of the steps fail, an appropriate HTTP error response is returned.
-//
-// Request Body:
-//
-//	{
-//	  "ID": "note_id"
-//	}
-//
-// Response Body:
-//
-//	{
-//	  "message": "Note deleted successfully"
-//	}
-//
-// Possible HTTP Status Codes:
-// - 405 Method Not Allowed: If the request method is not DELETE.
-// - 400 Bad Request: If the request body is invalid or cannot be read.
-// - 401 Unauthorized: If no user is signed in or the user is not the owner of the note.
-// - 500 Internal Server Error: If there is an error retrieving or deleting the note.
 func DeleteNoteHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
