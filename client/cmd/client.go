@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -136,9 +137,20 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 
 	username := requestBody["username"]
 	label := requestBody["label"]
-	errString, err := auth.Register(origin, username, label)
+	resp, err := auth.Register(origin, username, label)
 	if err != nil {
-		http.Error(w, errString, http.StatusBadRequest)
+
+		// Reads the response body message and passes it to the http response.
+		defer resp.Body.Close()
+		respBody, err := io.ReadAll(resp.Body)
+
+		if err != nil {
+			http.Error(w, "Failed to read response body", http.StatusInternalServerError)
+			return
+		}
+
+		respBodyStr := string(respBody)
+		http.Error(w, respBodyStr, http.StatusBadRequest)
 		return
 	}
 	w.WriteHeader(http.StatusOK)

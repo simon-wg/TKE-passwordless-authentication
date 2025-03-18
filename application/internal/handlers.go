@@ -47,15 +47,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	pubkey := requestBody.Pubkey
 	label := requestBody.Label
 
-	if label == "" {
-		http.Error(w, "Label cannot be empty", http.StatusBadRequest)
-	}
-
-	if username == "" {
-		http.Error(w, "Username cannot be empty", http.StatusBadRequest)
-		return
-	}
-
 	fmt.Printf("Received registration request for user: %s\n", username)
 
 	// Check if user already exists

@@ -82,6 +82,16 @@ func (repo *UserRepo) CreateUser(userName string, pubkey ed25519.PublicKey, labe
 		return nil, &structs.ErrorInputNotSanitized{Message: "Label can only contain alphanumeric characters [a-z, A-Z, 0-9]"}
 	}
 
+	// check that username is not empty
+	if userName == "" {
+		return nil, &structs.ErrorInputNotSanitized{Message: "Username cannot be empty"}
+	}
+
+	// Check that the label is not empty
+	if label == "" {
+		return nil, &structs.ErrorInputNotSanitized{Message: "Label cannot be empty"}
+	}
+
 	// Encodes public key to base64 to allow storing in MongoDB
 	encodedPubKey := base64.StdEncoding.EncodeToString(pubkey)
 	user := User{
