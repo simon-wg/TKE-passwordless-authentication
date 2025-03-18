@@ -1,7 +1,9 @@
 package structs
 
-type ErrorInputNotSanitized struct{}
+type ErrorInputNotSanitized struct {
+	Message string
+}
 
 func (e *ErrorInputNotSanitized) Error() string {
-	return "Input is not sanitized"
+	return e.Message
 }

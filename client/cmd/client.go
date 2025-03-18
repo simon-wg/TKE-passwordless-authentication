@@ -91,9 +91,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	username := requestBody["username"]
-	user, signedChallenge, err := auth.GetAndSign(origin, username)
+	user, signedChallenge, errMsg, err := auth.GetAndSign(origin, username)
 	if err != nil {
-		http.Error(w, "Failed to log in", http.StatusBadRequest)
+		http.Error(w, errMsg, http.StatusBadRequest)
 		return
 	}
 	response := GetAndSignResponse{

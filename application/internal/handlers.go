@@ -63,8 +63,9 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Checks for sanitization error
 	if _, ok := err.(*structs.ErrorInputNotSanitized); ok {
-		fmt.Println("Username is not sanitized")
-		http.Error(w, "Username can only contain alphanumeric characters [a-z, A-Z, 0-9]", http.StatusBadRequest)
+		fmt.Println("Input is not sanitized")
+		errMsg := err.(*structs.ErrorInputNotSanitized).Error()
+		http.Error(w, errMsg, http.StatusBadRequest)
 		return
 	}
 
@@ -76,6 +77,16 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Store new user data
 	user, err := UserRepo.CreateUser(username, pubkey, label)
+
+	// Checks for sanitization error
+	if _, ok := err.(*structs.ErrorInputNotSanitized); ok {
+		fmt.Println("Input is not sanitized")
+		errMsg := err.(*structs.ErrorInputNotSanitized).Error()
+		http.Error(w, errMsg, http.StatusBadRequest)
+		return
+	}
+
+	// Check for other errors
 	if err != nil || user == nil {
 		fmt.Printf("Error creating user: %v\n", err)
 		http.Error(w, "Unable to create user", http.StatusInternalServerError)
@@ -142,6 +153,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Check if the specified user is found
 	userExists, err := UserRepo.GetUser(username)
+
+	// Checks for sanitization error
+	if _, ok := err.(*structs.ErrorInputNotSanitized); ok {
+		fmt.Println("Input is not sanitized")
+		errMsg := err.(*structs.ErrorInputNotSanitized).Error()
+		http.Error(w, errMsg, http.StatusBadRequest)
+		return
+	}
 
 	if userExists == nil || err != nil {
 		fmt.Printf("User not found: %s\n", username)

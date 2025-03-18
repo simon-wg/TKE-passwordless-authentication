@@ -32,8 +32,9 @@ func SelectMode() int {
 // If an error occurs during the login process, it prints the error
 func CallLogin() {
 	username := getUsername()
-	_, _, err := auth.GetAndSign(appurl, username)
+	_, _, errMsg, err := auth.GetAndSign(appurl, username)
 	if err != nil {
+		le.Println(errMsg)
 		le.Println(err)
 	}
 }

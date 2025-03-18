@@ -77,6 +77,11 @@ func (repo *UserRepo) CreateUser(userName string, pubkey ed25519.PublicKey, labe
 		return nil, &structs.ErrorInputNotSanitized{}
 	}
 
+	// Check that the label is sanitized
+	if !isSanitized(label) {
+		return nil, &structs.ErrorInputNotSanitized{Message: "Label can only contain alphanumeric characters [a-z, A-Z, 0-9]"}
+	}
+
 	// Encodes public key to base64 to allow storing in MongoDB
 	encodedPubKey := base64.StdEncoding.EncodeToString(pubkey)
 	user := User{
@@ -112,7 +117,7 @@ func (repo *UserRepo) GetUser(userName string) (*User, error) {
 
 	// Check that username is sanitized
 	if !isSanitized(userName) {
-		return nil, &structs.ErrorInputNotSanitized{}
+		return nil, &structs.ErrorInputNotSanitized{Message: "Username can only contain alphanumeric characters [a-z, A-Z, 0-9]"}
 	}
 
 	filter := bson.M{"username": userName}

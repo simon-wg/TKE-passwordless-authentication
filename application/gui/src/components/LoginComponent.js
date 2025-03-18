@@ -37,13 +37,14 @@ const LoginComponent = () => {
       });
 
       if (!response.ok) {
+        var errorMessage = await response.text();
+        setError(errorMessage)
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
       const data = await response.json();
       verifySignedChallenge(username, data.signed_challenge);
     } catch (error) {
-      setError("Error fetching signed challenge");
       setLoading(false);
     }
   };
