@@ -258,27 +258,15 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 // - 500 Internal Server Error: if there is an error retrieving the labels or sending the response
 // - 200 OK: if the labels are retrieved successfully
 func GetPublicKeyLabelsHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := session_util.Store.Get(r, "session-name")
+	username, ok := session.Values["username"].(string)
+	if !ok || username == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-		return
-	}
-
-	requestBody := structs.GetPublicKeyLabelsRequest{}
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	if err := json.Unmarshal(body, &requestBody); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	username := requestBody.Username
-
-	if username == "" {
-		http.Error(w, "Username cannot be empty", http.StatusBadRequest)
 		return
 	}
 
@@ -318,6 +306,14 @@ func GetPublicKeyLabelsHandler(w http.ResponseWriter, r *http.Request) {
 // - 500 Internal Server Error: if there is an error adding the public key or sending the response
 // - 200 OK: if the public key is added successfully
 func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := session_util.Store.Get(r, "session-name")
+	username, ok := session.Values["username"].(string)
+
+	if !ok || username == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
@@ -335,17 +331,11 @@ func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	username := requestBody.Username
 	newPubKey := requestBody.Pubkey
 	label := requestBody.Label
 
 	if label == "" {
 		http.Error(w, "Label cannot be empty", http.StatusBadRequest)
-	}
-
-	if username == "" {
-		http.Error(w, "Username cannot be empty", http.StatusBadRequest)
-		return
 	}
 
 	if len(newPubKey) == 0 {
@@ -397,6 +387,14 @@ func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 // - 500 Internal Server Error: if there is an error removing the public key or sending the response
 // - 200 OK: if the public key is removed successfully
 func RemovePublicKeyHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := session_util.Store.Get(r, "session-name")
+	username, ok := session.Values["username"].(string)
+
+	if !ok || username == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
@@ -414,7 +412,6 @@ func RemovePublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	username := requestBody.Username
 	label := requestBody.Label
 
 	if label == "" {
