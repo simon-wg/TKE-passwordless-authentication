@@ -3,14 +3,9 @@ import { useState } from 'react';
 const useUpdateNote = () => {
   const [result, setResult] = useState(null);
 
-  const updateNote = async (id, name, note, isAuthenticated) => {
-    if (!isAuthenticated) {
-      setResult(false);
-      return;
-    }
-
+  const updateNote = async (id, name, note) => {
     try {
-      const response = await fetch('http://localhost:8080/api/update-password', {
+      const response = await fetch('/api/update-password', {
         method: 'POST',
         credentials: 'include',
         headers: {

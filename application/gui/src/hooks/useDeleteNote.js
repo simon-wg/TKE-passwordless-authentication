@@ -1,15 +1,11 @@
 import { useState } from 'react';
-import useAuthCheck from './useAuthCheck';
 
 const useDeleteNote = () => {
   const [result, setResult] = useState(null);
-  const isAuthenticated = useAuthCheck();
 
   const deleteNote = async (id) => {
-    if (!isAuthenticated) return;
-
     try {
-      const response = await fetch('http://localhost:8080/api/delete-password', {
+      const response = await fetch('/api/delete-password', {
         method: 'DELETE',
         credentials: 'include',
         headers: {

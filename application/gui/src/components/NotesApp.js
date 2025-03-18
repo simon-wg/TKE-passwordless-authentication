@@ -3,29 +3,33 @@ import './styles.css';
 import NoteCard from './NoteCard';
 import './NotesApp.css';
 import useFetchNotes from '../hooks/useFetchNotes';
-import useAuthCheck from '../hooks/useAuthCheck';
 import useDeleteNote from '../hooks/useDeleteNote';
 
 const NotesApp = () => {
-  const isAuthenticated = useAuthCheck();
-  const fetchedNotes = useFetchNotes(isAuthenticated);
-  const [notes, setNotes] = useState([]);
-  const [selectedNote, setSelectedNotes] = useState(null);
+  const fetchedNotes = useFetchNotes();
+  const [notes, setNotes] = useState(fetchedNotes);
+  const [selectedNote, setSelectedNote] = useState(null);
   const [deleteResult, deleteNote] = useDeleteNote();
+  const [tempNotes, setTempNotes] = useState([]);
 
   useEffect(() => {
-    setNotes(fetchedNotes);
+    // Only update if fetchedNotes is different
+    if (JSON.stringify(notes) !== JSON.stringify(fetchedNotes)) {
+      console.log("Fetch notes");
+      setNotes(fetchedNotes);
+    }
   }, [fetchedNotes]);
 
   const handleNoteClick = (data) => {
     if (selectedNote && selectedNote.ID === data.ID) {
-      setSelectedNotes(null);
+      setSelectedNote(null);
     } else {
-      setSelectedNotes(data);
+      setSelectedNote(data);
     }
   };
 
   const handleAddNote = () => {
+    console.log('Add');
     const newNote = {
       ID: `temp-${Date.now()}`, // Temporary ID for unsaved notes
       Name: '',
@@ -33,20 +37,18 @@ const NotesApp = () => {
       isUnsaved: true,
     };
     console.log(newNote);
-    console.log(notes);
     setNotes([...notes, newNote]);
-    setSelectedNotes(newNote);
+    setSelectedNote(newNote);
   };
 
   const handleUpdate = (updatedNote) => {
-    console.log(notes);
-    console.log(updatedNote);
+    console.log('Handle update');
     setNotes((prevNotes) =>
       prevNotes.map((note) =>
         note === selectedNote ? updatedNote : note
       )
     );
-    setSelectedNotes(updatedNote);
+    setSelectedNote(updatedNote);
   };
 
   const handleDelete = (id) => {
@@ -55,14 +57,14 @@ const NotesApp = () => {
       setNotes((prevNotes) =>
         prevNotes.filter((note) => note.ID !== id)
       );
-      setSelectedNotes(null);
+      setSelectedNote(null);
     } else {
       // Make HTTP request to delete saved note
       deleteNote(id).then(() => {
         setNotes((prevNotes) =>
           prevNotes.filter((note) => note.ID !== id)
         );
-        setSelectedNotes(null);
+        setSelectedNote(null);
       }).catch((error) => {
         console.error('Failed to delete note:', error);
       });
@@ -81,6 +83,17 @@ const NotesApp = () => {
             {noteData.Name || 'New Note'}
           </div>
         ))}
+
+        {tempNotes.map((noteData) => (
+          <div
+            key={noteData.ID}
+            className="note-list-item"
+            onClick={() => handleNoteClick(noteData)}
+          >
+            {noteData.Name || 'New Note'}
+          </div>
+        ))}
+
         <button className="add-note-button" onClick={handleAddNote}>
           +
         </button>

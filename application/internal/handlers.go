@@ -14,7 +14,7 @@ import (
 )
 
 var UserRepo util.UserRepository
-var PasswordRepo util.PasswordRepository
+var PasswordRepo util.NotesRepository
 
 // RegisterHandler handles the user registration process
 // It expects a POST request with a JSON body containing the username and public key with label of the user to be registered

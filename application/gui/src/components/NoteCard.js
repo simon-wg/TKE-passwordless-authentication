@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import useAuthCheck from "../hooks/useAuthCheck";
 import useSaveNote from '../hooks/useSaveNote';
 import useUpdateNote from '../hooks/useUpdatePassword';
 import useDeleteNote from '../hooks/useDeleteNote';
@@ -14,7 +13,6 @@ const NoteCard = ({ id: initialId, name: initialName, body: initialBody, isUnsav
   const [messageType, setMessageType] = useState(''); 
   const [saveClicked, setSaveClicked] = useState(false);
 
-  const isAuthenticated = useAuthCheck();
   const [saveResult, saveNote] = useSaveNote();
   const [updateResult, updateNote] = useUpdateNote();
   const [deleteResult, deleteNote] = useDeleteNote();
@@ -26,13 +24,13 @@ const NoteCard = ({ id: initialId, name: initialName, body: initialBody, isUnsav
   useEffect(() => {
     if (!saveClicked) return;
     if (isUnsaved) {
-      saveNote(name, body, isAuthenticated, 'save-password');
+      saveNote(name, body, 'save-password');
       setIsNew(false);
     } else {
-      updateNote(id, name, body, isAuthenticated, 'update-password');
+      updateNote(id, name, body, 'update-password');
     }
     setSaveClicked(false);
-  }, [saveClicked, saveNote, updateNote, isUnsaved, name, body, isAuthenticated, id]);
+  }, [saveClicked, saveNote, updateNote, isUnsaved, name, body, id]);
 
   useEffect(() => {
     if (saveResult !== null && saveResult !== prevSaveResult.current) {

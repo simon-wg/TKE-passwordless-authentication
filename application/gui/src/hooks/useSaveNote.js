@@ -3,14 +3,9 @@ import { useState } from 'react';
 const useSaveNote = () => {
   const [result, setResult] = useState(null);
 
-  const saveNote = async (name, note, isAuthenticated, endpoint) => {
-    if (!isAuthenticated) {
-      setResult(false);
-      return;
-    }
-
+  const saveNote = async (name, note, endpoint) => {
     try {
-      const response = await fetch('http://localhost:8080/api/' + endpoint, {
+      const response = await fetch('/api/' + endpoint, {
         method: 'POST',
         credentials: 'include',
         headers: {
