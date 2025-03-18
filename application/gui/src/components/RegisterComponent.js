@@ -9,10 +9,21 @@ const RegisterComponent = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  /**
+   * handleRegister sends a registration request to the client base URL with the provided username and label.
+   * It sets the loading state while the request is being processed and updates the success or error state based on the response.
+   *
+   * Parameters:
+   * - event: The event object associated with the form submission
+   *
+   * Returns:
+   * - None
+   */
   const handleRegister = async (event) => {
     event.preventDefault();
     setLoading(true);
 
+    // Sends POST register request to the client.
     const result = await fetch(config.clientBaseUrl + "/api/register", {
       method: "POST",
       headers: {
@@ -21,12 +32,16 @@ const RegisterComponent = () => {
       body: JSON.stringify({ username, label }),
     });
 
+    // Checks whether fetch response was successful or not. And responds accordingly.
     if (result.ok) {
       setSuccess("Success!");
       setError("");
     } else {
+
+      // Retrieves potential error message retrieved from the http error response and displays it to the user.
+      var errorMessage = await result.text();
       setSuccess("");
-      setError("Error creating user");
+      setError(errorMessage);
     }
     setLoading(false);
   };

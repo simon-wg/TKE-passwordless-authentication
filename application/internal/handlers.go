@@ -47,19 +47,18 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	pubkey := requestBody.Pubkey
 	label := requestBody.Label
 
-	if label == "" {
-		http.Error(w, "Label cannot be empty", http.StatusBadRequest)
-	}
-
-	if username == "" {
-		http.Error(w, "Username cannot be empty", http.StatusBadRequest)
-		return
-	}
-
 	fmt.Printf("Received registration request for user: %s\n", username)
 
 	// Check if user already exists
 	userExists, err := UserRepo.GetUser(username)
+
+	// Checks for sanitization error
+	if _, ok := err.(*structs.ErrorInputNotSanitized); ok {
+		fmt.Println("Input is not sanitized")
+		errMsg := err.(*structs.ErrorInputNotSanitized).Error()
+		http.Error(w, errMsg, http.StatusBadRequest)
+		return
+	}
 
 	if userExists != nil || err != mongo.ErrNoDocuments {
 		fmt.Printf("User already exists: %s\n", username)
@@ -69,6 +68,16 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Store new user data
 	user, err := UserRepo.CreateUser(username, pubkey, label)
+
+	// Checks for sanitization error
+	if _, ok := err.(*structs.ErrorInputNotSanitized); ok {
+		fmt.Println("Input is not sanitized")
+		errMsg := err.(*structs.ErrorInputNotSanitized).Error()
+		http.Error(w, errMsg, http.StatusBadRequest)
+		return
+	}
+
+	// Check for other errors
 	if err != nil || user == nil {
 		fmt.Printf("Error creating user: %v\n", err)
 		http.Error(w, "Unable to create user", http.StatusInternalServerError)
@@ -135,6 +144,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Check if the specified user is found
 	userExists, err := UserRepo.GetUser(username)
+
+	// Checks for sanitization error
+	if _, ok := err.(*structs.ErrorInputNotSanitized); ok {
+		fmt.Println("Input is not sanitized")
+		errMsg := err.(*structs.ErrorInputNotSanitized).Error()
+		http.Error(w, errMsg, http.StatusBadRequest)
+		return
+	}
 
 	if userExists == nil || err != nil {
 		fmt.Printf("User not found: %s\n", username)
