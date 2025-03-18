@@ -1,0 +1,60 @@
+.note-card {
+    background-color: #fff;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+.note-card input,
+.note-card textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.note-card .button-group {
+    display: flex;
+    gap: 10px;
+}
+
+.note-card button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.note-card button:hover {
+    background-color: #0056b3;
+}
+
+.note-card button.delete {
+    background-color: #f44336;
+}
+
+.note-card button.delete:hover {
+   background-color: #e53935;
+}
+
+.note-card p {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.note-card p.success {
+    background-color: #dff0d8;
+    color: #3c763d;
+}
+
+.note-card p.error {
+    background-color: #f2dede;
+    color: #a94442;
+}
