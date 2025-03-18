@@ -5,7 +5,7 @@ const useDeleteNote = () => {
 
   const deleteNote = async (id) => {
     try {
-      const response = await fetch('/api/delete-password', {
+      const response = await fetch('/api/delete-note', {
         method: 'DELETE',
         credentials: 'include',
         headers: {
