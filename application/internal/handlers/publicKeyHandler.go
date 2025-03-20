@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"chalmers/tkey-group22/application/internal/session_util"
 	"chalmers/tkey-group22/application/internal/structs"
 	"encoding/json"
 	"fmt"
@@ -19,9 +18,11 @@ import (
 // - 500 Internal Server Error: if there is an error retrieving the labels or sending the response
 // - 200 OK: if the labels are retrieved successfully
 func GetPublicKeyLabelsHandler(w http.ResponseWriter, r *http.Request) {
-	session, _ := session_util.Store.Get(r, "session-name")
-	username, ok := session.Values["username"].(string)
-	if !ok || username == "" {
+
+	// Get the authenticated user
+	username, err := getAuthenticatedUser(r)
+
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -45,15 +46,10 @@ func GetPublicKeyLabelsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responseBody := map[string][]string{"labels": labels}
-	responseBodyBytes, err := json.Marshal(responseBody)
-	if err != nil {
-		fmt.Printf("Unable to marshal response for user: %s\n", username)
-		http.Error(w, "Unable to send response", http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(responseBodyBytes)
+	// Send the response
+	response := map[string][]string{"labels": labels}
+	sendJSONResponse(w, http.StatusOK, response)
+
 }
 
 // AddPublicKeyHandler handles the addition of a new public key for a user
@@ -67,10 +63,11 @@ func GetPublicKeyLabelsHandler(w http.ResponseWriter, r *http.Request) {
 // - 500 Internal Server Error: if there is an error adding the public key or sending the response
 // - 200 OK: if the public key is added successfully
 func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
-	session, _ := session_util.Store.Get(r, "session-name")
-	username, ok := session.Values["username"].(string)
 
-	if !ok || username == "" {
+	// Get the authenticated user
+	username, err := getAuthenticatedUser(r)
+
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -126,15 +123,9 @@ func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responseBody := map[string]string{"message": "Public key added successfully"}
-	responseBodyBytes, err := json.Marshal(responseBody)
-	if err != nil {
-		fmt.Printf("Unable to marshal response for user: %s\n", username)
-		http.Error(w, "Unable to send response", http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(responseBodyBytes)
+	// Send the response
+	response := map[string]string{"message": "Public key added successfully"}
+	sendJSONResponse(w, http.StatusOK, response)
 }
 
 // RemovePublicKeyHandler handles the removal of a public key for a user
@@ -148,10 +139,11 @@ func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 // - 500 Internal Server Error: if there is an error removing the public key or sending the response
 // - 200 OK: if the public key is removed successfully
 func RemovePublicKeyHandler(w http.ResponseWriter, r *http.Request) {
-	session, _ := session_util.Store.Get(r, "session-name")
-	username, ok := session.Values["username"].(string)
 
-	if !ok || username == "" {
+	// Get the authenticated user
+	username, err := getAuthenticatedUser(r)
+
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -204,13 +196,8 @@ func RemovePublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responseBody := map[string]string{"message": "Public key removed successfully"}
-	responseBodyBytes, err := json.Marshal(responseBody)
-	if err != nil {
-		fmt.Printf("Unable to marshal response for user: %s\n", username)
-		http.Error(w, "Unable to send response", http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(responseBodyBytes)
+	// Send the response
+	response := map[string]string{"message": "Public key removed successfully"}
+	sendJSONResponse(w, http.StatusOK, response)
+
 }

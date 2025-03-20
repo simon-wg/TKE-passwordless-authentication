@@ -115,8 +115,10 @@ func CreateNoteHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to send response", http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(responseBodyBytes)
+
+	// Send the response
+	sendJSONResponse(w, http.StatusOK, responseBodyBytes)
+
 }
 
 // UpdateNoteHandler handles the HTTP request for updating a note.
@@ -168,11 +170,10 @@ func UpdateNoteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responseBody := map[string]string{"message": "Note updated successfully"}
-	responseBodyBytes, _ := json.Marshal(responseBody)
+	// Send the response
+	response := map[string]string{"message": "Note updated successfully"}
+	sendJSONResponse(w, http.StatusOK, response)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(responseBodyBytes)
 }
 
 // DeleteNoteHandler handles the deletion of a note.
@@ -229,9 +230,7 @@ func DeleteNoteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responseBody := map[string]string{"message": "Note deleted successfully"}
-	responseBodyBytes, _ := json.Marshal(responseBody)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(responseBodyBytes)
+	// Send the response
+	response := map[string]string{"message": "Note deleted successfully"}
+	sendJSONResponse(w, http.StatusOK, response)
 }

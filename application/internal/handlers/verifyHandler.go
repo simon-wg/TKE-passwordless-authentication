@@ -67,20 +67,7 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send success response
-	w.Write([]byte(nil))
-
 	// We don't expect a response body here, so commenting this out for the while
-	// responseBody := map[string]interface{}{
-	// 	"message":  "Verification successful",
-	// 	"userData": map[string]string{requestBody.Username: pubkeyString},
-	// }
-	// responseBodyBytes, err := json.Marshal(responseBody)
-	// if err != nil {
-	// 	fmt.Printf("Unable to marshal response: %v\n", err)
-	// 	http.Error(w, "Unable to send response", http.StatusInternalServerError)
-	// 	return
-	// }
-	// w.Header().Set("Content-Type", "application/json")
-	// w.Write(responseBodyBytes)
+	// sendJSONResponse(w, http.StatusOK, nil)
+
 }
