@@ -24,7 +24,7 @@ func main() {
 	// Connects to the MongoDB dat.env.exampleabase named tkeyUserDB
 	db, err := db.ConnectMongoDB(os.Getenv("MONGO_URI"), "tkeyUserDB")
 
-	// Initialize the UserRepository struct with the database reference
+	// Initialize the UserRepository and NoteRepository struct with the database reference
 	handlers.UserRepo = util.NewUserRepo(db.Database)
 	handlers.NotesRepo = util.NewNotesRepo(db.Database)
 
