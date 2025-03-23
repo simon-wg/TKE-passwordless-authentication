@@ -10,6 +10,9 @@ const SettingsPage = () => {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
   const [keyLabels, setKeyLabels] = useState([]);
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [popupMessage, setPopupMessage] = useState("");
 
   const fetchKeyLabels = async () => {
     const response = await fetch("/api/get-public-key-labels", {
@@ -50,7 +53,6 @@ const SettingsPage = () => {
       setMessage("Public key added successfully");
       setMessageType("success");
       setAddKeyLabel("");
-      // Refresh the key labels
       fetchKeyLabels();
     } else {
       setMessage("Error adding public key");
@@ -59,27 +61,45 @@ const SettingsPage = () => {
   };
 
   const handleRemoveKey = async () => {
-    const response = await fetch(
-      config.clientBaseUrl + "/api/remove-public-key",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ label: removeKeyLabel }),
-      }
-    );
+    const response = await fetch(config.clientBaseUrl + "/api/remove-public-key", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ label: removeKeyLabel }),
+    });
 
     if (response.ok) {
       setMessage("Public key removed successfully");
       setMessageType("success");
       setRemoveKeyLabel("");
-      // Refresh the key labels
       fetchKeyLabels();
     } else {
       setMessage("Error removing public key");
       setMessageType("error");
+    }
+  };
+
+  const handleAccountDeletion = async () => {
+    if (deleteConfirmation === "REMOVEMYACCOUNT") {
+      const response = await fetch("/api/unregister", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        setMessage("Account deleted successfully");
+        setMessageType("success");
+        setShowDeletePopup(false);
+      } else {
+        setPopupMessage("Error deleting account");
+      }
+    } else {
+      setPopupMessage("Incorrect confirmation input");
     }
   };
 
@@ -114,7 +134,26 @@ const SettingsPage = () => {
         />
         <button onClick={handleRemoveKey}>Remove Public Key</button>
       </div>
-      {message && <p className={messageType}>{message}</p>}
+      <button className="delete-button" onClick={() => setShowDeletePopup(true)}>
+        Delete Account
+      </button>
+
+      {showDeletePopup && (
+        <div className="lightbox">
+          <div className="popup">
+            <h2>Confirm Account Deletion</h2>
+            <p>Type "REMOVEMYACCOUNT" to confirm:</p>
+            <input
+              type="text"
+              value={deleteConfirmation}
+              onChange={(e) => setDeleteConfirmation(e.target.value)}
+            />
+            <button style={{ marginBottom: "10px" }} onClick={handleAccountDeletion}>Confirm</button>
+            <button onClick={() => setShowDeletePopup(false)}>Cancel</button>
+            {popupMessage && <p className="error-message" style={{ color: "red" }}>{popupMessage}</p>}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
