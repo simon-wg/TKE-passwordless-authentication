@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"chalmers/tkey-group22/application/internal/structs"
-	"chalmers/tkey-group22/application/internal/util"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,8 +9,6 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
-var UserRepo util.UserRepository
 
 // RegisterHandler handles the user registration process
 // It expects a POST request with a JSON body containing the username and public key with label of the user to be registered
@@ -83,14 +80,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send success response
-	responseBody := map[string]string{"message": "User registered successfully"}
-	responseBodyBytes, err := json.Marshal(responseBody)
-	if err != nil {
-		fmt.Printf("Unable to marshal response for user: %s\n", username)
-		http.Error(w, "Unable to send response", http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(responseBodyBytes)
+	// Send the response
+	response := map[string]string{"message": "User registered successfully"}
+	sendJSONResponse(w, http.StatusOK, response)
 }

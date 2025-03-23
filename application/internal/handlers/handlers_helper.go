@@ -2,10 +2,14 @@ package handlers
 
 import (
 	"chalmers/tkey-group22/application/internal/session_util"
+	"chalmers/tkey-group22/application/internal/util"
 	"encoding/json"
 	"fmt"
 	"net/http"
 )
+
+// UserRepo is a global variable that holds the UserRepository for other handlers to use
+var UserRepo util.UserRepository
 
 // Helper function to retrieve the authenticated username from session
 func getAuthenticatedUser(r *http.Request) (string, error) {

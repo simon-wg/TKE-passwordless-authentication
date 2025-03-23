@@ -4,7 +4,12 @@ import (
 	"net/http"
 )
 
-// This handler returns the username of the current session user
+// GetUserHandler returns the username of the current session user
+// It expects a valid authenticated session
+//
+// Possible responses:
+// - 401 Unauthorized: if the user is not authenticated
+// - 200 OK: if the user is authenticated successfully
 func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	// Get the authenticated user
 	username, err := getAuthenticatedUser(r)
