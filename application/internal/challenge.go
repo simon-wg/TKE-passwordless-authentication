@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"chalmers/tkey-group22/application/internal/util"
 	"crypto/ed25519"
 	"crypto/rand"
 	"encoding/base64"
@@ -81,7 +82,7 @@ func cleanupExpiredChallenges() {
 // Returns:
 //   - bool: True if the signature is valid, false otherwise.
 //   - error: An error if the verification fails due to an invalid format, expired challenge, or no active challenge.
-func VerifySignature(username string, signature []byte) (bool, error) {
+func VerifySignature(username string, signature []byte, userRepo util.UserRepository) (bool, error) {
 	challenge, exists := activeChallenges[username]
 	if !exists {
 		fmt.Println(activeChallenges)
@@ -92,7 +93,7 @@ func VerifySignature(username string, signature []byte) (bool, error) {
 		return false, errors.New("challenge expired")
 	}
 
-	userData, err := UserRepo.GetUser(username)
+	userData, err := userRepo.GetUser(username)
 	if err != nil {
 		return false, err
 	}
