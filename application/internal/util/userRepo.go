@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"regexp"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -74,6 +75,11 @@ func (repo *UserRepo) CreateUser(userName string, pubkey ed25519.PublicKey, labe
 
 	// Check that username is sanitized
 	if !isSanitized(userName) {
+		return nil, &structs.ErrorInputNotSanitized{}
+	}
+
+	// Check that the public key is sanitized
+	if !isSanitizedPubKey(string(pubkey)) {
 		return nil, &structs.ErrorInputNotSanitized{}
 	}
 
@@ -164,7 +170,7 @@ func (repo *UserRepo) UpdateUser(userName string, updatedUser User) (*mongo.Upda
 
 	// Check that new keys are sanitized
 	for _, pubkey := range updatedUser.PublicKeys {
-		if !isSanitized(pubkey.Label) || !isSanitized(pubkey.Key) {
+		if !isSanitized(pubkey.Label) || !isSanitizedPubKey(pubkey.Key) {
 			return nil, &structs.ErrorInputNotSanitized{}
 		}
 	}
@@ -258,10 +264,10 @@ func (repo *UserRepo) AddPublicKey(userName string, newPubKey ed25519.PublicKey,
 	}
 
 	// Check that the new public key is sanitized
-	if !isSanitized(string(newPubKey)) {
+	if !isSanitizedPubKey(string(newPubKey)) {
+		println(len(string(newPubKey)))
 		return nil, &structs.ErrorInputNotSanitized{}
 	}
-
 	// Check that label is sanitized
 	if !isSanitized(label) {
 		return nil, &structs.ErrorInputNotSanitized{}
@@ -277,10 +283,10 @@ func (repo *UserRepo) AddPublicKey(userName string, newPubKey ed25519.PublicKey,
 	}
 
 	encodedPubKey := base64.StdEncoding.EncodeToString(newPubKey)
-
 	for _, pubkey := range user.PublicKeys {
 		if pubkey.Key == encodedPubKey {
 			return nil, errors.New("public key already exists for the user")
+
 		}
 		if pubkey.Label == label {
 			return nil, errors.New("label already exists for the user")
@@ -364,4 +370,26 @@ func (repo *UserRepo) RemovePublicKey(userName string, label string) (*mongo.Upd
 func isSanitized(input string) bool {
 	// Check if input contains any non-alphanumeric characters
 	return !regexp.MustCompile("[^a-zA-Z0-9]").MatchString(input)
+}
+
+// isSanitizedPubKey checks if the input public key is sanitized by verifying its length and ensuring it does not contain common NoSQL injection characters.
+//
+// Parameters:
+//   - input: The public key input to check
+//
+// Returns:
+//   - bool: True if the public key is sanitized, false otherwise
+func isSanitizedPubKey(input string) bool {
+
+	// Length check public key
+	if len(input) < 32 || len(input) > 32 {
+		return false
+	}
+
+	// Checks if input contain common NoSQL injection characters
+	if strings.ContainsAny(input, "{$}[]().") {
+		return false
+	}
+
+	return true
 }
