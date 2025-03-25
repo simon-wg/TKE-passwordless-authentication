@@ -2,8 +2,13 @@ import React, { useState, useEffect } from "react";
 import useFetchUser from "../hooks/useFetchUser";
 import config from "../config";
 import "../components/styles.css";
+import { useNavigate } from "react-router-dom";
+
+
+
 
 const SettingsPage = () => {
+  const navigate = useNavigate();
   const user = useFetchUser();
   const [addKeyLabel, setAddKeyLabel] = useState("");
   const [removeKeyLabel, setRemoveKeyLabel] = useState("");
@@ -95,6 +100,9 @@ const SettingsPage = () => {
         setMessage("Account deleted successfully");
         setMessageType("success");
         setShowDeletePopup(false);
+
+        // !! TEMPORARY SOLUTION. api/logout should be called here when implemented. !!
+        navigate('/');
       } else {
         setPopupMessage("Error deleting account");
       }
