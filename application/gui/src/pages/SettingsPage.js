@@ -156,7 +156,7 @@ const SettingsPage = () => {
               value={deleteConfirmation}
               onChange={(e) => setDeleteConfirmation(e.target.value)}
             />
-            <button style={{ marginBottom: "10px" }} onClick={handleAccountDeletion}>Confirm</button>
+            <button className="delete-button" style={{ marginBottom: "10px" }} onClick={handleAccountDeletion}>Confirm</button>
             <button onClick={() => setShowDeletePopup(false)}>Cancel</button>
             {popupMessage && <p className="error-message" style={{ color: "red" }}>{popupMessage}</p>}
           </div>

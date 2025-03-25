@@ -127,8 +127,10 @@ button:hover {
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  width: 17.5vw;
+}
 
+.delete-button:hover {
+  background-color: darkred;
 }
 
 .lightbox {
