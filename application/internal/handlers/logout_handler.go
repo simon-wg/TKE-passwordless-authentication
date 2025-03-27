@@ -18,26 +18,10 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Retrieve session
-	session, err := session_util.Store.Get(r, "session-name")
+	err := session_util.TerminateSession(w, r)
 	if err != nil {
 		http.Error(w, "No active session found", http.StatusNotFound)
 	}
-
-	// Invalidate session in the server
-	session.Options.MaxAge = -1
-
-	// Save changes to remove session
-	session.Save(r, w)
-
-	// Deleted the cookie on the browser
-	http.SetCookie(w, &http.Cookie{
-		Name:     "session-name",
-		Value:    "",
-		Path:     "/",
-		MaxAge:   -1,
-		HttpOnly: true,
-	})
 
 	// Send a success response
 	w.WriteHeader(http.StatusOK)
