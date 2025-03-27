@@ -5,6 +5,12 @@ import (
 	"net/http"
 )
 
+// LogoutHandler handles user logout requests
+// It expects a POST request with a cookie (automatically included with credentials flag)
+//
+// Possible responses:
+// - 405 Method Not Allowed: if the request method is not POST
+// - 404 Not Found: if the user doesn't have a session
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	// Ensure it is a POST request
 	if r.Method != http.MethodPost {
@@ -13,7 +19,10 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve session
-	session, _ := session_util.Store.Get(r, "session-name")
+	session, err := session_util.Store.Get(r, "session-name")
+	if err != nil {
+		http.Error(w, "No active session found", http.StatusNotFound)
+	}
 
 	// Invalidate session in the server
 	session.Options.MaxAge = -1
