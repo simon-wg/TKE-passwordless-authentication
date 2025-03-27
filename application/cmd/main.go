@@ -44,6 +44,7 @@ func main() {
 	http.Handle("/api/get-user-note", session_util.SessionMiddleware(http.HandlerFunc(handlers.GetNotesHandler)))
 	http.Handle("/api/update-note", session_util.SessionMiddleware(http.HandlerFunc(handlers.UpdateNoteHandler)))
 	http.Handle("/api/delete-note", session_util.SessionMiddleware(http.HandlerFunc(handlers.DeleteNoteHandler)))
+	http.Handle("/api/logout", session_util.SessionMiddleware(http.HandlerFunc(handlers.LogoutHandler)))
 
 	fmt.Println("Mock application running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)

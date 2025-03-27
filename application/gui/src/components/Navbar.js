@@ -1,26 +1,27 @@
-import React from 'react';
-import './styles.css';
-import useFetchUser from '../hooks/useFetchUser';
-import GearIcon from './GearIcon';
+import React from "react";
+import "./styles.css";
+import useFetchUser from "../hooks/useFetchUser";
+import GearIcon from "./GearIcon";
+import LogoutButton from "./LogoutButton";
 
 const Navbar = ({ setPage, currentPage }) => {
   const user = useFetchUser();
 
   return (
     <nav className="navbar">
-      <ul>
+      <ul className="navbar-center">
         <li>
           <button
-            className={currentPage === 'register' ? 'active' : ''}
-            onClick={() => setPage('register')}
+            className={currentPage === "register" ? "active" : ""}
+            onClick={() => setPage("register")}
           >
             Register
           </button>
         </li>
         <li>
           <button
-            className={currentPage === 'login' ? 'active' : ''}
-            onClick={() => setPage('login')}
+            className={currentPage === "login" ? "active" : ""}
+            onClick={() => setPage("login")}
           >
             Login
           </button>
@@ -29,17 +30,22 @@ const Navbar = ({ setPage, currentPage }) => {
           <>
             <li>
               <button
-                className={currentPage === 'app' ? 'active' : ''}
-                onClick={() => setPage('app')}
+                className={currentPage === "app" ? "active" : ""}
+                onClick={() => setPage("app")}
               >
                 App
               </button>
             </li>
-            <GearIcon />
           </>
         )}
       </ul>
-      
+
+      {user !== null && (
+        <div className="navbar-right">
+          <LogoutButton />
+          <GearIcon />
+        </div>
+      )}
     </nav>
   );
 };
