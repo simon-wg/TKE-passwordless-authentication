@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"chalmers/tkey-group22/application/internal/session_util"
 	"fmt"
 	"net/http"
 
@@ -60,6 +61,12 @@ func UnregisterHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Error deleting user: %v\n", err)
 		http.Error(w, "Unable to delete user", http.StatusInternalServerError)
 		return
+	}
+
+	err = session_util.TerminateSession(w, r)
+
+	if err != nil {
+		http.Error(w, "Unable to terminate session", http.StatusInternalServerError)
 	}
 
 	// Send success response
