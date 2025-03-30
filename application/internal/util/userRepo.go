@@ -7,7 +7,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"regexp"
-	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -372,8 +371,7 @@ func isSanitized(input string) bool {
 	return !regexp.MustCompile("[^a-zA-Z0-9]").MatchString(input)
 }
 
-// isSanitizedPubKey checks if the input public key is sanitized by verifying its length and ensuring it does not contain common NoSQL injection characters.
-//
+// isSanitizedPubKey checks if the input public key is sanitized by verifying its length
 // Parameters:
 //   - input: The public key input to check
 //
@@ -383,11 +381,6 @@ func isSanitizedPubKey(input string) bool {
 
 	// Length check public key
 	if len(input) < 32 || len(input) > 32 {
-		return false
-	}
-
-	// Checks if input contain common NoSQL injection characters
-	if strings.ContainsAny(input, "{$}[]().") {
 		return false
 	}
 
