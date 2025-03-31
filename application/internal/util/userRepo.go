@@ -74,7 +74,7 @@ func (repo *UserRepo) CreateUser(userName string, pubkey ed25519.PublicKey, labe
 
 	// Check that username is sanitized
 	if !isSanitized(userName) {
-		return nil, &structs.ErrorInputNotSanitized{}
+		return nil, &structs.ErrorInputNotSanitized{Message: "Username can only contain alphanumeric characters [a-z, A-Z, 0-9]"}
 	}
 	// Check that the label is sanitized
 	if !isSanitized(label) {
@@ -153,12 +153,12 @@ func (repo *UserRepo) UpdateUser(userName string, updatedUser User) (*mongo.Upda
 
 	// Check that old username is sanitized
 	if !isSanitized(userName) {
-		return nil, &structs.ErrorInputNotSanitized{}
+		return nil, &structs.ErrorInputNotSanitized{Message: "Old username can only contain alphanumeric characters [a-z, A-Z, 0-9]"}
 	}
 
 	// Check that new username is sanitized
 	if !isSanitized(updatedUser.Username) {
-		return nil, &structs.ErrorInputNotSanitized{}
+		return nil, &structs.ErrorInputNotSanitized{Message: "New username can only contain alphanumeric characters [a-z, A-Z, 0-9]"}
 	}
 
 	filter := bson.M{"username": userName}
@@ -191,7 +191,7 @@ func (repo *UserRepo) DeleteUser(userName string) (*mongo.DeleteResult, error) {
 
 	// Check that username is sanitized
 	if !isSanitized(userName) {
-		return nil, &structs.ErrorInputNotSanitized{}
+		return nil, &structs.ErrorInputNotSanitized{Message: "Username can only contain alphanumeric characters [a-z, A-Z, 0-9]"}
 	}
 
 	filter := bson.M{"username": userName}
@@ -215,7 +215,7 @@ func (repo *UserRepo) GetPublicKeyLabels(userName string) ([]string, error) {
 
 	// Check that username is sanitized
 	if !isSanitized(userName) {
-		return nil, &structs.ErrorInputNotSanitized{}
+		return nil, &structs.ErrorInputNotSanitized{Message: "Username can only contain alphanumeric characters [a-z, A-Z, 0-9]"}
 	}
 
 	user, err := repo.GetUser(userName)
@@ -246,12 +246,12 @@ func (repo *UserRepo) AddPublicKey(userName string, newPubKey ed25519.PublicKey,
 
 	// Check that username is sanitized
 	if !isSanitized(userName) {
-		return nil, &structs.ErrorInputNotSanitized{}
+		return nil, &structs.ErrorInputNotSanitized{Message: "Username can only contain alphanumeric characters [a-z, A-Z, 0-9]"}
 	}
 
 	// Check that label is sanitized
 	if !isSanitized(label) {
-		return nil, &structs.ErrorInputNotSanitized{}
+		return nil, &structs.ErrorInputNotSanitized{Message: "Label can only contain alphanumeric characters [a-z, A-Z, 0-9]"}
 	}
 
 	user, err := repo.GetUser(userName)
@@ -302,12 +302,12 @@ func (repo *UserRepo) RemovePublicKey(userName string, label string) (*mongo.Upd
 
 	// Check that username is sanitized
 	if !isSanitized(userName) {
-		return nil, &structs.ErrorInputNotSanitized{}
+		return nil, &structs.ErrorInputNotSanitized{Message: "Username can only contain alphanumeric characters [a-z, A-Z, 0-9]"}
 	}
 
 	// Check that label is sanitized
 	if !isSanitized(label) {
-		return nil, &structs.ErrorInputNotSanitized{}
+		return nil, &structs.ErrorInputNotSanitized{Message: "Label can only contain alphanumeric characters [a-z, A-Z, 0-9]"}
 	}
 
 	user, err := repo.GetUser(userName)
