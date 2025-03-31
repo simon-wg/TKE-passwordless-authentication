@@ -32,7 +32,6 @@ const Navbar = ({ setPage, currentPage }) => {
                 App
               </button>
             </li>
-            <GearIcon />
           </>
         )}
         <li>
@@ -51,19 +50,6 @@ const Navbar = ({ setPage, currentPage }) => {
             Login
           </button>
         </li>
-        {user !== null && (
-          <>
-            <li>
-              <button
-                className={currentPage === 'app' ? 'active' : ''}
-                onClick={() => setPage('app')}
-              >
-                App
-              </button>
-            </li>
-            <GearIcon />
-          </>
-        )}
       </ul>
 
       {user !== null && (
