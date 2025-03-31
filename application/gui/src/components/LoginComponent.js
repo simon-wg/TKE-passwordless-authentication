@@ -27,6 +27,7 @@ const LoginComponent = () => {
     event.preventDefault();
     clearMessages();
     setLoading(true);
+    setMessage("Please touch your TKey to proceed with the login.");
     try {
       const response = await fetch(config.clientBaseUrl + "/api/login", {
         method: "POST",
@@ -38,7 +39,7 @@ const LoginComponent = () => {
 
       if (!response.ok) {
         var errorMessage = await response.text();
-        setError(errorMessage)
+        setError(errorMessage);
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
@@ -104,6 +105,7 @@ const LoginComponent = () => {
           {loading ? "Awaiting login" : "Login"}
         </button>
       </form>
+      {message && <p className="message">{message}</p>}
       {success && <p className="success">{success}</p>}
       {error && <p className="error">{error}</p>}
     </div>
