@@ -37,7 +37,6 @@ const RegisterComponent = () => {
       setSuccess("Success!");
       setError("");
     } else {
-
       // Retrieves potential error message retrieved from the http error response and displays it to the user.
       var errorMessage = await result.text();
       setSuccess("");
@@ -52,18 +51,26 @@ const RegisterComponent = () => {
       <LoadingCircle loading={loading} />
 
       <form onSubmit={handleRegister}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Key Label"
-          value={label}
-          onChange={(e) => setLabel(e.target.value)}
-        />
+        <div className="form-group">
+          <label htmlFor="username">Username</label>
+          <input
+            id="username"
+            type="text"
+            placeholder="Enter a username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="keyLabel">Key Label</label>
+          <input
+            id="keyLabel"
+            type="text"
+            placeholder="Main, Backup, etc."
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+          />
+        </div>
         <button onClick={handleRegister} disabled={loading}>
           {loading ? "Loading..." : "Register"}
         </button>
