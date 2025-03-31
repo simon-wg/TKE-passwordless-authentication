@@ -159,3 +159,12 @@ button:hover {
   border-radius: 10px;
   text-align: center;
 }
+
+.gear-icon {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.gear-icon:hover {
+  transform: scale(1.1);
+}
