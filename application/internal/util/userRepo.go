@@ -76,12 +76,6 @@ func (repo *UserRepo) CreateUser(userName string, pubkey ed25519.PublicKey, labe
 	if !isSanitized(userName) {
 		return nil, &structs.ErrorInputNotSanitized{}
 	}
-
-	// Check that the public key is sanitized
-	if !isSanitizedPubKey(string(pubkey)) {
-		return nil, &structs.ErrorInputNotSanitized{}
-	}
-
 	// Check that the label is sanitized
 	if !isSanitized(label) {
 		return nil, &structs.ErrorInputNotSanitized{Message: "Label can only contain alphanumeric characters [a-z, A-Z, 0-9]"}
@@ -165,13 +159,6 @@ func (repo *UserRepo) UpdateUser(userName string, updatedUser User) (*mongo.Upda
 	// Check that new username is sanitized
 	if !isSanitized(updatedUser.Username) {
 		return nil, &structs.ErrorInputNotSanitized{}
-	}
-
-	// Check that new keys are sanitized
-	for _, pubkey := range updatedUser.PublicKeys {
-		if !isSanitized(pubkey.Label) || !isSanitizedPubKey(pubkey.Key) {
-			return nil, &structs.ErrorInputNotSanitized{}
-		}
 	}
 
 	filter := bson.M{"username": userName}
@@ -262,11 +249,6 @@ func (repo *UserRepo) AddPublicKey(userName string, newPubKey ed25519.PublicKey,
 		return nil, &structs.ErrorInputNotSanitized{}
 	}
 
-	// Check that the new public key is sanitized
-	if !isSanitizedPubKey(string(newPubKey)) {
-		println(len(string(newPubKey)))
-		return nil, &structs.ErrorInputNotSanitized{}
-	}
 	// Check that label is sanitized
 	if !isSanitized(label) {
 		return nil, &structs.ErrorInputNotSanitized{}
@@ -369,20 +351,4 @@ func (repo *UserRepo) RemovePublicKey(userName string, label string) (*mongo.Upd
 func isSanitized(input string) bool {
 	// Check if input contains any non-alphanumeric characters
 	return !regexp.MustCompile("[^a-zA-Z0-9]").MatchString(input)
-}
-
-// isSanitizedPubKey checks if the input public key is sanitized by verifying its length
-// Parameters:
-//   - input: The public key input to check
-//
-// Returns:
-//   - bool: True if the public key is sanitized, false otherwise
-func isSanitizedPubKey(input string) bool {
-
-	// Length check public key
-	if len(input) < 32 || len(input) > 32 {
-		return false
-	}
-
-	return true
 }
