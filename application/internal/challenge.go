@@ -83,7 +83,6 @@ func cleanupExpiredChallenges() {
 //   - bool: True if the signature is valid, false otherwise.
 //   - error: An error if the verification fails due to an invalid format, expired challenge, or no active challenge.
 func VerifySignature(username string, signature []byte, userRepo util.UserRepository) (bool, error) {
-	fmt.Println("Verifying")
 	challengesLock.Lock()
 	challenge, exists := activeChallenges[username]
 	if exists {
