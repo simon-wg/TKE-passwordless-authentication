@@ -7,6 +7,7 @@ import "./components/styles.css";
 import NotesApp from "./components/NotesApp";
 import useFetchUser from "./hooks/useFetchUser";
 import LoadingCircle from "./components/LoadingCircle";
+import StartPage from "./components/StartPage";
 
 const App = () => {
   const [page, setPage] = useState("register");
@@ -16,6 +17,8 @@ const App = () => {
   useEffect(() => {
     if (user !== null) {
       setPage("app");
+    }else {
+      setPage("start");
     }
     setLoading(false);
   }, [user]);
@@ -30,6 +33,7 @@ const App = () => {
           {page === "register" && <RegisterComponent />}
           {page === "login" && <LoginComponent />}
           {page === "app" && <NotesApp />}
+          {page === "start" && <StartPage setPage={setPage} />}
         </>
       )}
     </div>

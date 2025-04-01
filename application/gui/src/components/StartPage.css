@@ -1,0 +1,12 @@
+.to-register-btn {
+    padding: '10px 20px';
+    font-size: '16px';
+    margin-top: 50px;
+    width: 500px;
+}
+
+@media (max-width: 500px) {
+    .to-register-btn {
+        width: 80%;
+    }
+}

@@ -9,7 +9,31 @@ const Navbar = ({ setPage, currentPage }) => {
 
   return (
     <nav className="navbar">
-      <ul className="navbar-center">
+      <ul>
+      {user === null && (
+          <>
+            <li>
+              <button
+                className={currentPage === 'start' ? 'active' : ''}
+                onClick={() => setPage('start')}
+              >
+                Start
+              </button>
+            </li>
+          </>
+        )}
+        {user !== null && (
+          <>
+            <li>
+              <button
+                className={currentPage === 'app' ? 'active' : ''}
+                onClick={() => setPage('app')}
+              >
+                App
+              </button>
+            </li>
+          </>
+        )}
         <li>
           <button
             className={currentPage === "register" ? "active" : ""}
@@ -26,18 +50,6 @@ const Navbar = ({ setPage, currentPage }) => {
             Login
           </button>
         </li>
-        {user !== null && (
-          <>
-            <li>
-              <button
-                className={currentPage === "app" ? "active" : ""}
-                onClick={() => setPage("app")}
-              >
-                App
-              </button>
-            </li>
-          </>
-        )}
       </ul>
 
       {user !== null && (
