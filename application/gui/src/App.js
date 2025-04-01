@@ -7,7 +7,7 @@ import "./components/styles.css";
 import NotesApp from "./components/NotesApp";
 import useFetchUser from "./hooks/useFetchUser";
 import LoadingCircle from "./components/LoadingCircle";
-import UnAuth from "./components/UnAuth";
+import StartPage from "./components/StartPage";
 
 const App = () => {
   const [page, setPage] = useState("register");
@@ -33,7 +33,7 @@ const App = () => {
           {page === "register" && <RegisterComponent />}
           {page === "login" && <LoginComponent />}
           {page === "app" && <NotesApp />}
-          {page === "start" && <UnAuth setPage={setPage} />}
+          {page === "start" && <StartPage setPage={setPage} />}
         </>
       )}
     </div>

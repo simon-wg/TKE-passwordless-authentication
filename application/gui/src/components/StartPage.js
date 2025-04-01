@@ -1,7 +1,7 @@
 import React from 'react';
-import './UnAuth.css';
+import './StartPage.css';
 
-const UnAuth = ({ setPage }) => {
+const StartPage = ({ setPage }) => {
     const handleRegisterClick = () => {
         setPage("register");
     };
@@ -19,7 +19,7 @@ const UnAuth = ({ setPage }) => {
                 When the client is running, plug in your TKey, head to the register or login page and fill out the form as usual.
             </p>
             <p>
-                The first time registering or login in after plugging in you will be prompted by a completely optional password. Leave it blank if you want to.
+                The first time registering or login in after plugging in you will be prompted by an optional user supplied secret (password)."
             </p>
             <p>
                 Then when the TKey starts to blink green, give it a touch!
@@ -31,4 +31,4 @@ const UnAuth = ({ setPage }) => {
     );
 };
 
-export default UnAuth;
+export default StartPage;
