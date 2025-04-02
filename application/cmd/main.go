@@ -18,18 +18,34 @@ import (
 func main() {
 	err := godotenv.Load("../.env")
 	if err != nil {
-		fmt.Println("Error loading .env file")
+		fmt.Printf("Failed to load .env file: %v\n", err)
+		os.Exit(1)
 	}
 
-	// Connects to the MongoDB dat.env.exampleabase named tkeyUserDB
+	// Connects to the MongoDB database named tkeyUserDB
 	db, err := db.ConnectMongoDB(os.Getenv("MONGO_URI"), "tkeyUserDB")
+	if err != nil {
+		fmt.Printf("Failed to connect to MongoDB: %v\n", err)
+		os.Exit(1)
+	}
+
+	if db == nil {
+		fmt.Println("Database connection is nil")
+		os.Exit(1)
+	}
 
 	// Initialize the UserRepository and NoteRepository struct with the database reference
 	handlers.UserRepo = util.NewUserRepo(db.Database)
 	handlers.NotesRepo = util.NewNotesRepo(db.Database)
 
-	if err != nil || db == nil || handlers.UserRepo == nil {
-		return
+	if handlers.UserRepo == nil {
+		fmt.Println("Failed to initialize UserRepository")
+		os.Exit(1)
+	}
+
+	if handlers.NotesRepo == nil {
+		fmt.Println("Failed to initialize NotesRepository")
+		os.Exit(1)
 	}
 
 	http.HandleFunc("/api/register", handlers.RegisterHandler)
