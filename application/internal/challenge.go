@@ -20,8 +20,8 @@ type Challenge struct {
 }
 
 var (
-	ValidDuration    = time.Duration(1) * time.Minute // challenges are valid for 60 seconds
-	challengeLength  = 128                            // number of bytes in challenge
+	ValidDuration    = time.Duration(20) * time.Second // challenges are valid for 20 seconds
+	challengeLength  = 128                             // number of bytes in challenge
 	cleanupInterval  = time.Duration(2) * time.Minute
 	activeChallenges = make(map[string]*Challenge)
 	challengesLock   sync.Mutex
@@ -83,7 +83,13 @@ func cleanupExpiredChallenges() {
 //   - bool: True if the signature is valid, false otherwise.
 //   - error: An error if the verification fails due to an invalid format, expired challenge, or no active challenge.
 func VerifySignature(username string, signature []byte, userRepo util.UserRepository) (bool, error) {
+	challengesLock.Lock()
 	challenge, exists := activeChallenges[username]
+	if exists {
+		delete(activeChallenges, username)
+	}
+	challengesLock.Unlock()
+
 	if !exists {
 		fmt.Println(activeChallenges)
 		return false, errors.New("no active challenge found for given user")
