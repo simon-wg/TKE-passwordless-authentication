@@ -94,6 +94,7 @@ func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 
 	if label == "" {
 		http.Error(w, "Label cannot be empty", http.StatusBadRequest)
+		return
 	}
 
 	if len(newPubKey) == 0 {
