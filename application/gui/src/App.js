@@ -12,12 +12,14 @@ import StartPage from "./components/StartPage";
 const App = () => {
   const [page, setPage] = useState("register");
   const [loading, setLoading] = useState(true);
+  const [showLoginSuccess, setShowLoginSuccess] = useState(false);
   const user = useFetchUser();
 
   useEffect(() => {
     if (user !== null) {
       setPage("app");
-    }else {
+      setShowLoginSuccess(true);
+    } else {
       setPage("start");
     }
     setLoading(false);
@@ -34,6 +36,16 @@ const App = () => {
           {page === "login" && <LoginComponent />}
           {page === "app" && <NotesApp />}
           {page === "start" && <StartPage setPage={setPage} />}
+          {showLoginSuccess && (
+            <div className="popup-notification">
+              <div className="popup-content">
+                <p>Login Success!</p>
+                <button onClick={() => setShowLoginSuccess(false)}>
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
