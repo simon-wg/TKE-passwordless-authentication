@@ -1,15 +1,22 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 const useCreateNote = () => {
   const [result, setResult] = useState(null);
 
   const createNote = async (name, note) => {
     try {
-      const response = await fetch('/api/create-note', {
-        method: 'POST',
-        credentials: 'include',
+      const csrfresponse = await fetch("/api/csrf-token", {
+        method: "GET",
+        credentials: "include",
+      });
+      const token = csrfresponse.headers.get("X-CSRF-Token");
+
+      const response = await fetch("/api/create-note", {
+        method: "POST",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
+          "X-CSRF-Token": token,
         },
         body: JSON.stringify({ name, note }),
       });
@@ -21,7 +28,7 @@ const useCreateNote = () => {
         setResult(false);
       }
     } catch (error) {
-      console.log('Error creating note', error);
+      console.log("Error creating note", error);
       setResult(false);
     }
   };
