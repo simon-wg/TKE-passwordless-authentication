@@ -19,7 +19,6 @@ func main() {
 	err := godotenv.Load("../.env")
 	if err != nil {
 		fmt.Printf("Failed to load .env file: %v\n", err)
-		os.Exit(1)
 	}
 
 	// Connects to the MongoDB database named tkeyUserDB
