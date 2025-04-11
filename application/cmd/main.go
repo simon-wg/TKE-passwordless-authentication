@@ -59,11 +59,11 @@ func main() {
 			csrfMiddleware(http.HandlerFunc(handlers.CreateNoteHandler)),
 		),
 	)
-	mux.Handle("/api/get-user-note", session_util.SessionMiddleware(http.HandlerFunc(handlers.GetNotesHandler)))
+	mux.Handle("/api/get-user-note", session_util.SessionMiddleware(csrfMiddleware(http.HandlerFunc(handlers.GetNotesHandler))))
 	mux.Handle("/api/update-note", session_util.SessionMiddleware(http.HandlerFunc(handlers.UpdateNoteHandler)))
 	mux.Handle("/api/delete-note", session_util.SessionMiddleware(http.HandlerFunc(handlers.DeleteNoteHandler)))
 	mux.Handle("/api/logout", session_util.SessionMiddleware(http.HandlerFunc(handlers.LogoutHandler)))
 
 	fmt.Println("Mock application running on http://localhost:8080")
-	http.ListenAndServe(":8080", csrfMiddleware(mux))
+	http.ListenAndServe(":8080", mux)
 }

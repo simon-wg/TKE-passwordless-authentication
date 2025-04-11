@@ -1,5 +1,5 @@
-import { useState } from 'react';
-
+import { useState } from "react";
+import { secureFetch } from "../util/secureFetch";
 /**
  * Custom hook to delete a note.
  *
@@ -24,12 +24,8 @@ const useDeleteNote = () => {
 
   const deleteNote = async (id) => {
     try {
-      const response = await fetch('/api/delete-note', {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const response = await secureFetch("/api/delete-note", {
+        method: "DELETE",
         body: JSON.stringify({ id }),
       });
 
@@ -40,7 +36,7 @@ const useDeleteNote = () => {
         setDeleteResult(false);
       }
     } catch (error) {
-      console.log('Error deleting note', error);
+      console.log("Error deleting note", error);
       setDeleteResult(false);
     }
   };

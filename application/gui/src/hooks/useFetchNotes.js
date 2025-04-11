@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { secureFetch } from "../util/secureFetch";
 
 /**
  * Custom hook to fetch user notes from the server.
@@ -20,10 +21,7 @@ const useFetchNotes = () => {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const response = await fetch("/api/get-user-note", {
-          method: "GET",
-          credentials: "include",
-        });
+        const response = await secureFetch("/api/get-user-note");
 
         if (response.ok) {
           let data = await response.json();

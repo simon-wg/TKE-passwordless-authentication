@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState } from "react";
+import { secureFetch } from "../util/secureFetch";
 
 /**
  * Custom hook to update a note.
@@ -7,7 +8,7 @@ import { useState } from 'react';
  *
  * @example
  * const [result, updateNote] = useUpdateNote();
- * 
+ *
  * // To update a note
  * updateNote(id, name, note);
  *
@@ -24,12 +25,8 @@ const useUpdateNote = () => {
 
   const updateNote = async (id, name, note) => {
     try {
-      const response = await fetch('/api/update-note', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const response = await secureFetch("/api/update-note", {
+        method: "POST",
         body: JSON.stringify({ id, name, note: note }),
       });
 
@@ -39,7 +36,7 @@ const useUpdateNote = () => {
         setResult(false);
       }
     } catch (error) {
-      console.log('Error saving note', error);
+      console.log("Error saving note", error);
       setResult(false);
     }
   };
