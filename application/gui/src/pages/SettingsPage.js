@@ -112,30 +112,43 @@ const SettingsPage = () => {
       </div>
       <div>
         <h2>Add Public Key</h2>
-        <input
-          type="text"
-          placeholder="Key Label"
-          value={addKeyLabel}
-          onChange={(e) => setAddKeyLabel(e.target.value)}
-        />
+        <div className="form-group">
+          <label htmlFor="addKeyLabel">Key Label</label>
+          <input
+            id="addKeyLabel"
+            type="text"
+            placeholder="Enter a label for the new key"
+            value={addKeyLabel}
+            onChange={(e) => setAddKeyLabel(e.target.value)}
+          />
+        </div>
         <button onClick={handleAddKey}>Add Public Key</button>
       </div>
       <div>
         <h2>Remove Public Key</h2>
-        <input
-          type="text"
-          placeholder="Key Label"
-          value={removeKeyLabel}
-          onChange={(e) => setRemoveKeyLabel(e.target.value)}
-        />
+        <div className="form-group">
+          <label htmlFor="removeKeyLabel">Key Label</label>
+          <input
+            id="removeKeyLabel"
+            type="text"
+            placeholder="Enter the label of the key to remove"
+            value={removeKeyLabel}
+            onChange={(e) => setRemoveKeyLabel(e.target.value)}
+          />
+        </div>
         <button onClick={handleRemoveKey}>Remove Public Key</button>
       </div>
-      <button
-        className="delete-button"
-        onClick={() => setShowDeletePopup(true)}
-      >
-        Delete Account
-      </button>
+
+      <div>
+        <h2>Account Deletion</h2>
+        <button
+          className="delete-button"
+          onClick={() => setShowDeletePopup(true)}
+        >
+          Delete Account
+        </button>
+      </div>
+
 
       {showDeletePopup && (
         <div className="lightbox">

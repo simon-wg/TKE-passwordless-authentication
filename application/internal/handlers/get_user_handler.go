@@ -15,6 +15,7 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	username, err := getAuthenticatedUser(r)
 	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
 	}
 
 	// Send success response
