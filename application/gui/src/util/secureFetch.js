@@ -1,3 +1,9 @@
+/* A function that makes API calls with a csrf token
+ * Optional params that allow you to specify request type (POST,DELETE, etc)
+ * will default to GET if nothing provided.
+ * Always includes credentials
+ * In practice works exactly as fetch() only with csrf tokens and cookies.
+ */
 import { fetchCsrfToken } from "./csrf";
 
 export const secureFetch = async (url, options = {}) => {

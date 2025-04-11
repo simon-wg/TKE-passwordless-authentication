@@ -2,10 +2,8 @@ import React, { useState, useEffect } from "react";
 import useFetchUser from "../hooks/useFetchUser";
 import config from "../config";
 import "../components/styles.css";
+import { secureFetch } from "../util/secureFetch";
 import { useNavigate } from "react-router-dom";
-
-
-
 
 const SettingsPage = () => {
   const navigate = useNavigate();
@@ -20,12 +18,8 @@ const SettingsPage = () => {
   const [popupMessage, setPopupMessage] = useState("");
 
   const fetchKeyLabels = async () => {
-    const response = await fetch("/api/get-public-key-labels", {
+    const response = await secureFetch("/api/get-public-key-labels", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
       body: JSON.stringify({ username: user }),
     });
 
@@ -45,14 +39,13 @@ const SettingsPage = () => {
   }, [user]);
 
   const handleAddKey = async () => {
-    const response = await fetch(config.clientBaseUrl + "/api/add-public-key", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ label: addKeyLabel }),
-    });
+    const response = await secureFetch(
+      config.clientBaseUrl + "/api/add-public-key",
+      {
+        method: "POST",
+        body: JSON.stringify({ label: addKeyLabel }),
+      }
+    );
 
     if (response.ok) {
       setMessage("Public key added successfully");
@@ -66,14 +59,13 @@ const SettingsPage = () => {
   };
 
   const handleRemoveKey = async () => {
-    const response = await fetch(config.clientBaseUrl + "/api/remove-public-key", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ label: removeKeyLabel }),
-    });
+    const response = await secureFetch(
+      config.clientBaseUrl + "/api/remove-public-key",
+      {
+        method: "POST",
+        body: JSON.stringify({ label: removeKeyLabel }),
+      }
+    );
 
     if (response.ok) {
       setMessage("Public key removed successfully");
@@ -88,12 +80,8 @@ const SettingsPage = () => {
 
   const handleAccountDeletion = async () => {
     if (deleteConfirmation === "REMOVEMYACCOUNT") {
-      const response = await fetch("/api/unregister", {
+      const response = await secureFetch("/api/unregister", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
       });
 
       if (response.ok) {
@@ -102,7 +90,7 @@ const SettingsPage = () => {
         setShowDeletePopup(false);
 
         // !! TEMPORARY SOLUTION. api/logout should be called here when implemented. !!
-        navigate('/');
+        navigate("/");
       } else {
         setPopupMessage("Error deleting account");
       }
@@ -142,7 +130,10 @@ const SettingsPage = () => {
         />
         <button onClick={handleRemoveKey}>Remove Public Key</button>
       </div>
-      <button className="delete-button" onClick={() => setShowDeletePopup(true)}>
+      <button
+        className="delete-button"
+        onClick={() => setShowDeletePopup(true)}
+      >
         Delete Account
       </button>
 
@@ -156,9 +147,19 @@ const SettingsPage = () => {
               value={deleteConfirmation}
               onChange={(e) => setDeleteConfirmation(e.target.value)}
             />
-            <button className="delete-button" style={{ marginBottom: "10px" }} onClick={handleAccountDeletion}>Confirm</button>
+            <button
+              className="delete-button"
+              style={{ marginBottom: "10px" }}
+              onClick={handleAccountDeletion}
+            >
+              Confirm
+            </button>
             <button onClick={() => setShowDeletePopup(false)}>Cancel</button>
-            {popupMessage && <p className="error-message" style={{ color: "red" }}>{popupMessage}</p>}
+            {popupMessage && (
+              <p className="error-message" style={{ color: "red" }}>
+                {popupMessage}
+              </p>
+            )}
           </div>
         </div>
       )}

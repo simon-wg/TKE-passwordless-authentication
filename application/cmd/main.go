@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gorilla/csrf"
 	"github.com/joho/godotenv"
 )
 
@@ -33,36 +32,24 @@ func main() {
 		return
 	}
 
-	var csrfMiddleware = csrf.Protect(
-		[]byte("your-32-byte-secret-key-here"),
-		csrf.Secure(false), // Set to true in production (HTTPS)
-		csrf.Path("/"),
-		csrf.HttpOnly(true),
-		csrf.SameSite(csrf.SameSiteLaxMode),
-	)
-
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/api/register", handlers.RegisterHandler)
 	mux.Handle("/api/login", http.HandlerFunc(handlers.LoginHandler))
 	mux.Handle("/api/verify", http.HandlerFunc(handlers.VerifyHandler))
-	mux.Handle("/api/getuser", http.HandlerFunc(handlers.GetUserHandler))
-	mux.Handle("/api/unregister", http.HandlerFunc(handlers.UnregisterHandler))
-	mux.Handle("/api/add-public-key", http.HandlerFunc(handlers.AddPublicKeyHandler))
-	mux.Handle("/api/remove-public-key", http.HandlerFunc(handlers.RemovePublicKeyHandler))
-	mux.Handle("/api/get-public-key-labels", http.HandlerFunc(handlers.GetPublicKeyLabelsHandler))
+	mux.Handle("/api/getuser", session_util.SessionMiddleware(session_util.CsrfMiddleware((http.HandlerFunc(handlers.GetUserHandler)))))
+	mux.Handle("/api/unregister", session_util.SessionMiddleware(session_util.CsrfMiddleware(http.HandlerFunc(handlers.UnregisterHandler))))
+	mux.Handle("/api/add-public-key", session_util.SessionMiddleware(session_util.CsrfMiddleware(http.HandlerFunc(handlers.AddPublicKeyHandler))))
+	mux.Handle("/api/remove-public-key", session_util.SessionMiddleware(session_util.CsrfMiddleware(http.HandlerFunc(handlers.RemovePublicKeyHandler))))
+	mux.Handle("/api/get-public-key-labels", session_util.SessionMiddleware(session_util.CsrfMiddleware(http.HandlerFunc(handlers.GetPublicKeyLabelsHandler))))
 
-	mux.Handle("/api/csrf-token", session_util.SessionMiddleware(http.HandlerFunc(handlers.GetCSRF)))
+	mux.Handle("/api/csrf-token", session_util.SessionMiddleware(session_util.CsrfMiddleware(http.HandlerFunc(handlers.GetCSRF))))
 
-	mux.Handle("/api/create-note",
-		session_util.SessionMiddleware(
-			csrfMiddleware(http.HandlerFunc(handlers.CreateNoteHandler)),
-		),
-	)
-	mux.Handle("/api/get-user-note", session_util.SessionMiddleware(csrfMiddleware(http.HandlerFunc(handlers.GetNotesHandler))))
-	mux.Handle("/api/update-note", session_util.SessionMiddleware(http.HandlerFunc(handlers.UpdateNoteHandler)))
-	mux.Handle("/api/delete-note", session_util.SessionMiddleware(http.HandlerFunc(handlers.DeleteNoteHandler)))
-	mux.Handle("/api/logout", session_util.SessionMiddleware(http.HandlerFunc(handlers.LogoutHandler)))
+	mux.Handle("/api/create-note", session_util.SessionMiddleware(session_util.CsrfMiddleware(http.HandlerFunc(handlers.CreateNoteHandler))))
+	mux.Handle("/api/get-user-note", session_util.SessionMiddleware(session_util.CsrfMiddleware(http.HandlerFunc(handlers.GetNotesHandler))))
+	mux.Handle("/api/update-note", session_util.SessionMiddleware(session_util.CsrfMiddleware(http.HandlerFunc(handlers.UpdateNoteHandler))))
+	mux.Handle("/api/delete-note", session_util.SessionMiddleware(session_util.CsrfMiddleware(http.HandlerFunc(handlers.DeleteNoteHandler))))
+	mux.Handle("/api/logout", session_util.SessionMiddleware(session_util.CsrfMiddleware(http.HandlerFunc(handlers.LogoutHandler))))
 
 	fmt.Println("Mock application running on http://localhost:8080")
 	http.ListenAndServe(":8080", mux)

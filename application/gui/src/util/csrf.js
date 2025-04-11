@@ -1,3 +1,9 @@
+/* Function that fetches and saves CSRF Tokens from server
+ *
+ * @returns a CSRF token
+ *
+ */
+
 let csrfTokenCache = null;
 
 export const fetchCsrfToken = async () => {
@@ -9,8 +15,10 @@ export const fetchCsrfToken = async () => {
 
   if (!res.ok) throw new Error("Failed to fetch CSRF token");
 
-  const data = await res.json();
-  csrfTokenCache = data.csrfToken;
+  const token = res.headers.get("X-CSRF-Token");
+  if (!token) throw new Error("CSRF token not found in response headers");
+
+  csrfTokenCache = token;
   console.log("Fetched csrf token:", { csrfTokenCache });
   return csrfTokenCache;
 };
