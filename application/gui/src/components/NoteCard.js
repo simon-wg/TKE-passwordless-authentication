@@ -38,18 +38,14 @@ const NoteCard = ({ id: initialId, name: initialName, body: initialBody, isUnsav
         setMessage('Failed to create note');
         setMessageType('error');
       } else {
+        setId(saveResult.id);
         setMessage('Note created successfully');
         setMessageType('success');
-        setId(saveResult.id);
         if (onUpdate) onUpdate({ ID: saveResult.id, Name: name, Note: body });
       }
       prevSaveResult.current = saveResult;
     }
   }, [saveResult, onUpdate]);
-
-  useEffect(() => {
-    console.log(message);
-  }, [message])
 
   useEffect(() => {
     if (updateResult !== null && updateResult !== prevUpdateResult.current) {
@@ -64,20 +60,6 @@ const NoteCard = ({ id: initialId, name: initialName, body: initialBody, isUnsav
       prevUpdateResult.current = updateResult;
     }
   }, [updateResult, onUpdate, id, name, body]);
-
-  useEffect(() => {
-    if (deleteResult !== null && deleteResult !== prevDeleteResult.current) {
-      if (deleteResult === false) {
-        setMessage('Failed to delete note');
-        setMessageType('error');
-      } else {
-        setMessage('Note deleted successfully');
-        setMessageType('success');
-        if (onDelete) onDelete(id);
-      }
-      prevDeleteResult.current = deleteResult;
-    }
-  }, [deleteResult, onDelete, id]);
 
   const handleNameChange = (event) => {
     setName(event.target.value);

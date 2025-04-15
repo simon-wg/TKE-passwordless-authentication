@@ -30,13 +30,11 @@ const NotesApp = () => {
       Note: '',
       isUnsaved: true,
     };
-    console.log(newNote);
     setNotes([...notes, newNote]);
     setSelectedNote(newNote);
   };
 
   const handleUpdate = (updatedNote) => {
-    console.log(updatedNote);
     setNotes((prevNotes) =>
       prevNotes.map((note) =>
         note === selectedNote ? updatedNote : note
@@ -69,9 +67,9 @@ const NotesApp = () => {
     <div className="note-manager">
       <div className="note-list">
 
-        {notes.map((noteData) => (
+        {notes.map((noteData, index) => (
           <div
-            key={noteData.ID}
+            key={index}
             className="note-list-item"
             onClick={() => handleNoteClick(noteData)}
           >
@@ -86,7 +84,7 @@ const NotesApp = () => {
       <div className="note-details">
         {selectedNote && (
           <NoteCard
-            key={selectedNote.isUnsaved ? selectedNote.tempId : selectedNote.ID}
+            key={notes.findIndex((note) => note === selectedNote)}
             id={selectedNote.ID}
             name={selectedNote.Name}
             body={selectedNote.Note}
