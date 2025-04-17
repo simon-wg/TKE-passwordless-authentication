@@ -15,7 +15,9 @@ const useCreateNote = () => {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const base64Data = await response.json(); 
+        const decodedString = atob(base64Data);
+        const data = JSON.parse(decodedString);
         setResult(data);
       } else {
         setResult(false);
