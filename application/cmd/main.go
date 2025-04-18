@@ -21,6 +21,10 @@ func main() {
 		fmt.Printf("Failed to load .env file: %v\n", err)
 	}
 
+	// Initiates the functions so that the .env variables gets loaded
+	session_util.InitCSRF()
+	session_util.InitSession()
+
 	// Connects to the MongoDB database named tkeyUserDB
 	db, err := db.ConnectMongoDB(os.Getenv("MONGO_URI"), "tkeyUserDB")
 	if err != nil {
