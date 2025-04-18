@@ -19,7 +19,6 @@ export const fetchCsrfToken = async () => {
   if (!token) throw new Error("CSRF token not found in response headers");
 
   csrfTokenCache = token;
-  console.log("Fetched csrf token:", { csrfTokenCache });
   return csrfTokenCache;
 };
 
