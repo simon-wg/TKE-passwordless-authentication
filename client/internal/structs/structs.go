@@ -48,9 +48,3 @@ type AddPublicKeyRequest struct {
 	Pubkey []byte `json:"pubkey"`
 	Label  string `json:"label"`
 }
-
-// RemovePublicKeyRequest represents a request to remove a public key for a user
-// It contains the username of the user and the label of the public key to be removed
-type RemovePublicKeyRequest struct {
-	Label string `json:"label"`
-}
