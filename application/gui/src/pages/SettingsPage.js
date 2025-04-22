@@ -39,21 +39,45 @@ const SettingsPage = () => {
   }, [user]);
 
   const handleAddKey = async () => {
-    const response = await secureFetch(
-      config.clientBaseUrl + "/api/add-public-key",
-      {
-        method: "POST",
-        body: JSON.stringify({ label: addKeyLabel }),
-      }
-    );
+    try {
+      const clientResponse = await fetch(
+        config.clientBaseUrl + "/api/add-public-key",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-    if (response.ok) {
+      if (!clientResponse.ok) {
+        const errorText = await clientResponse.text();
+        setMessage(errorText);
+        setMessageType("error");
+        return;
+      }
+
+      const { pubkey } = await clientResponse.json();
+
+      const backendResponse = await secureFetch("/api/add-public-key", {
+        method: "POST",
+        body: JSON.stringify({ label: addKeyLabel, pubkey }),
+      });
+
+      if (!backendResponse.ok) {
+        const errorText = await backendResponse.text();
+        setMessage(errorText);
+        setMessageType("error");
+        return;
+      }
+
       setMessage("Public key added successfully");
       setMessageType("success");
       setAddKeyLabel("");
       fetchKeyLabels();
-    } else {
-      setMessage("Error adding public key");
+    } catch (error) {
+      console.error("Error in add key flow:", error);
+      setMessage(`Unexpected Error: ${error.message}`);
       setMessageType("error");
     }
   };
@@ -70,8 +94,10 @@ const SettingsPage = () => {
       setRemoveKeyLabel("");
       fetchKeyLabels();
     } else {
-      setMessage("Error removing public key");
+      const errorText = await response.text();
+      setMessage(errorText);
       setMessageType("error");
+      return;
     }
   };
 
@@ -99,6 +125,10 @@ const SettingsPage = () => {
   return (
     <div className="container">
       <h1>Settings</h1>
+
+      {/* Message Display */}
+      {message && <p className={`message ${messageType}`}>{message}</p>}
+
       <div>
         <h2>Your Public Keys</h2>
         <ul>
