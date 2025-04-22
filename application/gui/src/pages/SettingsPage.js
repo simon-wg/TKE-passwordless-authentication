@@ -59,13 +59,10 @@ const SettingsPage = () => {
   };
 
   const handleRemoveKey = async () => {
-    const response = await secureFetch(
-      config.clientBaseUrl + "/api/remove-public-key",
-      {
-        method: "POST",
-        body: JSON.stringify({ label: removeKeyLabel }),
-      }
-    );
+    const response = await secureFetch("/api/remove-public-key", {
+      method: "POST",
+      body: JSON.stringify({ label: removeKeyLabel }),
+    });
 
     if (response.ok) {
       setMessage("Public key removed successfully");
@@ -148,7 +145,6 @@ const SettingsPage = () => {
           Delete Account
         </button>
       </div>
-
 
       {showDeletePopup && (
         <div className="lightbox">
