@@ -1,3 +1,5 @@
+import { secureFetch } from "../util/secureFetch";
+
 /**
  * Logs out the user by sending a http request to the server. The server then deletes
  * the session on the server then deletes the cookie in the browser
@@ -6,9 +8,8 @@
 function LogoutButton() {
   const handleClick = async () => {
     try {
-      const response = await fetch("/api/logout", {
+      const response = await secureFetch("/api/logout", {
         method: "POST",
-        credentials: "include",
       });
 
       if (response.ok) {

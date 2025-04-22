@@ -1,16 +1,13 @@
-import { useState } from 'react';
+import { useState } from "react";
+import { secureFetch } from "../util/secureFetch";
 
 const useCreateNote = () => {
   const [result, setResult] = useState(null);
 
   const createNote = async (name, note) => {
     try {
-      const response = await fetch('/api/create-note', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const response = await secureFetch("/api/create-note", {
+        method: "POST",
         body: JSON.stringify({ name, note }),
       });
 
@@ -23,7 +20,7 @@ const useCreateNote = () => {
         setResult(false);
       }
     } catch (error) {
-      console.log('Error creating note', error);
+      console.log("Error creating note", error);
       setResult(false);
     }
   };

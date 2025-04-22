@@ -6,6 +6,7 @@ require github.com/stretchr/testify v1.10.0
 
 require (
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/gorilla/csrf v1.7.2 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect

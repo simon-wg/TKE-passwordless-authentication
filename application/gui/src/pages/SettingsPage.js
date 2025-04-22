@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import useFetchUser from "../hooks/useFetchUser";
 import config from "../config";
 import "../components/styles.css";
+import { secureFetch } from "../util/secureFetch";
 import { useNavigate } from "react-router-dom";
 
 const SettingsPage = () => {
@@ -17,12 +18,8 @@ const SettingsPage = () => {
   const [popupMessage, setPopupMessage] = useState("");
 
   const fetchKeyLabels = async () => {
-    const response = await fetch("/api/get-public-key-labels", {
+    const response = await secureFetch("/api/get-public-key-labels", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
       body: JSON.stringify({ username: user }),
     });
 
@@ -42,14 +39,13 @@ const SettingsPage = () => {
   }, [user]);
 
   const handleAddKey = async () => {
-    const response = await fetch(config.clientBaseUrl + "/api/add-public-key", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ label: addKeyLabel }),
-    });
+    const response = await secureFetch(
+      config.clientBaseUrl + "/api/add-public-key",
+      {
+        method: "POST",
+        body: JSON.stringify({ label: addKeyLabel }),
+      }
+    );
 
     if (response.ok) {
       setMessage("Public key added successfully");
@@ -63,14 +59,10 @@ const SettingsPage = () => {
   };
 
   const handleRemoveKey = async () => {
-    const response = await fetch(
+    const response = await secureFetch(
       config.clientBaseUrl + "/api/remove-public-key",
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
         body: JSON.stringify({ label: removeKeyLabel }),
       }
     );
@@ -88,12 +80,8 @@ const SettingsPage = () => {
 
   const handleAccountDeletion = async () => {
     if (deleteConfirmation === "REMOVEMYACCOUNT") {
-      const response = await fetch("/api/unregister", {
+      const response = await secureFetch("/api/unregister", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
       });
 
       if (response.ok) {
@@ -150,6 +138,7 @@ const SettingsPage = () => {
         </div>
         <button onClick={handleRemoveKey}>Remove Public Key</button>
       </div>
+
       <div>
         <h2>Account Deletion</h2>
         <button
@@ -159,6 +148,7 @@ const SettingsPage = () => {
           Delete Account
         </button>
       </div>
+
 
       {showDeletePopup && (
         <div className="lightbox">
