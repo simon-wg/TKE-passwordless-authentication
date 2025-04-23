@@ -111,8 +111,6 @@ const SettingsPage = () => {
         setMessage("Account deleted successfully");
         setMessageType("success");
         setShowDeletePopup(false);
-
-        // !! TEMPORARY SOLUTION. api/logout should be called here when implemented. !!
         navigate("/");
       } else {
         setPopupMessage("Error deleting account");
