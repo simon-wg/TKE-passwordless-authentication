@@ -19,14 +19,7 @@ const StartPage = ({ setPage }) => {
           <h2>Getting Started</h2>{" "}
           <ul>
             {" "}
-            <li>
-              {" "}
-              Make sure you have the{" "}
-              <a href="https://github.com/epicreach/tkey-web-authentication">
-                daemon
-              </a>{" "}
-              installed and running{" "}
-            </li>{" "}
+            <li> Make sure you have the daemon installed and running </li>{" "}
             <li>Go to the Register page and fill out the forms</li>{" "}
             <li>
               {" "}
