@@ -20,16 +20,17 @@ const StartPage = ({ setPage }) => {
           <ul>
             {" "}
             <li> Make sure you have the daemon installed and running </li>{" "}
+            <li>Plug in your TKey</li>
             <li>Go to the Register page and fill out the forms</li>{" "}
             <li>
               {" "}
               When registering or logging in, you will be prompted to enter an
-              optional USS (User Supplied Secret){" "}
+              optional User Supplied Secret (password){" "}
             </li>{" "}
             <li>
               {" "}
-              If you've created a USS you will need to enter the same USS each
-              time you login{" "}
+              If you've created an account with an USS you will need to enter
+              the same USS each time you login{" "}
             </li>{" "}
           </ul>{" "}
         </div>{" "}
