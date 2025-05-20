@@ -165,7 +165,7 @@ func TestAddPublicKey(t *testing.T) {
 
 	username := "testuser"
 	initialPubkey := ed25519.PublicKey([]byte("initialpublickey"))
-	initialLabel := "initial key"
+	initialLabel := "initialKey"
 
 	// Create the user with the initial public key
 	_, err := repo.CreateUser(username, initialPubkey, initialLabel)
@@ -173,7 +173,7 @@ func TestAddPublicKey(t *testing.T) {
 
 	// Add a new public key to the existing user
 	newPubkey := ed25519.PublicKey([]byte("newpublickey"))
-	newLabel := "new key"
+	newLabel := "newKey"
 	result, err := repo.AddPublicKey(username, newPubkey, newLabel)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
@@ -209,7 +209,7 @@ func TestAddPublicKey(t *testing.T) {
 
 	// Try to add another public key beyond the maximum limit
 	extraPubkey := ed25519.PublicKey([]byte("extrapubkey"))
-	extraLabel := "extra key"
+	extraLabel := "extraKey"
 	_, err = repo.AddPublicKey(username, extraPubkey, extraLabel)
 	assert.Error(t, err)
 	assert.Equal(t, "user already has the maximum number of public keys", err.Error())
@@ -220,7 +220,7 @@ func TestRemovePublicKey(t *testing.T) {
 
 	username := "testuser"
 	initialPubkey := ed25519.PublicKey([]byte("initialpublickey"))
-	initialLabel := "initial key"
+	initialLabel := "initiaKey"
 
 	// Create the user with the initial public key
 	_, err := repo.CreateUser(username, initialPubkey, initialLabel)
@@ -228,7 +228,7 @@ func TestRemovePublicKey(t *testing.T) {
 
 	// Add a new public key to the existing user
 	newPubkey := ed25519.PublicKey([]byte("newpublickey"))
-	newLabel := "new key"
+	newLabel := "neKey"
 	_, err = repo.AddPublicKey(username, newPubkey, newLabel)
 	assert.NoError(t, err)
 
@@ -256,7 +256,7 @@ func TestGetPublicKeyLabels(t *testing.T) {
 
 	username := "testuser"
 	initialPubkey := ed25519.PublicKey([]byte("initialpublickey"))
-	initialLabel := "initial key"
+	initialLabel := "initiaKey"
 
 	// Create the user with the initial public key
 	_, err := repo.CreateUser(username, initialPubkey, initialLabel)
@@ -264,7 +264,7 @@ func TestGetPublicKeyLabels(t *testing.T) {
 
 	// Add a new public key to the existing user
 	newPubkey := ed25519.PublicKey([]byte("newpublickey"))
-	newLabel := "new key"
+	newLabel := "newKey"
 	_, err = repo.AddPublicKey(username, newPubkey, newLabel)
 	assert.NoError(t, err)
 

@@ -2,27 +2,81 @@ package tests
 
 import (
 	"chalmers/tkey-group22/application/internal"
+	"chalmers/tkey-group22/application/internal/util"
 	"crypto/ed25519"
-	"encoding/hex"
+	"encoding/base64"
+	"errors"
+	"fmt"
 	"testing"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
+var validPubKey ed25519.PublicKey
+var validPrivKey ed25519.PrivateKey
+var testUsername = "TestUser"
+var mockRepo = UserRepoMock{}
+
+func init() {
+	validPubKey, validPrivKey, _ = ed25519.GenerateKey(nil)
+}
+
+// Mock required UserRepo functions
+
+type UserRepoMock struct{}
+
+func (u UserRepoMock) GetUser(username string) (*util.User, error) {
+	if username == testUsername {
+		return &util.User{
+			ID:         primitive.NewObjectID(),
+			Username:   testUsername,
+			PublicKeys: []util.PublicKey{util.PublicKey{Label: "main", Key: base64.StdEncoding.EncodeToString(validPubKey)}},
+		}, nil
+	}
+	return nil, errors.New("No user found")
+}
+
+func (u UserRepoMock) AddPublicKey(userName string, newPubKey ed25519.PublicKey, label string) (*mongo.UpdateResult, error) {
+	panic("unimplemented")
+}
+
+func (u UserRepoMock) CreateUser(userName string, pubkey ed25519.PublicKey, label string) (*mongo.InsertOneResult, error) {
+	panic("unimplemented")
+}
+
+func (u UserRepoMock) DeleteUser(userName string) (*mongo.DeleteResult, error) {
+	panic("unimplemented")
+}
+
+func (u UserRepoMock) GetPublicKeyLabels(userName string) ([]string, error) {
+	panic("unimplemented")
+}
+
+func (u UserRepoMock) RemovePublicKey(userName string, label string) (*mongo.UpdateResult, error) {
+	panic("unimplemented")
+}
+
+func (u UserRepoMock) UpdateUser(userName string, updatedUser util.User) (*mongo.UpdateResult, error) {
+	panic("unimplemented")
+}
+
 func TestVerifySignedResponse_ValidSignature(t *testing.T) {
-	pubkey, privKey, _ := ed25519.GenerateKey(nil)
+	username := "TestUser"
 
 	// Generate a challenge
-	challengeValue, err := internal.GenerateChallenge(pubkey)
+	challengeValue, err := internal.GenerateChallenge(username)
 	if err != nil {
 		t.Fatalf("Failed to generate challenge: %v", err)
 	}
 
 	// Sign the challenge
-	challengeBytes, _ := hex.DecodeString(challengeValue)
-	signature := ed25519.Sign(privKey, challengeBytes)
+	challengeBytes := []byte(challengeValue)
+	signature := ed25519.Sign(validPrivKey, challengeBytes)
 
 	// Verify the signed response
-	valid, err := internal.VerifySignature(pubkey, signature)
+	valid, err := internal.VerifySignature(username, signature, mockRepo)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -32,10 +86,9 @@ func TestVerifySignedResponse_ValidSignature(t *testing.T) {
 }
 
 func TestVerifySignedResponse_InvalidSignature(t *testing.T) {
-	pubKey, _, _ := ed25519.GenerateKey(nil)
 
 	invalidSignature := []byte("invalidsignature")
-	valid, err := internal.VerifySignature(pubKey, invalidSignature)
+	valid, err := internal.VerifySignature(testUsername, invalidSignature, mockRepo)
 	if err == nil {
 		t.Fatalf("Expected an error, got none")
 	}
@@ -45,21 +98,19 @@ func TestVerifySignedResponse_InvalidSignature(t *testing.T) {
 }
 
 func TestVerifySignedResponse_NonExistentChallenge(t *testing.T) {
-	pubkey, privKey, _ := ed25519.GenerateKey(nil)
 
 	// Generate a challenge
-	challengeValue, err := internal.GenerateChallenge(pubkey)
+	challengeValue, err := internal.GenerateChallenge(testUsername)
 	if err != nil {
 		t.Fatalf("Failed to generate challenge: %v", err)
 	}
 
 	// Sign the challenge
-	challengeBytes, _ := hex.DecodeString(challengeValue)
-	signature := ed25519.Sign(privKey, challengeBytes)
+	challengeBytes := []byte(challengeValue)
+	signature := ed25519.Sign(validPrivKey, challengeBytes)
 
 	// Test with a non-existent challenge
-	nonExistentPubKey := []byte("nonexistentpubkey")
-	valid, err := internal.VerifySignature(nonExistentPubKey, signature)
+	valid, err := internal.VerifySignature("nonExistingUser", signature, mockRepo)
 	if err == nil {
 		t.Fatalf("Expected an error, got none")
 	}
@@ -71,28 +122,27 @@ func TestVerifySignedResponse_NonExistentChallenge(t *testing.T) {
 func TestVerifySignedResponse_ExpiredChallenge(t *testing.T) {
 	// Set a new validDuration for the test
 	originalValidDuration := internal.ValidDuration
-	internal.ValidDuration = time.Duration(400) * time.Millisecond
+	internal.ValidDuration = time.Duration(200) * time.Millisecond
 
 	// // Restore the original validDuration after the test
 	defer func() {
 		internal.ValidDuration = originalValidDuration
 	}()
 
-	pubkey, privKey, _ := ed25519.GenerateKey(nil)
-
+	fmt.Println(internal.ValidDuration)
 	// Generate a challenge
-	challengeValue, err := internal.GenerateChallenge(pubkey)
+	challengeValue, err := internal.GenerateChallenge(testUsername)
 	if err != nil {
 		t.Fatalf("Failed to generate challenge: %v", err)
 	}
 
 	// Sign the challenge
-	challengeBytes, _ := hex.DecodeString(challengeValue)
-	signature := ed25519.Sign(privKey, challengeBytes)
+	challengeBytes := []byte(challengeValue)
+	signature := ed25519.Sign(validPrivKey, challengeBytes)
 
-	// Test with an expired challenge
+	// Sleep until challenge expires
 	time.Sleep(internal.ValidDuration + time.Duration(100)*time.Millisecond)
-	valid, err := internal.VerifySignature(pubkey, signature)
+	valid, err := internal.VerifySignature(testUsername, signature, mockRepo)
 	if err == nil {
 		t.Fatalf("Expected an error, got none")
 	}
