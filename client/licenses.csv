@@ -1,0 +1,17 @@
+chalmers/tkey-group22/client/cmd,Unknown,Unknown
+chalmers/tkey-group22/client/internal/auth,Unknown,Unknown
+chalmers/tkey-group22/client/internal/structs,Unknown,Unknown
+chalmers/tkey-group22/client/internal/tkey,Unknown,Unknown
+chalmers/tkey-group22/client/internal/util,Unknown,Unknown
+github.com/ccoveille/go-safecast,https://github.com/ccoveille/go-safecast/blob/v1.5.0/LICENSE,MIT
+github.com/creack/goselect,https://github.com/creack/goselect/blob/v0.1.2/LICENSE,MIT
+github.com/gen2brain/beeep,https://github.com/gen2brain/beeep/blob/9c006672e7f4/LICENSE,BSD-2-Clause
+github.com/godbus/dbus/v5,https://github.com/godbus/dbus/blob/v5.1.0/LICENSE,BSD-2-Clause
+github.com/tillitis/tkeyclient,https://github.com/tillitis/tkeyclient/blob/v1.1.0/LICENSE,BSD-2-Clause
+github.com/tillitis/tkeysign,https://github.com/tillitis/tkeysign/blob/v1.0.1/LICENSE,BSD-2-Clause
+github.com/tillitis/tkeyutil,https://github.com/tillitis/tkeyutil/blob/v0.0.9/LICENSE,BSD-2-Clause
+github.com/twpayne/go-pinentry-minimal/pinentry,https://github.com/twpayne/go-pinentry-minimal/blob/2a5dc4396c2a/LICENSE,MIT
+go.bug.st/serial,https://github.com/bugst/go-serial.git/blob/v1.6.2/LICENSE,BSD-3-Clause
+golang.org/x/crypto,https://cs.opensource.google/go/x/crypto/+/v0.33.0:LICENSE,BSD-3-Clause
+golang.org/x/sys,https://cs.opensource.google/go/x/sys/+/v0.30.0:LICENSE,BSD-3-Clause
+golang.org/x/term,https://cs.opensource.google/go/x/term/+/v0.29.0:LICENSE,BSD-3-Clause
